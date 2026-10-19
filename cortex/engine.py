@@ -277,13 +277,10 @@ class CortexEngine:
 
         if self.potato_mode or not has_avx2 or ram_gb < 3.8:
             num_ctx = 1024
-            num_predict = 300
-        elif ram_gb < 7.5:
-            num_ctx = 2048
-            num_predict = 500
+            num_predict = 150
         else:
-            num_ctx = 4096
-            num_predict = 900
+            num_ctx = 1024
+            num_predict = 180
 
         return {
             "temperature": 0.15,
@@ -291,6 +288,14 @@ class CortexEngine:
             "num_predict": num_predict,
             "use_mlock": bool(ram_gb >= 3.8),
             "use_mmap": True,
+            "stop": [
+                "AI_MENTOR_REQUEST:",
+                "JSON_CMD_REQUEST:",
+                "LINUX_CMD_REQUEST:",
+                "\nUser:",
+                "<|end|>",
+                "<|user|>",
+            ],
         }
 
     def query_local_ollama(

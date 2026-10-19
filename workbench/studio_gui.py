@@ -486,6 +486,12 @@ class SynapseStudioWindow(Gtk.Window):
         btn_ask_cmd.connect("clicked", self._on_ask_linux_cmd)
         query_hbox.pack_start(btn_ask_cmd, False, False, 0)
 
+        btn_run_cmd = Gtk.Button(label="▶ Run Cmd")
+        btn_run_cmd.connect("clicked", self._on_run_linux_cmd)
+        query_hbox.pack_start(btn_run_cmd, False, False, 0)
+        self.last_synthesized_cmd: str = ""
+        self.last_cmd_query: str = ""
+
         cortex_out_scroll = Gtk.ScrolledWindow()
         cortex_out_scroll.set_policy(Gtk.PolicyType.AUTOMATIC, Gtk.PolicyType.AUTOMATIC)
         cortex_out_scroll.set_size_request(-1, 85)
@@ -785,15 +791,72 @@ class SynapseStudioWindow(Gtk.Window):
         threading.Thread(target=worker, daemon=True).start()
 
     def _on_ask_linux_cmd(self, _widget: Any) -> None:
-        q = self.cortex_entry.get_text().strip() or "boost ram on a potato with zram"
+        q = self.cortex_entry.get_text().strip() or "check disk space and memory"
         res = self.cortex.synthesize_command_and_instructions(q, force_llm=False)
+        self.last_synthesized_cmd = res.get("command", "")
+        self.last_cmd_query = q
         steps = " | ".join(f"{i}. {s}" for i, s in enumerate(res.get("instructions", []), 1))
         text = (
             f"⌘ Linux Command [{res.get('safety', 'safe').upper()}] ({res.get('source', 'FTS5')}): {res.get('summary')}\n"
-            f"▸ Command:  {res.get('command')}\n"
+            f"▸ Command:  {self.last_synthesized_cmd}   (Click '▶ Run Cmd' to execute live!)\n"
             f"▸ Steps:    {steps}"
         )
         self._set_cortex_message(text)
+
+    def _on_run_linux_cmd(self, _widget: Any) -> None:
+        import subprocess
+        import shutil
+        q = self.cortex_entry.get_text().strip() or "check disk space and memory"
+        first_word = q.split()[0] if q.split() else ""
+        is_direct_shell = (
+            bool(first_word)
+            and shutil.which(first_word) is not None
+            and (any(c in q for c in ["-", "|", "/", ";", "&"]) or len(q.split()) <= 3)
+        )
+        if self.last_synthesized_cmd and q == self.last_cmd_query:
+            cmd = self.last_synthesized_cmd
+            safety = "safe"
+            source = "Synthesized"
+        elif is_direct_shell:
+            cmd = q
+            safety = "safe"
+            source = "Direct Shell"
+        else:
+            res = self.cortex.synthesize_command_and_instructions(q, force_llm=False)
+            cmd = res.get("command", "").strip()
+            safety = res.get("safety", "safe").lower()
+            source = res.get("source", "FTS5")
+            self.last_synthesized_cmd = cmd
+            self.last_cmd_query = q
+
+        # Block destructive patterns
+        danger_tokens = ["rm -rf /", "mkfs", "dd if=", ":(){", "shutdown", "reboot", "poweroff", "> /dev/sd"]
+        if safety == "danger" or any(tok in cmd for tok in danger_tokens):
+            self._set_cortex_message(f"✗ Blocked potentially destructive command: {cmd}")
+            return
+
+        self._set_cortex_message(f"▶ Executing Linux command ({source}): $ {cmd} ...")
+
+        def worker():
+            try:
+                proc = subprocess.run(
+                    cmd,
+                    shell=True,
+                    capture_output=True,
+                    text=True,
+                    timeout=8,
+                )
+                out = (proc.stdout or "") + (proc.stderr or "")
+                out = out.strip() or "(Command completed with exit code 0 and no stdout)"
+                lines = out.splitlines()
+                if len(lines) > 12:
+                    out = "\n".join(lines[:12]) + f"\n... ({len(lines) - 12} more lines)"
+                msg = f"⌘ Executed: $ {cmd}  [Exit: {proc.returncode}]\n{out}"
+            except Exception as e:
+                msg = f"✗ Execution Error ($ {cmd}): {e}"
+            GLib.idle_add(self._set_cortex_message, msg)
+
+        threading.Thread(target=worker, daemon=True).start()
 
     def _on_tick(self) -> bool:
         if self.running:

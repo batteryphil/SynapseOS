@@ -392,6 +392,36 @@ AI_ENTRIES: List[Dict[str, Any]] = [
         "debugging_tips": (
             "• High webcam lag on CPU: Resize frame immediately after capture (`cv2.resize(frame, (320, 240))`) and process in grayscale when color isn't needed."
         )
+    },
+    {
+        "slug": "prime_moment_sliding_window_attention",
+        "paradigm": "Linear & Hybrid Attention (PRIME Moment)",
+        "keywords": "prime moment attention sliding window kv cache o(1) state taylor qk norm passkey retrieval c99 libprime",
+        "title": "PRIME Moment Sliding-Window Attention (O(1) L2-Cache State)",
+        "layman_guide": (
+            "Standard Transformer Softmax attention stores every past token in a growing KV-cache (O(N^2) work), which slows down potato CPUs. "
+            "PRIME Moment Sliding-Window Attention keeps an exact local window W for nearby tokens and compresses all evicted history into "
+            "1st- and 2nd-order statistical moments (S0, S1, S2) using a constant 67-262 KB of L2-cache memory at 8,700+ tokens/sec in C99!"
+        ),
+        "math_and_theory": (
+            "1. Per-Head L2 QK-Normalization: q_hat = q / ||q||_2, k_hat = k / ||k||_2 bounds dot products |q_hat . k_hat| <= 1, preventing 2nd-order Taylor polynomial P(x) = 1 + x + 0.5*x^2 parabolic rebound for x < -1.\n"
+            "2. O(1) Moment Recurrence: S0_t = lambda*S0 + 1, S1_t = lambda*S1 + k_hat*v^T (O(D^2)), S2_t = lambda*S2 + (k_hat odot k_hat)*v^T.\n"
+            "3. Hybrid Readout: y_t = alpha * SoftmaxWindow(q_t, K_{t-W:t}, V_{t-W:t}) + (1 - alpha) * PrimeMomentReadout(q_hat_t, S0, S1, S2)."
+        ),
+        "hyperparameters": {
+            "window_size (W)": "64 - 256 (Local exact token window before eviction into PRIME Moment state)",
+            "moment_decay (lambda)": "0.990 - 0.998 (Exponential retention horizon for long-range passkey recall)",
+            "hybrid_alpha": "0.45 (Balance between exact local sliding window and O(1) global PRIME Moment state)",
+            "qk_norm": "1 / Enabled (Mandatory to prevent Taylor polynomial parabolic rebound on negative dot products)"
+        },
+        "code_template": (
+            "from cortex.prime_window import HybridSlidingWindowPrimeEngine\n"
+            "engine = HybridSlidingWindowPrimeEngine(window_size=64, d_head=32, decay=0.995)\n"
+            "out = engine.step_token(q_vec, k_vec, v_vec)"
+        ),
+        "debugging_tips": (
+            "• Passkey accuracy drops at long distances: Ensure `qk_norm=1` is enabled and increase `moment_decay (lambda)` from 0.95 to 0.996 so early tokens do not decay before readout."
+        )
     }
 ]
 

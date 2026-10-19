@@ -207,7 +207,7 @@ def main():
     # Command help
     cmd_parser = subparsers.add_parser("cmd", help="Ask for a Linux command and instructions")
     cmd_parser.add_argument("query", nargs="+", help="What task or command you need help with")
-    cmd_parser.add_argument("-y", "--yes", action="store_true", help="Auto-run the suggested command")
+    cmd_parser.add_argument("-y", "--yes", "--run", "-x", "--exec", dest="yes", action="store_true", help="Auto-run the suggested command")
     cmd_parser.add_argument("--llm", action="store_true", help="Force live cortex-phi3 synthesis with FTS5 RAG")
 
     # AI guidance
