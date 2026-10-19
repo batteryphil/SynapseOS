@@ -183,6 +183,34 @@ class NEATGenome:
         self.connections[innov1] = ConnectionGene(src_node.id, new_id, 1.0, True, innov1)
         self.connections[innov2] = ConnectionGene(new_id, dst_node.id, conn.weight, True, innov2)
 
+    def mutate_remove_node(self) -> bool:
+        """Remove a hidden neuron and clean up its incident synapses."""
+        hidden_ids = [nid for nid, n in self.nodes.items() if n.type == "hidden"]
+        if not hidden_ids:
+            return False
+        victim_id = random.choice(hidden_ids)
+        del self.nodes[victim_id]
+        to_delete = [
+            innov for innov, c in self.connections.items()
+            if c.in_node == victim_id or c.out_node == victim_id
+        ]
+        for innov in to_delete:
+            del self.connections[innov]
+        # Re-enable a disabled connection if any exist so signal flow stays healthy
+        disabled = [c for c in self.connections.values() if not c.enabled and c.in_node in self.nodes and c.out_node in self.nodes]
+        if disabled:
+            random.choice(disabled).enabled = True
+        return True
+
+    def mutate_remove_connection(self) -> bool:
+        """Prune/disable an enabled synapse while keeping at least 2 active connections."""
+        enabled = [c for c in self.connections.values() if c.enabled]
+        if len(enabled) <= 2:
+            return False
+        victim = random.choice(enabled)
+        victim.enabled = False
+        return True
+
     @staticmethod
     def crossover(parent1: "NEATGenome", parent2: "NEATGenome") -> "NEATGenome":
         """Crossover assuming parent1 is at least as fit as parent2."""
@@ -247,6 +275,30 @@ class NEATPopulation:
         self.best_fitness_ever: float = -1e9
         self.history_best: List[float] = []
         self.history_avg: List[float] = []
+
+    def modify_structure(self, delta_neurons: int = 0, delta_synapses: int = 0) -> Dict[str, int]:
+        """Directly add or subtract hidden neurons or synapses across the active population & champion."""
+        targets = [self.best_genome] + self.genomes
+        for g in targets:
+            if delta_neurons > 0:
+                for _ in range(delta_neurons):
+                    g.mutate_add_node(self.tracker, max_hidden=32)
+            elif delta_neurons < 0:
+                for _ in range(abs(delta_neurons)):
+                    g.mutate_remove_node()
+            if delta_synapses > 0:
+                for _ in range(delta_synapses):
+                    g.mutate_add_connection(self.tracker)
+            elif delta_synapses < 0:
+                for _ in range(abs(delta_synapses)):
+                    g.mutate_remove_connection()
+        hidden = sum(1 for n in self.best_genome.nodes.values() if n.type == "hidden")
+        enabled_conns = sum(1 for c in self.best_genome.connections.values() if c.enabled)
+        return {
+            "total_nodes": len(self.best_genome.nodes),
+            "hidden_nodes": hidden,
+            "enabled_synapses": enabled_conns,
+        }
 
     def speciate(self) -> None:
         representatives = [s[0] for s in self.species if s]

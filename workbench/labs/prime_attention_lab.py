@@ -19,6 +19,7 @@ class PrimeAttentionLab:
         {"key": "head_dim", "label": "Head Dimension (D)", "desc": "Per-head dimension (O(D^2) state size in L2 cache)", "min": 16.0, "max": 64.0, "step": 16.0, "default": 32.0},
         {"key": "use_qk_norm", "label": "QK-Norm (1=On, 0=Parabolic Rebound)", "desc": "Prevents Taylor polynomial P(x)=1+x+0.5x^2 rebound for x < -1", "min": 0.0, "max": 1.0, "step": 1.0, "default": 1.0},
         {"key": "distractor_gap", "label": "Passkey Distractor Gap (N)", "desc": "Tokens between planted needle and retrieval query", "min": 32.0, "max": 1024.0, "step": 32.0, "default": 256.0},
+        {"key": "num_heads", "label": "Attention Heads (+/-)", "desc": "Number of parallel PRIME Moment attention heads", "min": 2.0, "max": 32.0, "step": 2.0, "default": 8.0},
     ]
 
     GAPS = [32, 64, 128, 256, 512, 1024]
@@ -37,15 +38,32 @@ class PrimeAttentionLab:
         self.c_bench: Dict[str, Any] = benchmark_c_prime_engine(num_heads=8, head_dim=64, steps=500)
         self.rebuild_simulation()
 
+    def modify_brain_structure(self, delta_neurons: int = 0, delta_synapses: int = 0) -> Dict[str, Any]:
+        if delta_neurons != 0:
+            cur_h = int(round(self.params.get("num_heads", 8.0)))
+            self.params["num_heads"] = float(max(2, min(32, cur_h + delta_neurons * 2)))
+        if delta_synapses != 0:
+            cur_w = int(round(self.params.get("window_size", 64.0)))
+            self.params["window_size"] = float(max(16, min(256, cur_w + delta_synapses * 16)))
+        self.rebuild_simulation()
+        H = int(round(self.params.get("num_heads", 8.0)))
+        D = int(round(self.params.get("head_dim", 32.0)))
+        return {
+            "total_nodes": H + D,
+            "hidden_nodes": H,
+            "enabled_synapses": H * D,
+        }
+
     def rebuild_simulation(self) -> None:
         D = max(16, int(round(self.params["head_dim"])))
         W = max(8, int(round(self.params["window_size"])))
+        H = max(2, int(round(self.params.get("num_heads", 8.0))))
         lam = float(self.params["decay"])
         alpha = float(self.params["alpha"])
         qk_norm = bool(round(self.params["use_qk_norm"]) >= 1)
 
         self.engine = HybridSlidingWindowPrimeEngine(
-            num_heads=8,
+            num_heads=H,
             head_dim=D,
             window_size=W,
             decay=lam,
@@ -167,15 +185,18 @@ class PrimeAttentionLab:
         target_gap = int(round(self.params["distractor_gap"]))
         idx = min(range(len(self.GAPS)), key=lambda i: abs(self.GAPS[i] - target_gap))
         hyb_pct = round(self.curve_hybrid[idx] * 100.0, 1)
+        win_pct = round(self.curve_window_only[idx] * 100.0, 1)
         lin_pct = round(self.curve_linear_elu[idx] * 100.0, 1)
         D = max(16, int(round(self.params["head_dim"])))
-        state_kb = round(((2 * D * D + 3 * D + 1) * 8 * 4) / 1024.0, 2)
+        H = max(2, int(round(self.params.get("num_heads", 8.0))))
+        state_kb = round(((2 * D * D + 3 * D + 1) * H * 4) / 1024.0, 2)
         return {
-            "lab": f"PRIME Moment Sliding-Window (W={int(self.params['window_size'])}, {state_kb}KB State)",
+            "lab": f"PRIME Moment Sliding-Window (W={int(self.params['window_size'])}, {H}H, {state_kb}KB State)",
             "generation": self.epoch,
             "species": int(self.params["window_size"]),
             "best_fitness": hyb_pct,
             "avg_fitness": lin_pct,
+            "win_fitness": win_pct,
             "best_ever": round(max(self.history_best) if self.history_best else hyb_pct, 1),
             "params": dict(self.params),
             "c_tokens_per_sec": round(self.c_bench.get("tokens_per_sec", 0.0), 1),

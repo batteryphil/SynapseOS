@@ -563,8 +563,326 @@ SCHOOL_CURRICULUM: List[Dict[str, Any]] = [
             "print('💡 Command:   ', cmd_info['command'])\n"
             "print('⚡ Speed:     ', cmd_info.get('source'))\n"
         )
+    },
+    # ==========================================================================
+    # TRACK 7: PRIME MOMENT SLIDING-WINDOW ATTENTION (O(1) MEMORY VAULT)
+    # ==========================================================================
+    {
+        "id": "lesson_7_1",
+        "track": "Track 7: PRIME Moment Attention (O(1) Memory)",
+        "title": "7.1 Solving Sliding-Window Amnesia with the PRIME Vault",
+        "grade_level": "Ages 11+ / All Levels",
+        "lab_id": "prime_attention",
+        "badge": "🔑 Vault Keeper",
+        "story": (
+            "Normal AI chatbots either run out of RAM on long conversations (Softmax keeps every word in a giant 288,000 KB table) "
+            "or forget old words as soon as they leave a small Sliding Window! PRIME Moment Attention fixes this: right before "
+            "a secret passkey ('7492') falls out of the Sliding Window, it compresses it into a tiny 67 KB Memory Vault (S0, S1, S2)!"
+        ),
+        "steps": [
+            "1. Click '▸ 1. Load Preset' to open Lab 7 (Window W=64, Passkey Gap N=256).",
+            "2. Watch the animated token conveyor belt: even after 'KEY:7492' leaves the blue Window, the green PRIME Vault remembers it (88%+ recall)!",
+            "3. Try dragging 'Window vs PRIME Blend' to 1.0 (Window Only) to see recall drop to 0%, then set it back to 0.45.",
+            "4. Click '✓ 2. Check Goal' with Hybrid Recall >= 80%!"
+        ],
+        "preset_params": {
+            "window_size": 64.0,
+            "decay": 0.9990,
+            "alpha": 0.45,
+            "head_dim": 32.0,
+            "use_qk_norm": 1.0,
+            "distractor_gap": 256.0,
+            "num_heads": 8.0,
+        },
+        "goal_metric": "best_fitness",
+        "goal_op": ">=",
+        "goal_target": 80.0,
+        "goal_desc": "Achieve >= 80% Passkey Recall across a 256-token distractor gap using Hybrid PRIME Attention",
+        "coding_challenge": (
+            "# 🎯 HANDS-ON CODING CHALLENGE 7.1:\n"
+            "# Benchmark the native C99 PRIME Moment Attention kernel on this CPU!\n\n"
+            "from cortex.prime_window import benchmark_c_prime_engine\n\n"
+            "res = benchmark_c_prime_engine(num_heads=8, head_dim=64, steps=1000)\n"
+            "print('Engine Backend: ', res['backend'])\n"
+            "print(f\"Decode Speed:   {res['tokens_per_sec']:,.1f} tokens/sec\")\n"
+            "print('O(1) State RAM: 67.1 KB (vs 288,000 KB Softmax KV-Cache)')\n"
+        )
+    },
+    {
+        "id": "lesson_7_2",
+        "track": "Track 7: PRIME Moment Attention (O(1) Memory)",
+        "title": "7.2 Why QK-Norm Stops Parabolic Explosion",
+        "grade_level": "Ages 12+ / Intermediate",
+        "lab_id": "prime_attention",
+        "badge": "⚡ Taylor Stabilizer",
+        "story": (
+            "PRIME approximates exponential attention exp(x) with a 2nd-order Taylor polynomial P(x) = 1 + x + 0.5*x^2. "
+            "Without QK-Norm, large negative numbers (x < -2) bounce back up like a parabola and drown out the passkey! "
+            "Turning QK-Norm ON keeps |x| <= 1.0 so the vault stays crystal clear even at 1,024 tokens."
+        ),
+        "steps": [
+            "1. Click '▸ 1. Load Preset' (sets Passkey Gap N=512 and QK-Norm=1).",
+            "2. Toggle 'QK-Norm' slider to 0 to see the red warning and watch recall collapse, then turn QK-Norm back to 1!",
+            "3. Click '✓ 2. Check Goal' with Recall >= 70% at Gap=512!"
+        ],
+        "preset_params": {
+            "window_size": 64.0,
+            "decay": 0.9993,
+            "alpha": 0.35,
+            "head_dim": 32.0,
+            "use_qk_norm": 1.0,
+            "distractor_gap": 512.0,
+            "num_heads": 8.0,
+        },
+        "goal_metric": "best_fitness",
+        "goal_op": ">=",
+        "goal_target": 70.0,
+        "goal_desc": "Maintain >= 70% Passkey Recall at a 512-token gap with QK-Norm active",
+        "coding_challenge": (
+            "# 🎯 HANDS-ON CODING CHALLENGE 7.2:\n"
+            "# Compare Taylor polynomial P(x) = 1 + x + 0.5*x^2 with and without QK-Norm!\n\n"
+            "def taylor_p(x):\n"
+            "    return 1.0 + x + 0.5 * (x ** 2)\n\n"
+            "print('Bounded QK-Norm (x = -0.8): ', round(taylor_p(-0.8), 3), ' (Small, quiet distractor)')\n"
+            "print('Unbounded Raw   (x = -4.0): ', round(taylor_p(-4.0), 3), ' (Explodes to +5.0 parabolic rebound!)')\n"
+        )
     }
 ]
+
+
+# ==============================================================================
+# 35 INTERACTIVE LAB EXAMPLES / PRESETS (5 FOR EACH OF THE 7 AI LABS)
+# ==============================================================================
+LAB_EXAMPLES: Dict[str, List[Dict[str, Any]]] = {
+    "moon_lander": [
+        {
+            "id": "ml_ex1",
+            "title": "Ex 1: Apollo 11 Calm Moon Landing (g=1.62)",
+            "desc": "Standard lunar gravity (1.62 m/s²), zero wind, 60 rockets evolving soft touchdown.",
+            "params": {"gravity": 1.62, "wind": 0.0, "fuel_capacity": 160.0, "pop_size": 60.0, "conn_add_prob": 0.18, "node_add_prob": 0.06, "weight_mutate_power": 0.60, "landing_bonus": 240.0, "thruster_power": 1.65, "target_hidden": 1.0},
+        },
+        {
+            "id": "ml_ex2",
+            "title": "Ex 2: Mars Gale-Force Crosswind (g=3.72, Wind=+0.85)",
+            "desc": "Strong sideways Martian dust storm! Rockets must tilt into the wind and fire side thrusters.",
+            "params": {"gravity": 3.72, "wind": 0.85, "fuel_capacity": 220.0, "pop_size": 70.0, "conn_add_prob": 0.24, "node_add_prob": 0.10, "weight_mutate_power": 0.65, "landing_bonus": 320.0, "thruster_power": 1.95, "target_hidden": 3.0},
+        },
+        {
+            "id": "ml_ex3",
+            "title": "Ex 3: Deep 8-Neuron Brain Topology (+8 Hidden)",
+            "desc": "Starts with 8 hidden neurons pre-grown in the middle layer for complex multi-thruster coordination.",
+            "params": {"gravity": 2.10, "wind": -0.45, "fuel_capacity": 180.0, "pop_size": 60.0, "conn_add_prob": 0.35, "node_add_prob": 0.20, "weight_mutate_power": 0.55, "landing_bonus": 280.0, "thruster_power": 1.75, "target_hidden": 8.0},
+        },
+        {
+            "id": "ml_ex4",
+            "title": "Ex 4: Earth Heavy Booster Recovery (g=9.8, High Thrust)",
+            "desc": "Full Earth gravity (9.8 m/s²) SpaceX-style suicide burn requiring high thrust (2.4x) and fast reflexes.",
+            "params": {"gravity": 9.80, "wind": 0.15, "fuel_capacity": 280.0, "pop_size": 80.0, "conn_add_prob": 0.22, "node_add_prob": 0.08, "weight_mutate_power": 0.70, "landing_bonus": 360.0, "thruster_power": 2.40, "target_hidden": 4.0},
+        },
+        {
+            "id": "ml_ex5",
+            "title": "Ex 5: Low-Fuel Precision Touchdown (Fuel=70)",
+            "desc": "Scarcity challenge: only 70 fuel units! Rockets that hover wastefully run dry and crash.",
+            "params": {"gravity": 1.40, "wind": 0.0, "fuel_capacity": 70.0, "pop_size": 70.0, "conn_add_prob": 0.20, "node_add_prob": 0.07, "weight_mutate_power": 0.50, "landing_bonus": 390.0, "thruster_power": 1.70, "target_hidden": 2.0},
+        },
+    ],
+    "raycast_car": [
+        {
+            "id": "rc_ex1",
+            "title": "Ex 1: Highway Cruiser (Wide Lane, 150px Lidar)",
+            "desc": "Generous 44px road corridor with long 150px laser lookahead for smooth beginner cornering.",
+            "params": {"sensor_range": 150.0, "max_speed": 4.5, "turn_rate": 0.09, "track_width": 44.0, "pop_size": 40.0, "conn_add_prob": 0.16, "node_add_prob": 0.05, "weight_mutate_power": 0.55, "target_hidden": 1.0},
+        },
+        {
+            "id": "rc_ex2",
+            "title": "Ex 2: Formula-1 Narrow Track Sprint (Speed=7.5)",
+            "desc": "Blistering 7.5 px/frame top speed on a tight 28px Monaco-style corridor with high steering agility.",
+            "params": {"sensor_range": 190.0, "max_speed": 7.5, "turn_rate": 0.13, "track_width": 28.0, "pop_size": 50.0, "conn_add_prob": 0.22, "node_add_prob": 0.08, "weight_mutate_power": 0.50, "target_hidden": 3.0},
+        },
+        {
+            "id": "rc_ex3",
+            "title": "Ex 3: Foggy Night Short-Range Lidar (Range=60px)",
+            "desc": "Cars can only see 60px ahead in thick fog and must rely on sharp 0.14 turn reflexes.",
+            "params": {"sensor_range": 60.0, "max_speed": 3.8, "turn_rate": 0.14, "track_width": 36.0, "pop_size": 50.0, "conn_add_prob": 0.25, "node_add_prob": 0.10, "weight_mutate_power": 0.65, "target_hidden": 4.0},
+        },
+        {
+            "id": "rc_ex4",
+            "title": "Ex 4: Deep 8-Neuron Autonomous Brain (+8 Hidden)",
+            "desc": "Pre-wires 8 hidden neurons so cars evolve smooth throttle modulation before sharp hairpins.",
+            "params": {"sensor_range": 165.0, "max_speed": 6.0, "turn_rate": 0.11, "track_width": 34.0, "pop_size": 45.0, "conn_add_prob": 0.35, "node_add_prob": 0.18, "weight_mutate_power": 0.55, "target_hidden": 8.0},
+        },
+        {
+            "id": "rc_ex5",
+            "title": "Ex 5: 100-Car Rush Hour Mega-Fleet (Pop=100)",
+            "desc": "Massive 100-car simultaneous neuroevolution population racing for the fastest lap.",
+            "params": {"sensor_range": 140.0, "max_speed": 5.5, "turn_rate": 0.10, "track_width": 38.0, "pop_size": 100.0, "conn_add_prob": 0.20, "node_add_prob": 0.06, "weight_mutate_power": 0.60, "target_hidden": 2.0},
+        },
+    ],
+    "rl_gridworld": [
+        {
+            "id": "rl_ex1",
+            "title": "Ex 1: Bold Q-Learning Cliff Walker (Off-Policy)",
+            "desc": "Zero wind + off-policy Q-Learning: learns the shortest path hugging the edge of the lava cliff.",
+            "params": {"alpha": 0.35, "gamma": 0.96, "epsilon": 0.10, "goal_reward": 140.0, "lava_penalty": -100.0, "step_penalty": -1.0, "wind_prob": 0.0, "use_sarsa": 0.0, "max_ep_steps": 90.0},
+        },
+        {
+            "id": "rl_ex2",
+            "title": "Ex 2: Cautious SARSA in 20% Stormy Wind (On-Policy)",
+            "desc": "On-policy SARSA accounts for random wind slips and learns a safe upper detour away from lava!",
+            "params": {"alpha": 0.28, "gamma": 0.96, "epsilon": 0.12, "goal_reward": 160.0, "lava_penalty": -140.0, "step_penalty": -0.8, "wind_prob": 0.20, "use_sarsa": 1.0, "max_ep_steps": 110.0},
+        },
+        {
+            "id": "rl_ex3",
+            "title": "Ex 3: Hyper-Curious Explorer (Epsilon=0.45, Alpha=0.6)",
+            "desc": "High 45% random curiosity explores every corner of the maze rapidly.",
+            "params": {"alpha": 0.60, "gamma": 0.92, "epsilon": 0.45, "goal_reward": 150.0, "lava_penalty": -80.0, "step_penalty": -1.2, "wind_prob": 0.05, "use_sarsa": 0.0, "max_ep_steps": 100.0},
+        },
+        {
+            "id": "rl_ex4",
+            "title": "Ex 4: Myopic Short-Sighted Agent (Gamma=0.55)",
+            "desc": "Low discount factor (γ=0.55) makes distant treasure barely visible until the agent is right next to it.",
+            "params": {"alpha": 0.35, "gamma": 0.55, "epsilon": 0.15, "goal_reward": 200.0, "lava_penalty": -100.0, "step_penalty": -0.5, "wind_prob": 0.0, "use_sarsa": 0.0, "max_ep_steps": 90.0},
+        },
+        {
+            "id": "rl_ex5",
+            "title": "Ex 5: High-Stakes Lava Gauntlet (Lava=-250, Goal=+300)",
+            "desc": "Massive lava punishment (-250) and high step penalty (-3.0) force ultra-efficient pathfinding.",
+            "params": {"alpha": 0.30, "gamma": 0.98, "epsilon": 0.08, "goal_reward": 300.0, "lava_penalty": -250.0, "step_penalty": -3.0, "wind_prob": 0.10, "use_sarsa": 1.0, "max_ep_steps": 80.0},
+        },
+    ],
+    "cartpole_rl": [
+        {
+            "id": "cp_ex1",
+            "title": "Ex 1: Earth Standard Pendulum (g=9.8, L=0.65m)",
+            "desc": "Classic OpenAI Gym CartPole benchmark under standard Earth gravity.",
+            "params": {"gravity": 9.8, "pole_length": 0.65, "force_mag": 12.0, "wind_gust": 0.15, "pop_size": 35.0, "conn_add_prob": 0.15, "node_add_prob": 0.05, "weight_mutate_power": 0.45, "target_hidden": 1.0},
+        },
+        {
+            "id": "cp_ex2",
+            "title": "Ex 2: Jupiter Crushing Gravity (g=22.0, Force=24N)",
+            "desc": "2.25x Earth gravity! The pole falls violently fast unless the cart motor fires at 24 Newtons.",
+            "params": {"gravity": 22.0, "pole_length": 0.70, "force_mag": 24.0, "wind_gust": 0.20, "pop_size": 50.0, "conn_add_prob": 0.22, "node_add_prob": 0.08, "weight_mutate_power": 0.55, "target_hidden": 3.0},
+        },
+        {
+            "id": "cp_ex3",
+            "title": "Ex 3: Twitchy Short Pencil Balance (Length=0.25m)",
+            "desc": "A tiny 25cm pencil has very low rotational inertia and requires lightning-fast micro-corrections.",
+            "params": {"gravity": 9.8, "pole_length": 0.25, "force_mag": 14.0, "wind_gust": 0.10, "pop_size": 45.0, "conn_add_prob": 0.20, "node_add_prob": 0.07, "weight_mutate_power": 0.50, "target_hidden": 2.0},
+        },
+        {
+            "id": "cp_ex4",
+            "title": "Ex 4: Hurricane Gust Survival (Wind=1.8, +6 Neurons)",
+            "desc": "Heavy random wind torque buffets the pole every frame; uses 6 hidden neurons for recovery.",
+            "params": {"gravity": 9.8, "pole_length": 0.60, "force_mag": 18.0, "wind_gust": 1.80, "pop_size": 55.0, "conn_add_prob": 0.28, "node_add_prob": 0.12, "weight_mutate_power": 0.60, "target_hidden": 6.0},
+        },
+        {
+            "id": "cp_ex5",
+            "title": "Ex 5: Lunar Slow-Motion Giant Pole (g=1.62, L=1.65m)",
+            "desc": "Low Moon gravity with a tall 1.65m pole creates graceful slow-motion balancing dynamics.",
+            "params": {"gravity": 1.62, "pole_length": 1.65, "force_mag": 7.0, "wind_gust": 0.30, "pop_size": 30.0, "conn_add_prob": 0.14, "node_add_prob": 0.05, "weight_mutate_power": 0.40, "target_hidden": 0.0},
+        },
+    ],
+    "nn_playground": [
+        {
+            "id": "nn_ex1",
+            "title": "Ex 1: Concentric Rings (8 Neurons, Fast Convergence)",
+            "desc": "Separates an inner blue circle from an outer orange ring in <100 epochs.",
+            "params": {"dataset_id": 1.0, "hidden_neurons": 8.0, "learning_rate": 0.22, "l2_reg": 0.001, "noise": 0.05, "steps_per_frame": 6.0, "activation_gain": 1.2, "synapse_density": 4.0},
+        },
+        {
+            "id": "nn_ex2",
+            "title": "Ex 2: Classic XOR Quadrants (4 Neurons, Non-Linear)",
+            "desc": "Minsky & Papert's famous 1969 XOR puzzle solved cleanly by 4 hidden neurons.",
+            "params": {"dataset_id": 0.0, "hidden_neurons": 4.0, "learning_rate": 0.25, "l2_reg": 0.001, "noise": 0.04, "steps_per_frame": 6.0, "activation_gain": 1.4, "synapse_density": 4.0},
+        },
+        {
+            "id": "nn_ex3",
+            "title": "Ex 3: Two Interleaving Moons (10 Neurons, Sharp Boundary)",
+            "desc": "Curves a S-shaped decision boundary between two crescent moons.",
+            "params": {"dataset_id": 2.0, "hidden_neurons": 10.0, "learning_rate": 0.24, "l2_reg": 0.0005, "noise": 0.06, "steps_per_frame": 8.0, "activation_gain": 1.8, "synapse_density": 3.0},
+        },
+        {
+            "id": "nn_ex4",
+            "title": "Ex 4: Archimedean Double Spiral (18 Neurons, Deep MLP)",
+            "desc": "High-capacity 18-neuron hidden layer untangling the intertwined double spiral.",
+            "params": {"dataset_id": 3.0, "hidden_neurons": 18.0, "learning_rate": 0.28, "l2_reg": 0.0005, "noise": 0.02, "steps_per_frame": 12.0, "activation_gain": 2.2, "synapse_density": 4.0},
+        },
+        {
+            "id": "nn_ex5",
+            "title": "Ex 5: Under-Parameterized 1-Neuron Bottleneck (1 Neuron)",
+            "desc": "Shows why 1 neuron fails on Rings—then click '[+ Add Neuron]' on the left to watch it solve it live!",
+            "params": {"dataset_id": 1.0, "hidden_neurons": 1.0, "learning_rate": 0.20, "l2_reg": 0.001, "noise": 0.05, "steps_per_frame": 6.0, "activation_gain": 1.0, "synapse_density": 2.0},
+        },
+    ],
+    "swarm_ecosystem": [
+        {
+            "id": "sw_ex1",
+            "title": "Ex 1: Balanced Starling Murmuration (40 Prey, 4 Pred)",
+            "desc": "Harmonious co-evolution of flocking cohesion, foraging, and predator dodging.",
+            "params": {"num_prey": 40.0, "num_predators": 4.0, "vision_radius": 95.0, "prey_speed": 4.2, "predator_speed": 4.0, "food_count": 32.0, "mutation_sigma": 0.20},
+        },
+        {
+            "id": "sw_ex2",
+            "title": "Ex 2: Apex Wolfpack Ambush (10 Fast Predators)",
+            "desc": "10 high-speed predators force prey to evolve extreme evasion and tight separation.",
+            "params": {"num_prey": 50.0, "num_predators": 10.0, "vision_radius": 125.0, "prey_speed": 5.2, "predator_speed": 5.0, "food_count": 40.0, "mutation_sigma": 0.30},
+        },
+        {
+            "id": "sw_ex3",
+            "title": "Ex 3: 75-Prey Mega-Swarm Super-Organism",
+            "desc": "Massive 75-agent prey school with 145px long-range sensory vision.",
+            "params": {"num_prey": 75.0, "num_predators": 3.0, "vision_radius": 145.0, "prey_speed": 4.5, "predator_speed": 4.2, "food_count": 55.0, "mutation_sigma": 0.15},
+        },
+        {
+            "id": "sw_ex4",
+            "title": "Ex 4: Famine Desert Foraging (Only 10 Food Nodes)",
+            "desc": "Severe resource scarcity where only the most aggressive food-seeking genotypes survive.",
+            "params": {"num_prey": 30.0, "num_predators": 2.0, "vision_radius": 130.0, "prey_speed": 4.8, "predator_speed": 3.8, "food_count": 10.0, "mutation_sigma": 0.40},
+        },
+        {
+            "id": "sw_ex5",
+            "title": "Ex 5: Hyper-Speed Blitz Ecosystem (Speed=6.2)",
+            "desc": "Maximum velocity pursuit and evasion with rapid evolutionary turnover.",
+            "params": {"num_prey": 45.0, "num_predators": 6.0, "vision_radius": 110.0, "prey_speed": 6.2, "predator_speed": 6.0, "food_count": 35.0, "mutation_sigma": 0.25},
+        },
+    ],
+    "prime_attention": [
+        {
+            "id": "pa_ex1",
+            "title": "Ex 1: Hybrid Window + PRIME Vault (W=64, Gap=256 -> 88%)",
+            "desc": "Passkey '7492' leaves the 64-token window but is recalled from the 67 KB O(1) PRIME Moment Vault!",
+            "params": {"window_size": 64.0, "decay": 0.9990, "alpha": 0.45, "head_dim": 32.0, "use_qk_norm": 1.0, "distractor_gap": 256.0, "num_heads": 8.0},
+        },
+        {
+            "id": "pa_ex2",
+            "title": "Ex 2: Window-Only Amnesia Trap (Alpha=1.0 -> 0% Recall!)",
+            "desc": "Pure Sliding Window without PRIME: as soon as Passkey '7492' steps past W=64, it is 100% forgotten!",
+            "params": {"window_size": 64.0, "decay": 0.9990, "alpha": 1.00, "head_dim": 32.0, "use_qk_norm": 1.0, "distractor_gap": 256.0, "num_heads": 8.0},
+        },
+        {
+            "id": "pa_ex3",
+            "title": "Ex 3: Deep 1024-Token Long-Horizon Vault (Decay=0.9995)",
+            "desc": "High λ=0.9995 retention horizon preserves the passkey across 1,024 distractor tokens in O(1) RAM.",
+            "params": {"window_size": 64.0, "decay": 0.9995, "alpha": 0.30, "head_dim": 64.0, "use_qk_norm": 1.0, "distractor_gap": 1024.0, "num_heads": 16.0},
+        },
+        {
+            "id": "pa_ex4",
+            "title": "Ex 4: QK-Norm OFF Parabolic Rebound Crash (QK-Norm=0)",
+            "desc": "Demonstrates why 2nd-order Taylor attention fails without QK-Norm: negative logits rebound and drown S2!",
+            "params": {"window_size": 32.0, "decay": 0.9985, "alpha": 0.25, "head_dim": 32.0, "use_qk_norm": 0.0, "distractor_gap": 256.0, "num_heads": 8.0},
+        },
+        {
+            "id": "pa_ex5",
+            "title": "Ex 5: Ultra-Light 9 KB L2-Cache Potato Config (D=16, 4H)",
+            "desc": "4 heads x 16-dim uses just 8.8 KB of L2 cache while running at 8,700+ tok/s in native C99.",
+            "params": {"window_size": 48.0, "decay": 0.9990, "alpha": 0.40, "head_dim": 16.0, "use_qk_norm": 1.0, "distractor_gap": 128.0, "num_heads": 4.0},
+        },
+    ],
+}
+
+
+def get_examples_for_lab(lab_id: str) -> List[Dict[str, Any]]:
+    return LAB_EXAMPLES.get(lab_id, LAB_EXAMPLES["moon_lander"])
 
 
 def get_lesson_by_id(lesson_id: str) -> Dict[str, Any]:
@@ -596,3 +914,4 @@ def verify_lesson_goal(lesson: Dict[str, Any], telemetry: Dict[str, Any]) -> Tup
         f"(Goal: {lesson['goal_op']} {target_val}).\n"
         f"   Tip: Click '🎯 Load Lesson Preset' and then '⚡ Turbo +25 Gens'!"
     )
+

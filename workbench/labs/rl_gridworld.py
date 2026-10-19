@@ -18,6 +18,7 @@ class RLGridWorldLab:
         {"key": "step_penalty", "label": "Step Cost", "desc": "Per-move energy cost (encourages shortest path)", "min": -5.0, "max": -0.1, "step": 0.1, "default": -1.0},
         {"key": "wind_prob", "label": "Wind Slip Chance", "desc": "Stochastic probability of being blown 1 cell up/down", "min": 0.0, "max": 0.35, "step": 0.05, "default": 0.05},
         {"key": "use_sarsa", "label": "Algorithm (0=Q, 1=SARSA)", "desc": "0: Off-policy Q-Learning, 1: On-policy SARSA", "min": 0.0, "max": 1.0, "step": 1.0, "default": 0.0},
+        {"key": "max_ep_steps", "label": "Episode Horizon", "desc": "Max steps per episode before timeout", "min": 30.0, "max": 180.0, "step": 10.0, "default": 90.0},
     ]
 
     # Actions: 0=Up, 1=Right, 2=Down, 3=Left
@@ -46,6 +47,18 @@ class RLGridWorldLab:
         self.current_return = 0.0
         self.steps_in_ep = 0
         self.reset_q_table()
+
+    def modify_brain_structure(self, delta_neurons: int = 0, delta_synapses: int = 0) -> Dict[str, Any]:
+        # Adjust discount foresight / learning rate and return Q-state capacity
+        if delta_neurons != 0:
+            self.params["gamma"] = max(0.50, min(0.99, self.params["gamma"] + delta_neurons * 0.02))
+        if delta_synapses != 0:
+            self.params["alpha"] = max(0.02, min(0.90, self.params["alpha"] + delta_synapses * 0.05))
+        return {
+            "total_nodes": self.cols * self.rows,
+            "hidden_nodes": len(self.q_table),
+            "enabled_synapses": len(self.q_table) * 4,
+        }
 
     def reset_q_table(self) -> None:
         self.q_table = {

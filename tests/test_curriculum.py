@@ -13,6 +13,8 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")
 
 from workbench.curriculum import (
     SCHOOL_CURRICULUM,
+    LAB_EXAMPLES,
+    get_examples_for_lab,
     get_lessons_for_lab,
     get_lesson_by_id,
     verify_lesson_goal,
@@ -21,9 +23,9 @@ from workbench.sandbox_runner import run_student_code, explain_python_error_for_
 
 
 class TestSchoolCurriculumAndSandbox(unittest.TestCase):
-    def test_01_all_12_lessons_and_6_labs_covered(self):
-        """Ensure all 12 lessons exist and cover all 6 AI labs."""
-        self.assertEqual(len(SCHOOL_CURRICULUM), 12)
+    def test_01_all_14_lessons_7_labs_and_35_examples_covered(self):
+        """Ensure all 14 lessons and 35 lab examples (5 per lab) exist across all 7 AI labs."""
+        self.assertEqual(len(SCHOOL_CURRICULUM), 14)
         covered_labs = {lesson["lab_id"] for lesson in SCHOOL_CURRICULUM}
         expected_labs = {
             "moon_lander",
@@ -32,8 +34,15 @@ class TestSchoolCurriculumAndSandbox(unittest.TestCase):
             "cartpole_rl",
             "nn_playground",
             "swarm_ecosystem",
+            "prime_attention",
         }
         self.assertEqual(covered_labs, expected_labs)
+
+        # Verify 5 examples for each of the 7 labs (35 total examples)
+        self.assertEqual(set(LAB_EXAMPLES.keys()), expected_labs)
+        for lab_id in expected_labs:
+            exs = get_examples_for_lab(lab_id)
+            self.assertEqual(len(exs), 5, f"Expected 5 examples for {lab_id}")
 
         for lesson in SCHOOL_CURRICULUM:
             self.assertTrue(lesson["title"])

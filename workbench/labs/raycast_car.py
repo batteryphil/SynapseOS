@@ -35,6 +35,7 @@ class NEATRaycastCarLab:
         {"key": "conn_add_prob", "label": "Add Synapse Rate", "desc": "Probability of adding a new neural connection", "min": 0.02, "max": 0.45, "step": 0.02, "default": 0.16},
         {"key": "node_add_prob", "label": "Add Neuron Rate", "desc": "Probability of splitting a synapse with a neuron", "min": 0.01, "max": 0.25, "step": 0.01, "default": 0.05},
         {"key": "weight_mutate_power", "label": "Mutation Power", "desc": "Magnitude of weight perturbations", "min": 0.10, "max": 1.50, "step": 0.05, "default": 0.55},
+        {"key": "target_hidden", "label": "Hidden Neurons (+/-)", "desc": "Directly add or subtract hidden neurons in car brains", "min": 0.0, "max": 20.0, "step": 1.0, "default": 0.0},
     ]
 
     RAY_ANGLES = [-1.05, -0.52, 0.0, 0.52, 1.05]  # -60, -30, 0, +30, +60 deg
@@ -74,8 +75,18 @@ class NEATRaycastCarLab:
             pts.append((x, y))
         return pts
 
+    def modify_brain_structure(self, delta_neurons: int = 0, delta_synapses: int = 0) -> Dict[str, Any]:
+        info = self.neat.modify_structure(delta_neurons=delta_neurons, delta_synapses=delta_synapses)
+        self.params["target_hidden"] = float(info["hidden_nodes"])
+        return info
+
     def update_param(self, key: str, value: float) -> None:
         self.params[key] = float(value)
+        if key == "target_hidden":
+            cur_hidden = sum(1 for n in self.neat.best_genome.nodes.values() if n.type == "hidden")
+            diff = int(round(value)) - cur_hidden
+            if diff != 0:
+                self.neat.modify_structure(delta_neurons=diff, delta_synapses=0)
         self.neat.conn_add_prob = self.params["conn_add_prob"]
         self.neat.node_add_prob = self.params["node_add_prob"]
         self.neat.weight_mutate_power = self.params["weight_mutate_power"]

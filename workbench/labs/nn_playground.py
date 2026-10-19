@@ -12,11 +12,13 @@ from typing import Dict, Any, List, Tuple
 class NeuralPlaygroundLab:
     VARIABLE_SPECS = [
         {"key": "dataset_id", "label": "Dataset (0=XOR,1=Ring,2=Moon,3=Spiral)", "desc": "Non-linear 2D classification geometry", "min": 0.0, "max": 3.0, "step": 1.0, "default": 1.0},
-        {"key": "hidden_neurons", "label": "Hidden Layer Neurons", "desc": "Capacity of the hidden representation layer", "min": 2.0, "max": 16.0, "step": 1.0, "default": 8.0},
+        {"key": "hidden_neurons", "label": "Hidden Layer Neurons (+/-)", "desc": "Capacity of the hidden representation layer", "min": 1.0, "max": 24.0, "step": 1.0, "default": 8.0},
         {"key": "learning_rate", "label": "Learning Rate (η)", "desc": "Gradient descent step size", "min": 0.01, "max": 0.60, "step": 0.02, "default": 0.18},
         {"key": "l2_reg", "label": "L2 Regularization (λ)", "desc": "Weight decay penalty preventing overfitting", "min": 0.0, "max": 0.02, "step": 0.001, "default": 0.001},
         {"key": "noise", "label": "Dataset Noise", "desc": "Gaussian jitter on sample coordinates", "min": 0.0, "max": 0.35, "step": 0.02, "default": 0.06},
         {"key": "steps_per_frame", "label": "Epochs per Frame", "desc": "Backprop gradient updates per render tick", "min": 1.0, "max": 20.0, "step": 1.0, "default": 5.0},
+        {"key": "activation_gain", "label": "Activation Steepness", "desc": "Sharpness of Tanh non-linear boundary", "min": 0.5, "max": 3.0, "step": 0.1, "default": 1.0},
+        {"key": "synapse_density", "label": "Active Input Features (2..4)", "desc": "2=Linear (x,y) only, 4=Full Polynomial (+r^2, x*y)", "min": 2.0, "max": 4.0, "step": 1.0, "default": 4.0},
     ]
 
     DATASET_NAMES = {0: "XOR Checkerboard", 1: "Concentric Rings", 2: "Two Interleaving Moons", 3: "Archimedean Spiral"}
@@ -37,6 +39,33 @@ class NeuralPlaygroundLab:
 
         self.rebuild_dataset()
         self.rebuild_network()
+
+    def modify_brain_structure(self, delta_neurons: int = 0, delta_synapses: int = 0) -> Dict[str, Any]:
+        """Dynamically add or remove hidden neurons without wiping existing learned weights!"""
+        if delta_neurons > 0:
+            for _ in range(delta_neurons):
+                if len(self.w1) < 24:
+                    self.w1.append([random.gauss(0.0, 0.9) for _ in range(4)])
+                    self.b1.append(random.gauss(0.0, 0.2))
+                    self.w2.append(random.gauss(0.0, 0.9))
+        elif delta_neurons < 0:
+            for _ in range(abs(delta_neurons)):
+                if len(self.w1) > 1:
+                    self.w1.pop()
+                    self.b1.pop()
+                    self.w2.pop()
+        self.params["hidden_neurons"] = float(len(self.w1))
+        if delta_synapses != 0:
+            cur_f = int(round(self.params.get("synapse_density", 4.0)))
+            new_f = max(2, min(4, cur_f + delta_synapses))
+            self.params["synapse_density"] = float(new_f)
+        h = len(self.w1)
+        f_cnt = int(round(self.params.get("synapse_density", 4.0)))
+        return {
+            "total_nodes": f_cnt + h + 1,
+            "hidden_nodes": h,
+            "enabled_synapses": h * (f_cnt + 1),
+        }
 
     def rebuild_dataset(self, n_samples: int = 120) -> None:
         dtype = int(round(self.params["dataset_id"]))
@@ -89,11 +118,21 @@ class NeuralPlaygroundLab:
         self.params[key] = float(value)
         if key in ("dataset_id", "noise") and old != float(value):
             self.rebuild_dataset()
-        elif key == "hidden_neurons" and int(round(old or 8)) != int(round(value)):
-            self.rebuild_network()
+        elif key == "hidden_neurons":
+            target_h = max(1, min(24, int(round(value))))
+            diff = target_h - len(self.w1)
+            if diff != 0:
+                self.modify_brain_structure(delta_neurons=diff, delta_synapses=0)
 
     def predict_prob(self, x: float, y: float) -> Tuple[float, List[float]]:
-        feats = [x, y, x * x + y * y, x * y]
+        f_cnt = int(round(self.params.get("synapse_density", 4.0)))
+        gain = self.params.get("activation_gain", 1.0)
+        feats = [
+            x,
+            y,
+            (x * x + y * y) if f_cnt >= 3 else 0.0,
+            (x * y) if f_cnt >= 4 else 0.0,
+        ]
         h_acts: List[float] = []
         z_out = self.b2
         for j in range(len(self.w1)):
@@ -103,7 +142,7 @@ class NeuralPlaygroundLab:
                 + self.w1[j][2] * feats[2]
                 + self.w1[j][3] * feats[3]
             )
-            hj = math.tanh(max(-15.0, min(15.0, s)))
+            hj = math.tanh(max(-15.0, min(15.0, s * gain)))
             h_acts.append(hj)
             z_out += self.w2[j] * hj
         z_out = max(-20.0, min(20.0, z_out))

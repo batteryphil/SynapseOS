@@ -72,8 +72,42 @@ class SwarmEcosystemLab:
         ]
         self.step_counter = 0
 
+    def modify_brain_structure(self, delta_neurons: int = 0, delta_synapses: int = 0) -> Dict[str, Any]:
+        if delta_neurons > 0:
+            for _ in range(delta_neurons * 2):
+                if len(self.prey) < 90:
+                    self.prey.append(SwarmAgent(random.uniform(40, self.width - 40), random.uniform(40, self.height - 40), False))
+        elif delta_neurons < 0:
+            for _ in range(abs(delta_neurons) * 2):
+                if len(self.prey) > 6:
+                    self.prey.pop()
+        self.params["num_prey"] = float(len(self.prey))
+        if delta_synapses > 0 and len(self.predators) < 15:
+            self.predators.append(SwarmAgent(random.uniform(40, self.width - 40), random.uniform(40, self.height - 40), True))
+            self.params["num_predators"] = float(len(self.predators))
+        elif delta_synapses < 0 and len(self.predators) > 1:
+            self.predators.pop()
+            self.params["num_predators"] = float(len(self.predators))
+        return {
+            "total_nodes": len(self.prey) + len(self.predators),
+            "hidden_nodes": len(self.prey),
+            "enabled_synapses": len(self.prey) * 4,
+        }
+
     def update_param(self, key: str, value: float) -> None:
         self.params[key] = float(value)
+        if key == "num_prey":
+            target = int(round(value))
+            while len(self.prey) < target:
+                self.prey.append(SwarmAgent(random.uniform(40, self.width - 40), random.uniform(40, self.height - 40), False))
+            while len(self.prey) > max(5, target):
+                self.prey.pop()
+        elif key == "num_predators":
+            target = int(round(value))
+            while len(self.predators) < target:
+                self.predators.append(SwarmAgent(random.uniform(40, self.width - 40), random.uniform(40, self.height - 40), True))
+            while len(self.predators) > max(1, target):
+                self.predators.pop()
 
     def step_physics(self) -> bool:
         vis = self.params["vision_radius"]
