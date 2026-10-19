@@ -71,6 +71,10 @@ check_prerequisites() {
     done
 
     if [ ${#missing[@]} -gt 0 ]; then
+        if [ "${ACTION:---dry-run}" = "--dry-run" ]; then
+            log_warn "Optional host ISO packaging tools not installed in live target environment (${missing[*]}); continuing config dry-run."
+            return 0
+        fi
         log_error "Missing required build tools: ${missing[*]}"
         log_info "Run: sudo apt-get install -y ${missing[*]}"
         exit 1
