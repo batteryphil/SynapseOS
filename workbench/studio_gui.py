@@ -287,6 +287,12 @@ class SynapseStudioWindow(Gtk.Window):
         btn_browser.connect("clicked", self._on_open_browser)
         header_box.pack_start(btn_browser, False, False, 2)
 
+        # Secure Remote HTTPS Tunnel Button
+        btn_tunnel = Gtk.Button(label="❖ Tunnel")
+        btn_tunnel.set_tooltip_text("Show or start encrypted HTTPS Remote Browser Tunnel (Cloudflare + noVNC)")
+        btn_tunnel.connect("clicked", self._on_show_tunnel)
+        header_box.pack_start(btn_tunnel, False, False, 2)
+
         # Badge Status Pill
         self.badge_lbl = Gtk.Label()
         self._update_badge_header()
@@ -668,6 +674,33 @@ class SynapseStudioWindow(Gtk.Window):
             return
         subprocess.Popen(cmd, shell=True)
         self._set_cortex_message(f"◈ Launched {bname} Web Browser! (Opening {url} on desktop)")
+
+    def _on_show_tunnel(self, _btn: Gtk.Button) -> None:
+        import re
+        log_path = "/tmp/cloudflared.log"
+        url = ""
+        if os.path.exists(log_path):
+            try:
+                with open(log_path, "r", encoding="utf-8", errors="ignore") as f:
+                    m = re.search(r"https://[a-zA-Z0-9.-]+\.trycloudflare\.com", f.read())
+                    if m:
+                        url = m.group(0)
+            except Exception:
+                pass
+        if url:
+            self._set_cortex_message(
+                f"❖ SECURE REMOTE BROWSER TUNNEL ACTIVE!\n"
+                f"   • Shareable HTTPS Link (Anywhere):  {url}/vnc.html?autoconnect=1&resize=scale\n"
+                f"   • Local Wi-Fi / LAN Link:           http://192.168.40.151:6080\n"
+                f"   • Remote VNC Password:              synapse-ai"
+            )
+        else:
+            self._set_cortex_message("❖ Starting encrypted Cloudflare + noVNC tunnel in background...")
+            def start_worker():
+                import subprocess
+                subprocess.run(["/usr/local/bin/synapse-tunnel", "synapse-ai"], check=False)
+                GLib.idle_add(self._on_show_tunnel, _btn)
+            threading.Thread(target=start_worker, daemon=True).start()
 
     def _on_general_chat(self, _widget: Any) -> None:
         q = self.cortex_entry.get_text().strip()
