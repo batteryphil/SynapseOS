@@ -1,0 +1,15 @@
+# ==============================================================================
+# SynapseOS Bare-Bones Openbox Autostart (Potato-Grade: <150MB Idle OS RAM)
+# ==============================================================================
+
+# 1. Solid Dark Studio Background (0 MB RAM overhead, zero compositor lag)
+xsetroot -solid "#0f1117" &
+
+# 2. Tint2 Lightweight Point-and-Click Taskbar
+tint2 &
+
+# 3. PCManFM Desktop Icons (Point-and-click desktop shortcuts)
+pcmanfm --desktop &
+
+# 4. Launch Synapse Studio (6 Point-and-Click AI Labs + Cortex Bar) on Boot
+/usr/local/bin/synapse-studio &

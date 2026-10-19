@@ -1,0 +1,60 @@
+# ==============================================================================
+# SynapseOS Tint2 Taskbar Configuration (<10 MB RAM, Point-and-Click Panel)
+# ==============================================================================
+
+# Background 1: Panel
+rounded = 0
+border_width = 1
+border_sides = T
+background_color = #0f1117 100
+border_color = #262b38 100
+
+# Background 2: Active Task
+rounded = 4
+border_width = 1
+border_sides = TBLR
+background_color = #1e293b 100
+border_color = #38bdf8 100
+
+# Panel Layout
+panel_items = LTSC
+panel_size = 100% 30
+panel_margin = 0 0
+panel_padding = 4 2 4
+panel_background_id = 1
+wm_menu = 1
+panel_dock = 0
+panel_position = bottom center horizontal
+panel_layer = top
+
+# Launchers (Point & Click Quick Access)
+launcher_padding = 4 2 4
+launcher_background_id = 0
+launcher_icon_size = 22
+launcher_item_app = /usr/share/applications/synapse-studio.desktop
+launcher_item_app = /usr/share/applications/cortex.desktop
+
+# Taskbar
+taskbar_mode = single_desktop
+taskbar_padding = 2 2 4
+taskbar_background_id = 0
+task_text = 1
+task_icon = 1
+task_centered = 0
+task_maximum_size = 200 26
+task_padding = 6 2 4
+task_font = JetBrains Mono 9
+task_font_color = #cbd5e1 100
+task_active_font_color = #38bdf8 100
+task_active_background_id = 2
+
+# System Tray
+systray_padding = 4 2 4
+systray_background_id = 0
+
+# Clock
+time1_format = %H:%M  %Y-%m-%d
+time1_font = JetBrains Mono Bold 9
+clock_font_color = #38bdf8 100
+clock_padding = 8 2
+clock_lclick_command = lxterminal --title="System Monitor" -e "htop"

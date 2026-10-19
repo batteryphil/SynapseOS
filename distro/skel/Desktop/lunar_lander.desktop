@@ -1,0 +1,11 @@
+[Desktop Entry]
+Version=1.0
+Type=Application
+Name=Synapse Studio (6 AI Labs)
+GenericName=Point-and-Click AI Experimentation Workbench
+Comment=NEAT Moon Lander, Lidar Self-Driving Car, RL GridWorld, CartPole, Neural Backprop & Swarm AI
+Exec=/usr/local/bin/synapse-studio
+Icon=applications-science
+Terminal=false
+Categories=Education;Science;ArtificialIntelligence;Development;
+StartupNotify=true

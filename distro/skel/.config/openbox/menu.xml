@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<openbox_menu xmlns="http://openbox.org/3.4/menu">
+  <menu id="root-menu" label="SynapseOS AI Workstation">
+    <separator label="⚡ AI Experimentation Labs" />
+    <item label="🚀 Launch Synapse Studio (All 6 AI Labs)">
+      <action name="Execute">
+        <command>/usr/local/bin/synapse-studio</command>
+      </action>
+    </item>
+    <item label="📊 Run 6-Lab CPU Benchmark">
+      <action name="Execute">
+        <command>lxterminal --title="Synapse AI Benchmark" -e "bash -c '/usr/local/bin/synapse-studio --benchmark --gens 15; read -p \"Press Enter to close...\"'"</command>
+      </action>
+    </item>
+
+    <separator label="🤖 Cortex-Phi3 AI Assistant" />
+    <item label="🧠 Open Cortex AI Copilot">
+      <action name="Execute">
+        <command>lxterminal --title="Cortex-Phi3 AI Copilot" -e "bash -i -c 'cortex; exec bash'"</command>
+      </action>
+    </item>
+    <item label="📖 NEAT Moon Lander Guide">
+      <action name="Execute">
+        <command>lxterminal --title="NEAT Guide" -e "bash -c 'cortex ai \"neat moon lander\"; read -p \"Press Enter to close...\"'"</command>
+      </action>
+    </item>
+
+    <separator label="🐧 System &amp; Potato Tools" />
+    <item label="💻 Terminal (with ?? and ?ai)">
+      <action name="Execute">
+        <command>lxterminal</command>
+      </action>
+    </item>
+    <item label="📁 File Manager (PCManFM)">
+      <action name="Execute">
+        <command>pcmanfm</command>
+      </action>
+    </item>
+    <item label="📈 Process &amp; RAM Monitor (htop)">
+      <action name="Execute">
+        <command>lxterminal --title="System Monitor" -e "htop"</command>
+      </action>
+    </item>
+
+    <separator label="🔌 Session" />
+    <item label="🔄 Reconfigure Openbox">
+      <action name="Reconfigure" />
+    </item>
+    <item label="🚪 Exit X11 Session">
+      <action name="Exit">
+        <prompt>yes</prompt>
+      </action>
+    </item>
+  </menu>
+</openbox_menu>

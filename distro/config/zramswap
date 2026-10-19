@@ -1,0 +1,9 @@
+# ==============================================================================
+# SynapseOS Potato-Grade ZRAM Configuration (/etc/default/zramswap)
+# Compresses up to 50% of physical RAM for OS/Python heaps using LZ4 (~3:1 ratio),
+# while leaving physical RAM unencumbered for mlock-pinned Q4_K_M LLM weights.
+# ==============================================================================
+
+ALGO=lz4
+PERCENT=50
+PRIORITY=100

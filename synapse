@@ -1,0 +1,74 @@
+#!/usr/bin/env bash
+# ==============================================================================
+# SynapseOS Project Orchestrator
+# ==============================================================================
+
+set -euo pipefail
+DIR="$(cd "$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")" && pwd)"
+
+CYAN="\033[96m"
+GREEN="\033[92m"
+BOLD="\033[1m"
+RESET="\033[0m"
+
+cmd="${1:-help}"
+
+case "$cmd" in
+    studio)
+        shift || true
+        python3 "${DIR}/workbench/cli_runner.py" "$@"
+        ;;
+    curriculum)
+        shift || true
+        if [ $# -eq 0 ]; then
+            python3 "${DIR}/workbench/cli_runner.py" --list-lessons
+        else
+            python3 "${DIR}/workbench/cli_runner.py" --run-lesson "$1"
+        fi
+        ;;
+    cortex)
+        shift || true
+        python3 "${DIR}/cortex/cortex_cli.py" "$@"
+        ;;
+    test)
+        echo -e "${CYAN}Running SynapseOS Automated Test Suite (Cortex + 6 AI Labs + School Suite)...${RESET}"
+        python3 -m unittest discover -s "${DIR}/tests" -p "test_*.py"
+        ;;
+    build-iso)
+        shift || true
+        "${DIR}/distro/build-iso.sh" "${1:---dry-run}"
+        ;;
+    install-local)
+        echo -e "${CYAN}Installing Cortex & Synapse Studio into local environment...${RESET}"
+        sudo ln -sf "${DIR}/cortex/cortex_cli.py" /usr/local/bin/cortex
+        sudo ln -sf "${DIR}/workbench/cli_runner.py" /usr/local/bin/synapse-studio
+        sudo chmod +x /usr/local/bin/cortex /usr/local/bin/synapse-studio
+
+        if ! grep -q "shell_integration.sh" ~/.bashrc 2>/dev/null; then
+            echo "" >> ~/.bashrc
+            echo "# SynapseOS Cortex Terminal Hook" >> ~/.bashrc
+            echo "source ${DIR}/cortex/shell_integration.sh" >> ~/.bashrc
+            echo -e "${GREEN}[✓] Added '??' and '?ai' shortcuts to your ~/.bashrc!${RESET}"
+            echo -e "Run ${BOLD}source ~/.bashrc${RESET} to enable immediately."
+        else
+            echo -e "${GREEN}[✓] Hook already present in ~/.bashrc.${RESET}"
+        fi
+        ;;
+    status)
+        python3 "${DIR}/cortex/cortex_cli.py" sys
+        "${DIR}/distro/build-iso.sh" --dry-run
+        ;;
+    help|*)
+        echo -e "${BOLD}SynapseOS Management Tool${RESET}"
+        echo "Usage: ./synapse <command>"
+        echo ""
+        echo "Commands:"
+        echo "  studio [--benchmark]  Launch the Point-and-Click AI Workbench (6 Labs + School Suite)"
+        echo "  curriculum [lesson]   List or run the 10-lesson School AI Curriculum & Coding Sandbox"
+        echo "  cortex [cmd|ai|forge] Run the Cortex-Phi3 AI Assistant & Linux Guide"
+        echo "  test                  Run automated unit and integration tests"
+        echo "  build-iso [--all]     Build bootable Live ISO image (default: --dry-run)"
+        echo "  install-local         Install 'cortex', 'synapse-studio' & '??' shell hook onto host"
+        echo "  status                Display system hardware, local SLM, FTS5 KB, and ISO status"
+        ;;
+esac

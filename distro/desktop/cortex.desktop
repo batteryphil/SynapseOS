@@ -1,0 +1,12 @@
+[Desktop Entry]
+Version=1.0
+Type=Application
+Name=Cortex AI Assistant
+GenericName=AI System Guide & Terminal Copilot
+Comment=Ask questions about Linux administration, commands, and AI experimentation (NEAT, RL, LLMs)
+Exec=xfce4-terminal --title="Cortex AI Copilot" --geometry=100x30 -e "cortex"
+Icon=utilities-terminal
+Terminal=false
+Categories=System;Development;Science;Education;
+Keywords=AI;Assistant;Linux;Terminal;Copilot;NEAT;PyTorch;
+StartupNotify=true

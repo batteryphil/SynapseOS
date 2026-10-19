@@ -1,0 +1,14 @@
+[Unit]
+Description=Cortex Local AI Assistant & System Monitor Daemon
+After=network.target ollama.service
+
+[Service]
+Type=simple
+User=%i
+ExecStart=/usr/local/bin/cortex
+Restart=on-failure
+RestartSec=5s
+Environment=PYTHONUNBUFFERED=1
+
+[Install]
+WantedBy=default.target

@@ -1,0 +1,26 @@
+# SynapseOS Build & Output Artifacts (Large binaries hosted via Releases / Hugging Face)
+build/
+output/*.iso
+output/*.iso.*
+output/*.gguf
+iso/*.iso
+
+# Python caches & virtual environments
+__pycache__/
+*.py[cod]
+*$py.class
+.venv*/
+venv/
+env/
+.pytest_cache/
+
+# QLoRA intermediate checkpoints (keep dataset & Modelfile tracked)
+cortex/forge/output_qlora/
+*.gguf
+*.bin
+*.safetensors
+
+# OS & Editor files
+.DS_Store
+*.swp
+*~

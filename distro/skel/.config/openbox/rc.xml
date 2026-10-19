@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<openbox_config xmlns="http://openbox.org/3.4/rc" xmlns:xi="http://www.w3.org/2001/XInclude">
+  <resistance>
+    <strength>10</strength>
+    <screen_edge_strength>20</screen_edge_strength>
+  </resistance>
+  <focus>
+    <focusNew>yes</focusNew>
+    <followMouse>no</followMouse>
+  </focus>
+  <theme>
+    <name>Clearlooks</name>
+    <titleLayout>NLIMC</titleLayout>
+    <keepBorder>yes</keepBorder>
+    <animateIconify>no</animateIconify>
+  </theme>
+  <desktops>
+    <number>2</number>
+    <firstdesk>1</firstdesk>
+    <names>
+      <name>AI Workbench</name>
+      <name>Terminal &amp; Code</name>
+    </names>
+  </desktops>
+  <keyboard>
+    <!-- Super + Space: Instant App Launcher (Rofi) -->
+    <keybind key="W-space">
+      <action name="Execute">
+        <command>rofi -show drun</command>
+      </action>
+    </keybind>
+    <!-- Super + S: Launch Synapse Studio (6 AI Labs) -->
+    <keybind key="W-s">
+      <action name="Execute">
+        <command>/usr/local/bin/synapse-studio</command>
+      </action>
+    </keybind>
+    <!-- Super + A: Launch Cortex-Phi3 AI Assistant -->
+    <keybind key="W-a">
+      <action name="Execute">
+        <command>lxterminal --title="Cortex-Phi3 Copilot" -e "bash -i -c 'cortex; exec bash'"</command>
+      </action>
+    </keybind>
+    <!-- Super + Enter: Launch Terminal -->
+    <keybind key="W-Return">
+      <action name="Execute">
+        <command>lxterminal</command>
+      </action>
+    </keybind>
+    <!-- Alt + F4: Close Window -->
+    <keybind key="A-F4">
+      <action name="Close"/>
+    </keybind>
+    <!-- Alt + Tab: Switch Windows -->
+    <keybind key="A-Tab">
+      <action name="NextWindow"/>
+    </keybind>
+  </keyboard>
+  <mouse>
+    <context name="Root">
+      <mousebind button="Right" action="Press">
+        <action name="ShowMenu">
+          <menu>root-menu</menu>
+        </action>
+      </mousebind>
+    </context>
+  </mouse>
+</openbox_config>

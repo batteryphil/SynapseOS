@@ -1,0 +1,9 @@
+[Desktop Entry]
+Version=1.0
+Type=Application
+Name=Cortex AI Assistant
+Comment=System commands & AI experiment mentor
+Exec=lxterminal --title="Cortex AI Copilot" -e "cortex"
+Icon=utilities-terminal
+Terminal=false
+Categories=System;Development;
