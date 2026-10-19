@@ -15,7 +15,7 @@ import sys
 import math
 import time
 import threading
-from typing import Dict, Any, List, Set, Tuple
+from typing import Dict, Any, List, Set, Tuple, Optional
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(os.path.realpath(__file__)), "..")))
 
@@ -98,7 +98,87 @@ entry, textview, textview text {
     color: #a5f3fc;
     font-family: monospace;
 }
+popover, popover.background {
+    background-color: #161922;
+    color: #f8fafc;
+    border: 1px solid #38bdf8;
+    padding: 4px;
+}
 """
+
+
+class SynapseDropdown(Gtk.Button):
+    """Downward-opening Popover dropdown that never shrinks or clips near the top of the screen."""
+
+    def __init__(self) -> None:
+        super().__init__()
+        self._items: List[Tuple[str, str]] = []
+        self._active_id: Optional[str] = None
+        self._callbacks: List[Any] = []
+
+        hbox = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=8)
+        self._label = Gtk.Label(label="")
+        self._label.set_xalign(0.0)
+        arrow_lbl = Gtk.Label(label="▾")
+        hbox.pack_start(self._label, True, True, 2)
+        hbox.pack_end(arrow_lbl, False, False, 2)
+        self.add(hbox)
+
+        self._popover = Gtk.Popover.new(self)
+        self._popover.set_position(Gtk.PositionType.BOTTOM)
+        self._popover.set_constrain_to(Gtk.PopoverConstraint.NONE)
+        self._vbox = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=2)
+        self._vbox.set_margin_top(4)
+        self._vbox.set_margin_bottom(4)
+        self._vbox.set_margin_start(4)
+        self._vbox.set_margin_end(4)
+        self._popover.add(self._vbox)
+        super().connect("clicked", self._on_self_clicked)
+
+    def _on_self_clicked(self, _btn: Gtk.Button) -> None:
+        self._vbox.show_all()
+        self._popover.popup()
+
+    def append(self, item_id: str, text: str) -> None:
+        self._items.append((item_id, text))
+        btn = Gtk.Button()
+        lbl = Gtk.Label(label=text)
+        lbl.set_xalign(0.0)
+        btn.add(lbl)
+        btn.connect("clicked", self._on_item_clicked, item_id)
+        self._vbox.pack_start(btn, False, False, 0)
+        self._vbox.show_all()
+        if self._active_id is None:
+            self.set_active_id(item_id)
+
+    def _on_item_clicked(self, _btn: Gtk.Button, item_id: str) -> None:
+        self._popover.popdown()
+        if self._active_id != item_id:
+            self.set_active_id(item_id)
+            for cb in self._callbacks:
+                cb(self)
+
+    def set_active_id(self, item_id: str) -> None:
+        for iid, txt in self._items:
+            if iid == item_id:
+                self._active_id = iid
+                self._label.set_text(txt)
+                break
+
+    def get_active_id(self) -> Optional[str]:
+        return self._active_id
+
+    def get_active_text(self) -> str:
+        for iid, txt in self._items:
+            if iid == self._active_id:
+                return txt
+        return ""
+
+    def connect(self, signal_name: str, callback: Any, *args: Any) -> Any:
+        if signal_name == "changed":
+            self._callbacks.append(callback)
+            return len(self._callbacks)
+        return super().connect(signal_name, callback, *args)
 
 
 class SynapseStudioWindow(Gtk.Window):
@@ -169,7 +249,7 @@ class SynapseStudioWindow(Gtk.Window):
         title_lbl.set_markup("<b><span size='large' foreground='#38bdf8'>⚡ SYNAPSE STUDIO</span></b>")
         header_box.pack_start(title_lbl, False, False, 4)
 
-        self.lab_combo = Gtk.ComboBoxText()
+        self.lab_combo = SynapseDropdown()
         for lid, lname in self.LAB_CATALOG:
             self.lab_combo.append(lid, lname)
         self.lab_combo.set_active_id(self.active_lab_id)
@@ -284,7 +364,7 @@ class SynapseStudioWindow(Gtk.Window):
         lesson_lbl.set_markup("<b>★ Choose a Follow-Along AI Lesson:</b>")
         school_vbox.pack_start(lesson_lbl, False, False, 0)
 
-        self.lesson_combo = Gtk.ComboBoxText()
+        self.lesson_combo = SynapseDropdown()
         for les in SCHOOL_CURRICULUM:
             short_title = les["title"] if len(les["title"]) <= 34 else les["title"][:31] + "..."
             self.lesson_combo.append(les["id"], short_title)
@@ -439,13 +519,13 @@ class SynapseStudioWindow(Gtk.Window):
             box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=1)
             lbl = Gtk.Label()
             lbl.set_xalign(0.0)
-            lbl.set_markup(f"<b>{spec['label']}</b>")
+            lbl.set_markup(f"<b>{GLib.markup_escape_text(spec['label'])}</b>")
             lbl.set_tooltip_text(spec["desc"])
             box.pack_start(lbl, False, False, 0)
 
             desc_lbl = Gtk.Label()
             desc_lbl.set_xalign(0.0)
-            desc_lbl.set_markup(f"<span size='small' foreground='#94a3b8'>{spec['desc']}</span>")
+            desc_lbl.set_markup(f"<span size='small' foreground='#94a3b8'>{GLib.markup_escape_text(spec['desc'])}</span>")
             box.pack_start(desc_lbl, False, False, 0)
 
             adj = Gtk.Adjustment(
