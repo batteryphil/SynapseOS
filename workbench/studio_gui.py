@@ -40,6 +40,7 @@ from workbench.curriculum import (
     verify_lesson_goal,
 )
 from workbench.sandbox_runner import run_student_code
+from workbench.kid_arcade_view import SynapseKidsView
 from cortex.engine import CortexEngine
 
 
@@ -317,12 +318,25 @@ class SynapseStudioWindow(Gtk.Window):
         return self.labs[self.active_lab_id]
 
     def _build_ui(self) -> None:
+        self.mode_stack = Gtk.Stack()
+        self.mode_stack.set_transition_type(Gtk.StackTransitionType.CROSSFADE)
+        self.mode_stack.set_transition_duration(180)
+        self.add(self.mode_stack)
+
+        # PAGE 1: Full-Screen "Synapse Kids" Interactive Arcade View
+        self.kids_view = SynapseKidsView(
+            self,
+            on_switch_to_teacher=lambda: self._set_kid_mode(False),
+        )
+        self.mode_stack.add_named(self.kids_view, "kid")
+
+        # PAGE 2: Full 3-Column "Teacher / Pro Workstation" View
         root_vbox = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=4)
         root_vbox.set_margin_top(4)
         root_vbox.set_margin_bottom(4)
         root_vbox.set_margin_start(5)
         root_vbox.set_margin_end(5)
-        self.add(root_vbox)
+        self.mode_stack.add_named(root_vbox, "pro")
 
         # --- TOP HEADER BAR (Fits comfortably within 1260px) ---
         header_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=6)
@@ -360,12 +374,12 @@ class SynapseStudioWindow(Gtk.Window):
         mode_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=4)
         header_box.pack_end(mode_box, False, False, 2)
 
-        self.btn_kid_mode = Gtk.Button(label="★ Kid Mode (Scratch)")
-        self.btn_kid_mode.set_tooltip_text("Playful Scratch-style mode: big buttons, hidden telemetry, step-by-step slider unlocks!")
+        self.btn_kid_mode = Gtk.Button(label="★ Synapse Kids")
+        self.btn_kid_mode.set_tooltip_text("Switch to full-screen Synapse Kids mode!")
         self.btn_kid_mode.connect("clicked", lambda _b: self._set_kid_mode(True))
         mode_box.pack_start(self.btn_kid_mode, False, False, 1)
 
-        self.btn_pro_mode = Gtk.Button(label="⚙ Teacher / Pro Mode")
+        self.btn_pro_mode = Gtk.Button(label="⚙ Mode Professeur / Teacher")
         self.btn_pro_mode.set_tooltip_text("Full Engineering & Classroom Workstation: all sliders, TTFT/RAM telemetry, Python code & Linux runner!")
         self.btn_pro_mode.connect("clicked", lambda _b: self._set_kid_mode(False))
         mode_box.pack_start(self.btn_pro_mode, False, False, 1)
@@ -838,56 +852,12 @@ class SynapseStudioWindow(Gtk.Window):
         all_kid_classes = ["kid-btn-play", "kid-btn-turbo", "kid-btn-brain", "kid-btn-unlock", "mode-active-kid", "mode-active-pro"]
 
         if self.kid_mode:
+            self.mode_stack.set_visible_child_name("kid")
+            self.kids_view.queue_draw()
             set_cls(self.btn_kid_mode, ["mode-active-kid"], ["mode-active-pro"])
             set_cls(self.btn_pro_mode, [], ["mode-active-pro", "mode-active-kid"])
-            set_cls(self.btn_run, ["kid-btn-play"], ["kid-btn-turbo", "kid-btn-brain"])
-            set_cls(self.btn_turbo, ["kid-btn-turbo"], ["kid-btn-play", "kid-btn-brain"])
-            set_cls(self.btn_add_neuron, ["kid-btn-brain"], ["kid-btn-play", "kid-btn-turbo"])
-            set_cls(self.btn_sub_neuron, ["kid-btn-brain"], ["kid-btn-play", "kid-btn-turbo"])
-            set_cls(self.btn_load_preset, ["kid-btn-play"], [])
-            set_cls(self.btn_check_goal, ["kid-btn-turbo"], [])
-            set_cls(self.btn_kid_peek_brain, ["kid-btn-brain"], [])
-            set_cls(self.btn_kid_back_mission, ["kid-btn-play"], [])
-            set_cls(self.btn_chat, ["kid-btn-play"], [])
-            set_cls(self.btn_ask_llm, ["kid-btn-brain"], [])
-
-            self.title_lbl.set_markup("<b><span foreground='#4ade80'>★ SYNAPSE AI ARCADE</span></b>")
-            self.left_frame.set_label(" ★ 1. Game Controls & Sliders ")
-            self.center_frame.set_label(" ★ 2. Live AI Game Arena ")
-            self.right_frame.set_label(" ★ 3. Mission Steps & AI Brain ")
-            self.right_frame.set_size_request(315, -1)
-            self.cortex_frame.set_label(" ★ 4. Ask Cortex (Your Friendly AI Buddy!) ")
-
-            self.ex_lbl.set_markup("<b><span size='small' foreground='#facc15'>★ Pick a Fun Game Preset:</span></b>")
-            self.surg_lbl.set_markup("<b><span size='small' foreground='#38bdf8'>★ Grow or Shrink AI Brain:</span></b>")
-            self.btn_run.set_label("|| PAUSE GAME" if self.running else "▶ PLAY GAME!")
-            self.btn_turbo.set_label("⚡ SUPER TRAIN AI (+25 TRIES!)")
-            self.btn_reset.set_label("↻ Start Over")
-            self.btn_add_neuron.set_label("+ Grow Brain")
-            self.btn_sub_neuron.set_label("- Shrink")
-            self.btn_load_preset.set_label("★ 1. Start Mission!")
-            self.btn_check_goal.set_label("✓ 2. Did I Win?")
-            self.btn_chat.set_label("★ Ask AI Buddy!")
-            self.btn_ask_llm.set_label("★ Give Me a Hint!")
-            self.cortex_entry.set_placeholder_text("Ask your AI Buddy Cortex a question about the game...")
-
-            # Hide intimidating engineering controls in Kid Mode
-            self.btn_step.hide()
-            self.btn_export.hide()
-            self.btn_add_syn.hide()
-            self.btn_sub_syn.hide()
-            self.perf_lbl.hide()
-            self.btn_open_challenge.hide()
-            self.btn_ask_fast.hide()
-            self.btn_ask_cmd.hide()
-            self.btn_run_cmd.hide()
-
-            # Show Kid Mode Mission / Brain toggle buttons & hide raw notebook tab bar
-            self.btn_kid_peek_brain.show()
-            self.btn_kid_back_mission.show()
-            self.right_notebook.set_show_tabs(False)
-            self.right_notebook.set_current_page(0)
         else:
+            self.mode_stack.set_visible_child_name("pro")
             set_cls(self.btn_pro_mode, ["mode-active-pro"], ["mode-active-kid"])
             set_cls(self.btn_kid_mode, [], ["mode-active-kid", "mode-active-pro"])
             for b in [
@@ -1407,12 +1377,8 @@ class SynapseStudioWindow(Gtk.Window):
         rec_str = "--" if isinstance(rec_val, (int, float)) and rec_val <= -1e6 else str(rec_val)
 
         if self.kid_mode:
-            self.telemetry_lbl.set_markup(
-                f"<b><span foreground='#facc15'>★ {telem['lab']}</span></b>   |   "
-                f"AI Try: <b><span foreground='#38bdf8'>#{telem['generation']}</span></b>   |   "
-                f"Current Score: <b><span foreground='#4ade80'>{telem['best_fitness']}</span></b>   |   "
-                f"High Score: <b><span foreground='#f472b6'>{rec_str}</span></b>{extra}"
-            )
+            self.kids_view.step_kid_simulation()
+            self.kids_view.queue_draw()
         else:
             self.telemetry_lbl.set_markup(
                 f"<b>{telem['lab']}</b>   |   Gen/Ep: <b><span foreground='#38bdf8'>{telem['generation']}</span></b>   "
@@ -1420,10 +1386,9 @@ class SynapseStudioWindow(Gtk.Window):
                 f"|   Avg: <span foreground='#facc15'>{telem['avg_fitness']}</span>   "
                 f"|   Record: <b><span foreground='#f472b6'>{rec_str}</span></b>{extra}"
             )
-
-        self.sim_canvas.queue_draw()
-        if self.right_notebook.get_current_page() == 2:
-            self.net_canvas.queue_draw()
+            self.sim_canvas.queue_draw()
+            if self.right_notebook.get_current_page() == 2:
+                self.net_canvas.queue_draw()
         return True
 
     # ==========================================================================
