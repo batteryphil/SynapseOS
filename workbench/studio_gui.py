@@ -67,6 +67,64 @@ button {
 button:hover {
     background-color: #2d3548;
 }
+button.kid-btn-play {
+    background-color: #15803d;
+    color: #ffffff;
+    font-weight: bold;
+    border: 2px solid #4ade80;
+    border-radius: 7px;
+    padding: 7px 10px;
+}
+button.kid-btn-play:hover {
+    background-color: #16a34a;
+}
+button.kid-btn-turbo {
+    background-color: #b45309;
+    color: #ffffff;
+    font-weight: bold;
+    border: 2px solid #facc15;
+    border-radius: 7px;
+    padding: 8px 10px;
+}
+button.kid-btn-turbo:hover {
+    background-color: #d97706;
+}
+button.kid-btn-brain {
+    background-color: #0369a1;
+    color: #ffffff;
+    font-weight: bold;
+    border: 2px solid #38bdf8;
+    border-radius: 7px;
+    padding: 6px 8px;
+}
+button.kid-btn-brain:hover {
+    background-color: #0284c7;
+}
+button.kid-btn-unlock {
+    background-color: #5b21b6;
+    color: #ffffff;
+    font-weight: bold;
+    border: 2px solid #c084fc;
+    border-radius: 7px;
+    padding: 6px 10px;
+}
+button.kid-btn-unlock:hover {
+    background-color: #6d28d9;
+}
+button.mode-active-kid {
+    background-color: #15803d;
+    color: #fef08a;
+    font-weight: bold;
+    border: 2px solid #4ade80;
+    border-radius: 6px;
+}
+button.mode-active-pro {
+    background-color: #0369a1;
+    color: #ffffff;
+    font-weight: bold;
+    border: 2px solid #38bdf8;
+    border-radius: 6px;
+}
 menu, .menu, .popup, combobox window, combobox menu {
     background-color: #161922;
     color: #f8fafc;
@@ -231,6 +289,8 @@ class SynapseStudioWindow(Gtk.Window):
         self.earned_badges: Set[str] = set()
         self.running = True
         self.user_mode = "school"
+        self.kid_mode: bool = True
+        self.kid_unlocked_sliders: int = 2
         self.slider_widgets: Dict[str, Gtk.Scale] = {}
         self._updating_sliders = False
         self.chat_history: List[Tuple[str, str]] = []
@@ -249,8 +309,6 @@ class SynapseStudioWindow(Gtk.Window):
         self._populate_sliders()
         self._refresh_lesson_view()
         self._load_lesson_coding_challenge()
-        # Show the animated Brain & Phi-3 tab on startup so user immediately sees Phi-3 + Lab Brain working
-        self.right_notebook.set_current_page(2)
 
         GLib.timeout_add(18, self._on_tick)
 
@@ -270,9 +328,9 @@ class SynapseStudioWindow(Gtk.Window):
         header_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=6)
         root_vbox.pack_start(header_box, False, False, 0)
 
-        title_lbl = Gtk.Label()
-        title_lbl.set_markup("<b><span foreground='#38bdf8'>⚡ SYNAPSE STUDIO</span></b>")
-        header_box.pack_start(title_lbl, False, False, 2)
+        self.title_lbl = Gtk.Label()
+        self.title_lbl.set_markup("<b><span foreground='#38bdf8'>⚡ SYNAPSE STUDIO</span></b>")
+        header_box.pack_start(self.title_lbl, False, False, 2)
 
         self.lab_combo = SynapseDropdown()
         for lid, lname in self.LAB_CATALOG:
@@ -281,63 +339,58 @@ class SynapseStudioWindow(Gtk.Window):
         self.lab_combo.connect("changed", self._on_lab_changed)
         header_box.pack_start(self.lab_combo, False, False, 2)
 
-        # Web Browser Launch Button (BMP symbol ◈ instead of supplementary emoji)
-        btn_browser = Gtk.Button(label="◈ Web Browser")
-        btn_browser.set_tooltip_text("Open Internet Web Browser (Firefox ESR / NetSurf)")
-        btn_browser.connect("clicked", self._on_open_browser)
-        header_box.pack_start(btn_browser, False, False, 2)
+        # Web Browser Launch Button
+        self.btn_browser = Gtk.Button(label="◈ Web Browser")
+        self.btn_browser.set_tooltip_text("Open Internet Web Browser (Firefox ESR / NetSurf)")
+        self.btn_browser.connect("clicked", self._on_open_browser)
+        header_box.pack_start(self.btn_browser, False, False, 2)
 
         # Secure Remote HTTPS Tunnel Button
-        btn_tunnel = Gtk.Button(label="❖ Tunnel")
-        btn_tunnel.set_tooltip_text("Show or start encrypted HTTPS Remote Browser Tunnel (Cloudflare + noVNC)")
-        btn_tunnel.connect("clicked", self._on_show_tunnel)
-        header_box.pack_start(btn_tunnel, False, False, 2)
+        self.btn_tunnel = Gtk.Button(label="❖ Tunnel")
+        self.btn_tunnel.set_tooltip_text("Show or start encrypted HTTPS Remote Browser Tunnel (Cloudflare + noVNC)")
+        self.btn_tunnel.connect("clicked", self._on_show_tunnel)
+        header_box.pack_start(self.btn_tunnel, False, False, 2)
 
         # Badge Status Pill
         self.badge_lbl = Gtk.Label()
         self._update_badge_header()
         header_box.pack_start(self.badge_lbl, False, False, 4)
 
-        # Universal Continuum Skill Mode Switcher
-        mode_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=2)
+        # KID MODE vs TEACHER / PRO MODE PROMINENT TOGGLE SWITCHER
+        mode_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=4)
         header_box.pack_end(mode_box, False, False, 2)
 
-        btn_school = Gtk.RadioButton.new_with_label_from_widget(None, "★ Tutorial")
-        btn_school.connect("toggled", self._on_mode_toggled, "school")
-        btn_play = Gtk.RadioButton.new_with_label_from_widget(btn_school, "◈ Sim")
-        btn_play.connect("toggled", self._on_mode_toggled, "playground")
-        btn_code = Gtk.RadioButton.new_with_label_from_widget(btn_school, "✎ Code")
-        btn_code.connect("toggled", self._on_mode_toggled, "studio")
-        btn_pro = Gtk.RadioButton.new_with_label_from_widget(btn_school, "⚙ Brain & Phi-3")
-        btn_pro.set_active(True)
-        btn_pro.connect("toggled", self._on_mode_toggled, "pro")
+        self.btn_kid_mode = Gtk.Button(label="★ Kid Mode (Scratch)")
+        self.btn_kid_mode.set_tooltip_text("Playful Scratch-style mode: big buttons, hidden telemetry, step-by-step slider unlocks!")
+        self.btn_kid_mode.connect("clicked", lambda _b: self._set_kid_mode(True))
+        mode_box.pack_start(self.btn_kid_mode, False, False, 1)
 
-        mode_box.pack_start(btn_school, False, False, 1)
-        mode_box.pack_start(btn_play, False, False, 1)
-        mode_box.pack_start(btn_code, False, False, 1)
-        mode_box.pack_start(btn_pro, False, False, 1)
+        self.btn_pro_mode = Gtk.Button(label="⚙ Teacher / Pro Mode")
+        self.btn_pro_mode.set_tooltip_text("Full Engineering & Classroom Workstation: all sliders, TTFT/RAM telemetry, Python code & Linux runner!")
+        self.btn_pro_mode.connect("clicked", lambda _b: self._set_kid_mode(False))
+        mode_box.pack_start(self.btn_pro_mode, False, False, 1)
 
         # --- MAIN WORKSPACE 3-COLUMN SPLIT (245 + 420 + 360 = 1025px < 1280px) ---
         main_hbox = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=5)
         root_vbox.pack_start(main_hbox, True, True, 0)
 
         # COLUMN 1: 5 Lab Examples + Direct Brain Surgery + Variable Sliders
-        left_frame = Gtk.Frame(label=" ⚙ 1. Presets, Brain Surgery & Sliders ")
-        left_frame.set_size_request(245, -1)
-        main_hbox.pack_start(left_frame, False, False, 0)
+        self.left_frame = Gtk.Frame(label=" ★ 1. Game Controls & Unlocked Sliders ")
+        self.left_frame.set_size_request(245, -1)
+        main_hbox.pack_start(self.left_frame, False, False, 0)
 
-        left_vbox = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=3)
+        left_vbox = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=4)
         left_vbox.set_margin_top(4)
         left_vbox.set_margin_bottom(4)
         left_vbox.set_margin_start(5)
         left_vbox.set_margin_end(5)
-        left_frame.add(left_vbox)
+        self.left_frame.add(left_vbox)
 
         # 5 Examples per Lab Selector
-        ex_lbl = Gtk.Label()
-        ex_lbl.set_xalign(0.0)
-        ex_lbl.set_markup("<b><span size='small' foreground='#facc15'>★ 5 Examples for Current Lab:</span></b>")
-        left_vbox.pack_start(ex_lbl, False, False, 0)
+        self.ex_lbl = Gtk.Label()
+        self.ex_lbl.set_xalign(0.0)
+        self.ex_lbl.set_markup("<b><span size='small' foreground='#facc15'>★ Pick a Fun Game Preset:</span></b>")
+        left_vbox.pack_start(self.ex_lbl, False, False, 0)
 
         self.example_combo = SynapseDropdown()
         self.example_combo.connect("changed", self._on_example_selected)
@@ -345,55 +398,60 @@ class SynapseStudioWindow(Gtk.Window):
 
         ctrl_grid = Gtk.Grid()
         ctrl_grid.set_column_spacing(3)
-        ctrl_grid.set_row_spacing(3)
+        ctrl_grid.set_row_spacing(4)
         left_vbox.pack_start(ctrl_grid, False, False, 0)
 
-        self.btn_run = Gtk.Button(label="|| Pause")
+        self.btn_run = Gtk.Button(label="|| PAUSE GAME")
+        self.btn_run.set_hexpand(True)
         self.btn_run.connect("clicked", self._on_toggle_run)
         ctrl_grid.attach(self.btn_run, 0, 0, 1, 1)
 
-        btn_step = Gtk.Button(label=">| Step 1")
-        btn_step.connect("clicked", self._on_step_once)
-        ctrl_grid.attach(btn_step, 1, 0, 1, 1)
+        self.btn_step = Gtk.Button(label=">| Step 1")
+        self.btn_step.connect("clicked", self._on_step_once)
+        ctrl_grid.attach(self.btn_step, 1, 0, 1, 1)
 
-        btn_turbo = Gtk.Button(label="⚡ Turbo +25 Gens")
-        btn_turbo.connect("clicked", self._on_turbo_evolve)
-        ctrl_grid.attach(btn_turbo, 0, 1, 2, 1)
+        self.btn_turbo = Gtk.Button(label="⚡ SUPER TRAIN AI (+25 TRIES!)")
+        self.btn_turbo.set_hexpand(True)
+        self.btn_turbo.connect("clicked", self._on_turbo_evolve)
+        ctrl_grid.attach(self.btn_turbo, 0, 1, 2, 1)
 
-        btn_reset = Gtk.Button(label="↻ Reset")
-        btn_reset.connect("clicked", self._on_reset_lab)
-        ctrl_grid.attach(btn_reset, 0, 2, 1, 1)
+        self.btn_reset = Gtk.Button(label="↻ Start Over")
+        self.btn_reset.set_hexpand(True)
+        self.btn_reset.connect("clicked", self._on_reset_lab)
+        ctrl_grid.attach(self.btn_reset, 0, 2, 1, 1)
 
-        btn_export = Gtk.Button(label="✎ Export .py")
-        btn_export.connect("clicked", self._on_export_py)
-        ctrl_grid.attach(btn_export, 1, 2, 1, 1)
+        self.btn_export = Gtk.Button(label="✎ Export .py")
+        self.btn_export.connect("clicked", self._on_export_py)
+        ctrl_grid.attach(self.btn_export, 1, 2, 1, 1)
 
         # Direct Structural Brain Surgery Buttons (+ / - Neurons & Synapses)
-        surg_lbl = Gtk.Label()
-        surg_lbl.set_xalign(0.0)
-        surg_lbl.set_markup("<b><span size='small' foreground='#38bdf8'>⚙ Direct Brain Surgery (+/-):</span></b>")
-        left_vbox.pack_start(surg_lbl, False, False, 0)
+        self.surg_lbl = Gtk.Label()
+        self.surg_lbl.set_xalign(0.0)
+        self.surg_lbl.set_markup("<b><span size='small' foreground='#38bdf8'>★ Grow or Shrink AI Brain:</span></b>")
+        left_vbox.pack_start(self.surg_lbl, False, False, 0)
 
         surg_grid = Gtk.Grid()
         surg_grid.set_column_spacing(3)
         surg_grid.set_row_spacing(3)
         left_vbox.pack_start(surg_grid, False, False, 0)
 
-        btn_add_neuron = Gtk.Button(label="+ Add Neuron")
-        btn_add_neuron.connect("clicked", self._on_brain_surgery, 1, 0)
-        surg_grid.attach(btn_add_neuron, 0, 0, 1, 1)
+        self.btn_add_neuron = Gtk.Button(label="+ Grow Brain")
+        self.btn_add_neuron.set_hexpand(True)
+        self.btn_add_neuron.connect("clicked", self._on_brain_surgery, 1, 0)
+        surg_grid.attach(self.btn_add_neuron, 0, 0, 1, 1)
 
-        btn_sub_neuron = Gtk.Button(label="- Sub Neuron")
-        btn_sub_neuron.connect("clicked", self._on_brain_surgery, -1, 0)
-        surg_grid.attach(btn_sub_neuron, 1, 0, 1, 1)
+        self.btn_sub_neuron = Gtk.Button(label="- Shrink")
+        self.btn_sub_neuron.set_hexpand(True)
+        self.btn_sub_neuron.connect("clicked", self._on_brain_surgery, -1, 0)
+        surg_grid.attach(self.btn_sub_neuron, 1, 0, 1, 1)
 
-        btn_add_syn = Gtk.Button(label="+ Add Synapse")
-        btn_add_syn.connect("clicked", self._on_brain_surgery, 0, 2)
-        surg_grid.attach(btn_add_syn, 0, 1, 1, 1)
+        self.btn_add_syn = Gtk.Button(label="+ Add Synapse")
+        self.btn_add_syn.connect("clicked", self._on_brain_surgery, 0, 2)
+        surg_grid.attach(self.btn_add_syn, 0, 1, 1, 1)
 
-        btn_sub_syn = Gtk.Button(label="- Prune Wire")
-        btn_sub_syn.connect("clicked", self._on_brain_surgery, 0, -2)
-        surg_grid.attach(btn_sub_syn, 1, 1, 1, 1)
+        self.btn_sub_syn = Gtk.Button(label="- Prune Wire")
+        self.btn_sub_syn.connect("clicked", self._on_brain_surgery, 0, -2)
+        surg_grid.attach(self.btn_sub_syn, 1, 1, 1, 1)
 
         slider_scroll = Gtk.ScrolledWindow()
         slider_scroll.set_policy(Gtk.PolicyType.NEVER, Gtk.PolicyType.AUTOMATIC)
@@ -403,11 +461,11 @@ class SynapseStudioWindow(Gtk.Window):
         slider_scroll.add(self.sliders_vbox)
 
         # COLUMN 2: 60 FPS Live Physics & Agent Viewport + Performance Telemetry Bar
-        center_frame = Gtk.Frame(label=" ◈ 2. Real-Time Simulation Viewport & Performance Telemetry ")
-        main_hbox.pack_start(center_frame, True, True, 0)
+        self.center_frame = Gtk.Frame(label=" ★ 2. Live AI Game Arena (60 FPS) ")
+        main_hbox.pack_start(self.center_frame, True, True, 0)
 
         center_vbox = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=2)
-        center_frame.add(center_vbox)
+        self.center_frame.add(center_vbox)
 
         self.telemetry_lbl = Gtk.Label()
         self.telemetry_lbl.set_xalign(0.01)
@@ -427,12 +485,12 @@ class SynapseStudioWindow(Gtk.Window):
         center_vbox.pack_start(self.sim_canvas, True, True, 0)
 
         # COLUMN 3: 3-Tab Right Panel (School Tutorials | Hands-On Coding | Brain & Phi-3)
-        right_frame = Gtk.Frame(label=" ★ 3. Tutorials, Code & Live Phi-3 Brain ")
-        right_frame.set_size_request(360, -1)
-        main_hbox.pack_start(right_frame, False, False, 0)
+        self.right_frame = Gtk.Frame(label=" ★ 3. Mission Steps & AI Brain Peek ")
+        self.right_frame.set_size_request(330, -1)
+        main_hbox.pack_start(self.right_frame, False, False, 0)
 
         self.right_notebook = Gtk.Notebook()
-        right_frame.add(self.right_notebook)
+        self.right_frame.add(self.right_notebook)
 
         # --- TAB 0: FOLLOW-ALONG SCHOOL TUTORIALS ---
         school_vbox = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=5)
@@ -441,10 +499,10 @@ class SynapseStudioWindow(Gtk.Window):
         school_vbox.set_margin_start(5)
         school_vbox.set_margin_end(5)
 
-        lesson_lbl = Gtk.Label()
-        lesson_lbl.set_xalign(0.0)
-        lesson_lbl.set_markup("<b>★ Choose a Follow-Along AI Lesson:</b>")
-        school_vbox.pack_start(lesson_lbl, False, False, 0)
+        self.lesson_lbl = Gtk.Label()
+        self.lesson_lbl.set_xalign(0.0)
+        self.lesson_lbl.set_markup("<b><span foreground='#facc15'>★ Pick Your AI Mission:</span></b>")
+        school_vbox.pack_start(self.lesson_lbl, False, False, 0)
 
         self.lesson_combo = SynapseDropdown()
         for les in SCHOOL_CURRICULUM:
@@ -457,17 +515,21 @@ class SynapseStudioWindow(Gtk.Window):
         lesson_btn_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=4)
         school_vbox.pack_start(lesson_btn_box, False, False, 0)
 
-        btn_load_preset = Gtk.Button(label="▸ 1. Load Preset")
-        btn_load_preset.connect("clicked", self._on_apply_lesson_preset)
-        lesson_btn_box.pack_start(btn_load_preset, True, True, 0)
+        self.btn_load_preset = Gtk.Button(label="★ 1. Start Mission!")
+        self.btn_load_preset.connect("clicked", self._on_apply_lesson_preset)
+        lesson_btn_box.pack_start(self.btn_load_preset, True, True, 0)
 
-        btn_check_goal = Gtk.Button(label="✓ 2. Check Goal")
-        btn_check_goal.connect("clicked", self._on_check_lesson_goal)
-        lesson_btn_box.pack_start(btn_check_goal, True, True, 0)
+        self.btn_check_goal = Gtk.Button(label="✓ 2. Did I Win?")
+        self.btn_check_goal.connect("clicked", self._on_check_lesson_goal)
+        lesson_btn_box.pack_start(self.btn_check_goal, True, True, 0)
 
-        btn_open_challenge = Gtk.Button(label="✎ 3. Open Python Coding Challenge")
-        btn_open_challenge.connect("clicked", self._on_open_lesson_coding)
-        school_vbox.pack_start(btn_open_challenge, False, False, 0)
+        self.btn_kid_peek_brain = Gtk.Button(label="⚙ Peek Inside AI Brain!")
+        self.btn_kid_peek_brain.connect("clicked", lambda _b: self.right_notebook.set_current_page(2))
+        school_vbox.pack_start(self.btn_kid_peek_brain, False, False, 0)
+
+        self.btn_open_challenge = Gtk.Button(label="✎ 3. Open Python Coding Challenge")
+        self.btn_open_challenge.connect("clicked", self._on_open_lesson_coding)
+        school_vbox.pack_start(self.btn_open_challenge, False, False, 0)
 
         lesson_scroll = Gtk.ScrolledWindow()
         lesson_scroll.set_policy(Gtk.PolicyType.AUTOMATIC, Gtk.PolicyType.AUTOMATIC)
@@ -531,62 +593,66 @@ class SynapseStudioWindow(Gtk.Window):
 
         # --- TAB 2: ANIMATED PHI-3 BRAIN & LIVE NEURAL TOPOLOGY ---
         viz_vbox = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=4)
+        self.btn_kid_back_mission = Gtk.Button(label="★ Back to My Mission Steps")
+        self.btn_kid_back_mission.connect("clicked", lambda _b: self.right_notebook.set_current_page(0))
+        viz_vbox.pack_start(self.btn_kid_back_mission, False, False, 2)
+
         self.net_canvas = Gtk.DrawingArea()
-        self.net_canvas.set_size_request(345, 340)
+        self.net_canvas.set_size_request(315, 340)
         self.net_canvas.connect("draw", self._draw_net_canvas)
         viz_vbox.pack_start(self.net_canvas, True, True, 0)
         self.right_notebook.append_page(viz_vbox, Gtk.Label(label="⚙ Brain & Phi-3"))
 
         # --- BOTTOM BAR: BUILT-IN CORTEX-PHI3 GENERAL CHAT, AI TUTOR & LINUX RUNNER ---
-        cortex_frame = Gtk.Frame(label=" ⚡ 4. Cortex-Phi3 General Chat, Classroom AI Tutor & Live Linux Runner ")
-        root_vbox.pack_start(cortex_frame, False, False, 0)
+        self.cortex_frame = Gtk.Frame(label=" ★ 4. Ask Cortex (Your Friendly AI Buddy!) ")
+        root_vbox.pack_start(self.cortex_frame, False, False, 0)
 
         cortex_vbox = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=3)
         cortex_vbox.set_margin_top(3)
         cortex_vbox.set_margin_bottom(3)
         cortex_vbox.set_margin_start(5)
         cortex_vbox.set_margin_end(5)
-        cortex_frame.add(cortex_vbox)
+        self.cortex_frame.add(cortex_vbox)
 
         query_hbox = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=4)
         cortex_vbox.pack_start(query_hbox, False, False, 0)
 
         self.cortex_entry = Gtk.Entry()
-        self.cortex_entry.set_placeholder_text("Chat with Cortex-Phi3, ask an AI question, or type a Linux command...")
+        self.cortex_entry.set_placeholder_text("Ask your AI Buddy Cortex a question about the game...")
         self.cortex_entry.connect("activate", self._on_general_chat)
         query_hbox.pack_start(self.cortex_entry, True, True, 0)
 
-        btn_chat = Gtk.Button(label="★ General Chat")
-        btn_chat.set_tooltip_text("Multi-turn conversational chat with local Cortex-Phi3 (with PRIME memory)")
-        btn_chat.connect("clicked", self._on_general_chat)
-        query_hbox.pack_start(btn_chat, False, False, 0)
+        self.btn_chat = Gtk.Button(label="★ Ask AI Buddy!")
+        self.btn_chat.set_tooltip_text("Chat with your friendly local Cortex-Phi3 AI Buddy!")
+        self.btn_chat.connect("clicked", self._on_general_chat)
+        query_hbox.pack_start(self.btn_chat, False, False, 0)
 
-        btn_ask_fast = Gtk.Button(label="⚡ Instant (<1ms)")
-        btn_ask_fast.connect("clicked", self._on_ask_cortex_fast)
-        query_hbox.pack_start(btn_ask_fast, False, False, 0)
+        self.btn_ask_fast = Gtk.Button(label="⚡ Instant (<1ms)")
+        self.btn_ask_fast.connect("clicked", self._on_ask_cortex_fast)
+        query_hbox.pack_start(self.btn_ask_fast, False, False, 0)
 
-        btn_ask_llm = Gtk.Button(label="★ AI Tutor")
-        btn_ask_llm.connect("clicked", self._on_ask_cortex_llm)
-        query_hbox.pack_start(btn_ask_llm, False, False, 0)
+        self.btn_ask_llm = Gtk.Button(label="★ Give Me a Hint!")
+        self.btn_ask_llm.connect("clicked", self._on_ask_cortex_llm)
+        query_hbox.pack_start(self.btn_ask_llm, False, False, 0)
 
-        btn_ask_cmd = Gtk.Button(label="⌘ Linux (??)")
-        btn_ask_cmd.connect("clicked", self._on_ask_linux_cmd)
-        query_hbox.pack_start(btn_ask_cmd, False, False, 0)
+        self.btn_ask_cmd = Gtk.Button(label="⌘ Linux (??)")
+        self.btn_ask_cmd.connect("clicked", self._on_ask_linux_cmd)
+        query_hbox.pack_start(self.btn_ask_cmd, False, False, 0)
 
-        btn_run_cmd = Gtk.Button(label="▶ Run Cmd")
-        btn_run_cmd.connect("clicked", self._on_run_linux_cmd)
-        query_hbox.pack_start(btn_run_cmd, False, False, 0)
+        self.btn_run_cmd = Gtk.Button(label="▶ Run Cmd")
+        self.btn_run_cmd.connect("clicked", self._on_run_linux_cmd)
+        query_hbox.pack_start(self.btn_run_cmd, False, False, 0)
 
-        btn_clear_chat = Gtk.Button(label="↻ Clear")
-        btn_clear_chat.connect("clicked", self._on_clear_chat)
-        query_hbox.pack_start(btn_clear_chat, False, False, 0)
+        self.btn_clear_chat = Gtk.Button(label="↻ Clear")
+        self.btn_clear_chat.connect("clicked", self._on_clear_chat)
+        query_hbox.pack_start(self.btn_clear_chat, False, False, 0)
 
         self.last_synthesized_cmd: str = ""
         self.last_cmd_query: str = ""
 
         cortex_out_scroll = Gtk.ScrolledWindow()
         cortex_out_scroll.set_policy(Gtk.PolicyType.AUTOMATIC, Gtk.PolicyType.AUTOMATIC)
-        cortex_out_scroll.set_size_request(-1, 82)
+        cortex_out_scroll.set_size_request(-1, 76)
         cortex_vbox.pack_start(cortex_out_scroll, False, False, 0)
 
         self.cortex_text = Gtk.TextView()
@@ -594,8 +660,8 @@ class SynapseStudioWindow(Gtk.Window):
         self.cortex_text.set_wrap_mode(Gtk.WrapMode.WORD_CHAR)
         cortex_out_scroll.add(self.cortex_text)
         self._set_cortex_message(
-            "★ Welcome to SynapseOS! Pick any of the 5 Examples per Lab on the left, click '+ Add Neuron' / '- Sub Neuron' to rewire brains live, "
-            "or type anything above and click '★ General Chat' to talk with Cortex-Phi3 while watching its brain animate in the '⚙ Brain & Phi-3' tab!"
+            "★ Welcome to Kid Mode! Click '⚡ SUPER TRAIN AI (+25 TRIES!)' on the left to watch your AI learn, "
+            "complete Missions on the right to unlock new sliders, or click '⚙ Teacher / Pro Mode' at the top-right for full engineering controls!"
         )
 
     def _populate_examples_dropdown(self) -> None:
@@ -739,6 +805,133 @@ class SynapseStudioWindow(Gtk.Window):
             f"<b><span foreground='#facc15'>★ Badges: {earned} / {total}</span></b>"
         )
 
+    def _on_unlock_next_slider(self, _btn: Gtk.Button) -> None:
+        total_specs = len(self.active_lab.VARIABLE_SPECS)
+        self.kid_unlocked_sliders = min(total_specs, self.kid_unlocked_sliders + 1)
+        self._populate_sliders()
+        unlocked_name = self.active_lab.VARIABLE_SPECS[min(total_specs - 1, self.kid_unlocked_sliders - 1)]["label"]
+        self._set_cortex_message(
+            f"★ LEVEL UP! You unlocked a new AI control slider: '{unlocked_name}'! Try dragging it on the left!"
+        )
+
+    def _set_kid_mode(self, is_kid: bool) -> None:
+        self.kid_mode = is_kid
+        self._apply_ui_mode()
+        self._populate_sliders()
+        if is_kid:
+            self._set_cortex_message(
+                "★ Switched to KID MODE (Scratch Style)! Big buttons are active, complex telemetry is hidden, and sliders unlock step-by-step as you complete missions!"
+            )
+        else:
+            self._set_cortex_message(
+                "⚙ Switched to TEACHER / PRO MODE! All engineering sliders, live FPS/TTFT/RAM telemetry, Python code sandbox, and Linux command runner are now unlocked!"
+            )
+
+    def _apply_ui_mode(self) -> None:
+        def set_cls(btn: Gtk.Widget, add_classes: List[str], rem_classes: List[str]) -> None:
+            ctx = btn.get_style_context()
+            for rc in rem_classes:
+                ctx.remove_class(rc)
+            for ac in add_classes:
+                ctx.add_class(ac)
+
+        all_kid_classes = ["kid-btn-play", "kid-btn-turbo", "kid-btn-brain", "kid-btn-unlock", "mode-active-kid", "mode-active-pro"]
+
+        if self.kid_mode:
+            set_cls(self.btn_kid_mode, ["mode-active-kid"], ["mode-active-pro"])
+            set_cls(self.btn_pro_mode, [], ["mode-active-pro", "mode-active-kid"])
+            set_cls(self.btn_run, ["kid-btn-play"], ["kid-btn-turbo", "kid-btn-brain"])
+            set_cls(self.btn_turbo, ["kid-btn-turbo"], ["kid-btn-play", "kid-btn-brain"])
+            set_cls(self.btn_add_neuron, ["kid-btn-brain"], ["kid-btn-play", "kid-btn-turbo"])
+            set_cls(self.btn_sub_neuron, ["kid-btn-brain"], ["kid-btn-play", "kid-btn-turbo"])
+            set_cls(self.btn_load_preset, ["kid-btn-play"], [])
+            set_cls(self.btn_check_goal, ["kid-btn-turbo"], [])
+            set_cls(self.btn_kid_peek_brain, ["kid-btn-brain"], [])
+            set_cls(self.btn_kid_back_mission, ["kid-btn-play"], [])
+            set_cls(self.btn_chat, ["kid-btn-play"], [])
+            set_cls(self.btn_ask_llm, ["kid-btn-brain"], [])
+
+            self.title_lbl.set_markup("<b><span foreground='#4ade80'>★ SYNAPSE AI ARCADE</span></b>")
+            self.left_frame.set_label(" ★ 1. Game Controls & Sliders ")
+            self.center_frame.set_label(" ★ 2. Live AI Game Arena ")
+            self.right_frame.set_label(" ★ 3. Mission Steps & AI Brain ")
+            self.right_frame.set_size_request(315, -1)
+            self.cortex_frame.set_label(" ★ 4. Ask Cortex (Your Friendly AI Buddy!) ")
+
+            self.ex_lbl.set_markup("<b><span size='small' foreground='#facc15'>★ Pick a Fun Game Preset:</span></b>")
+            self.surg_lbl.set_markup("<b><span size='small' foreground='#38bdf8'>★ Grow or Shrink AI Brain:</span></b>")
+            self.btn_run.set_label("|| PAUSE GAME" if self.running else "▶ PLAY GAME!")
+            self.btn_turbo.set_label("⚡ SUPER TRAIN AI (+25 TRIES!)")
+            self.btn_reset.set_label("↻ Start Over")
+            self.btn_add_neuron.set_label("+ Grow Brain")
+            self.btn_sub_neuron.set_label("- Shrink")
+            self.btn_load_preset.set_label("★ 1. Start Mission!")
+            self.btn_check_goal.set_label("✓ 2. Did I Win?")
+            self.btn_chat.set_label("★ Ask AI Buddy!")
+            self.btn_ask_llm.set_label("★ Give Me a Hint!")
+            self.cortex_entry.set_placeholder_text("Ask your AI Buddy Cortex a question about the game...")
+
+            # Hide intimidating engineering controls in Kid Mode
+            self.btn_step.hide()
+            self.btn_export.hide()
+            self.btn_add_syn.hide()
+            self.btn_sub_syn.hide()
+            self.perf_lbl.hide()
+            self.btn_open_challenge.hide()
+            self.btn_ask_fast.hide()
+            self.btn_ask_cmd.hide()
+            self.btn_run_cmd.hide()
+
+            # Show Kid Mode Mission / Brain toggle buttons & hide raw notebook tab bar
+            self.btn_kid_peek_brain.show()
+            self.btn_kid_back_mission.show()
+            self.right_notebook.set_show_tabs(False)
+            self.right_notebook.set_current_page(0)
+        else:
+            set_cls(self.btn_pro_mode, ["mode-active-pro"], ["mode-active-kid"])
+            set_cls(self.btn_kid_mode, [], ["mode-active-kid", "mode-active-pro"])
+            for b in [
+                self.btn_run, self.btn_turbo, self.btn_add_neuron, self.btn_sub_neuron,
+                self.btn_load_preset, self.btn_check_goal, self.btn_chat, self.btn_ask_llm,
+            ]:
+                set_cls(b, [], all_kid_classes)
+
+            self.title_lbl.set_markup("<b><span foreground='#38bdf8'>⚡ SYNAPSE STUDIO</span></b>")
+            self.left_frame.set_label(" ⚙ 1. Presets, Brain Surgery & Sliders ")
+            self.center_frame.set_label(" ◈ 2. Real-Time Simulation Viewport & Performance Telemetry ")
+            self.right_frame.set_label(" ★ 3. Tutorials, Code & Live Phi-3 Brain ")
+            self.right_frame.set_size_request(360, -1)
+            self.cortex_frame.set_label(" ⚡ 4. Cortex-Phi3 General Chat, Classroom AI Tutor & Live Linux Runner ")
+
+            self.ex_lbl.set_markup("<b><span size='small' foreground='#facc15'>★ 5 Examples for Current Lab:</span></b>")
+            self.surg_lbl.set_markup("<b><span size='small' foreground='#38bdf8'>⚙ Direct Brain Surgery (+/-):</span></b>")
+            self.btn_run.set_label("|| Pause" if self.running else "▶ Resume")
+            self.btn_turbo.set_label("⚡ Turbo +25 Gens")
+            self.btn_reset.set_label("↻ Reset")
+            self.btn_add_neuron.set_label("+ Add Neuron")
+            self.btn_sub_neuron.set_label("- Sub Neuron")
+            self.btn_load_preset.set_label("▸ 1. Load Preset")
+            self.btn_check_goal.set_label("✓ 2. Check Goal")
+            self.btn_chat.set_label("★ General Chat")
+            self.btn_ask_llm.set_label("★ AI Tutor")
+            self.cortex_entry.set_placeholder_text("Chat with Cortex-Phi3, ask an AI question, or type a Linux command...")
+
+            # Show all engineering controls in Teacher / Pro Mode
+            self.btn_step.show()
+            self.btn_export.show()
+            self.btn_add_syn.show()
+            self.btn_sub_syn.show()
+            self.perf_lbl.show()
+            self.btn_open_challenge.show()
+            self.btn_ask_fast.show()
+            self.btn_ask_cmd.show()
+            self.btn_run_cmd.show()
+
+            self.btn_kid_peek_brain.hide()
+            self.btn_kid_back_mission.hide()
+            self.right_notebook.set_show_tabs(True)
+            self.right_notebook.set_current_page(2)
+
     def _populate_sliders(self) -> None:
         self._updating_sliders = True
         for child in self.sliders_vbox.get_children():
@@ -746,12 +939,22 @@ class SynapseStudioWindow(Gtk.Window):
         self.slider_widgets.clear()
 
         lab = self.active_lab
-        for spec in lab.VARIABLE_SPECS:
+        specs = lab.VARIABLE_SPECS
+        total_specs = len(specs)
+        if self.kid_mode:
+            unlocked_count = min(total_specs, self.kid_unlocked_sliders + len(self.earned_badges) * 2)
+        else:
+            unlocked_count = total_specs
+
+        for idx, spec in enumerate(specs):
+            if idx >= unlocked_count:
+                break
             key = spec["key"]
             box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=1)
             lbl = Gtk.Label()
             lbl.set_xalign(0.0)
-            lbl.set_markup(f"<b>{GLib.markup_escape_text(spec['label'])}</b>")
+            prefix = f"★ " if self.kid_mode else ""
+            lbl.set_markup(f"<b>{prefix}{GLib.markup_escape_text(spec['label'])}</b>")
             lbl.set_tooltip_text(spec["desc"])
             box.pack_start(lbl, False, False, 0)
 
@@ -778,6 +981,30 @@ class SynapseStudioWindow(Gtk.Window):
 
             self.sliders_vbox.pack_start(box, False, False, 2)
             self.slider_widgets[key] = scale
+
+        if self.kid_mode and unlocked_count < total_specs:
+            rem = total_specs - unlocked_count
+            next_label = specs[unlocked_count]["label"]
+            unlock_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=3)
+            unlock_box.set_margin_top(6)
+
+            lock_lbl = Gtk.Label()
+            lock_lbl.set_xalign(0.0)
+            lock_lbl.set_line_wrap(True)
+            lock_lbl.set_max_width_chars(28)
+            lock_lbl.set_markup(
+                f"<b><span foreground='#c084fc'>★ {rem} More Sliders Locked!</span></b>\n"
+                f"<span size='small' foreground='#cbd5e1'>Next: <b>{GLib.markup_escape_text(next_label)}</b>\n"
+                f"Win a Mission Badge or click below to unlock step-by-step:</span>"
+            )
+            unlock_box.pack_start(lock_lbl, False, False, 0)
+
+            btn_unlock = Gtk.Button(label=f"★ Unlock '{next_label[:16]}' (+1)")
+            btn_unlock.get_style_context().add_class("kid-btn-unlock")
+            btn_unlock.connect("clicked", self._on_unlock_next_slider)
+            unlock_box.pack_start(btn_unlock, False, False, 0)
+
+            self.sliders_vbox.pack_start(unlock_box, False, False, 4)
 
         self.sliders_vbox.show_all()
         self._updating_sliders = False
@@ -846,6 +1073,7 @@ class SynapseStudioWindow(Gtk.Window):
         if self.active_lab_id != target_lab:
             self.active_lab_id = target_lab
             self.lab_combo.set_active_id(target_lab)
+            self._populate_examples_dropdown()
 
         lab = self.active_lab
         for k, v in lesson["preset_params"].items():
@@ -859,7 +1087,7 @@ class SynapseStudioWindow(Gtk.Window):
 
         self._populate_sliders()
         self._set_cortex_message(
-            f"▸ Loaded preset for '{lesson['title']}'! Now follow the steps in the Tutorials tab or click '⚡ Turbo +25 Gens'."
+            f"★ Mission '{lesson['title']}' Ready! Now click '⚡ SUPER TRAIN AI (+25 TRIES!)' on the left to train your AI!"
         )
 
     def _on_check_lesson_goal(self, _btn: Gtk.Button) -> None:
@@ -867,9 +1095,13 @@ class SynapseStudioWindow(Gtk.Window):
         telem = self.labs[lesson["lab_id"]].get_telemetry()
         passed, msg = verify_lesson_goal(lesson, telem)
         if passed:
+            was_new = lesson["id"] not in self.earned_badges
             self.earned_badges.add(lesson["id"])
             self._update_badge_header()
             self._refresh_lesson_view()
+            if was_new and self.kid_mode:
+                self._populate_sliders()
+                msg += "\n★ BONUS: You unlocked 2 new AI Control Sliders on the left!"
         self._set_cortex_message(msg)
 
     def _on_open_lesson_coding(self, _btn: Gtk.Button) -> None:
@@ -924,10 +1156,11 @@ class SynapseStudioWindow(Gtk.Window):
         lid = combo.get_active_id()
         if lid and lid in self.labs:
             self.active_lab_id = lid
+            self.kid_unlocked_sliders = 2
             self._populate_examples_dropdown()
             self._populate_sliders()
             self._set_cortex_message(
-                f"Switched to {combo.get_active_text()}. Pick any of the 5 Presets on the top-left, click '+ Add Neuron', or click '⚡ Turbo +25 Gens'!"
+                f"★ Switched to {combo.get_active_text()}! Click '⚡ SUPER TRAIN AI (+25 TRIES!)' or try the unlocked sliders on the left!"
             )
 
     def _on_mode_toggled(self, btn: Gtk.RadioButton, mode: str) -> None:
@@ -951,11 +1184,14 @@ class SynapseStudioWindow(Gtk.Window):
 
     def _on_toggle_run(self, _btn: Gtk.Button) -> None:
         self.running = not self.running
-        self.btn_run.set_label("|| Pause" if self.running else "▶ Resume")
+        if self.kid_mode:
+            self.btn_run.set_label("|| PAUSE GAME" if self.running else "▶ PLAY GAME!")
+        else:
+            self.btn_run.set_label("|| Pause" if self.running else "▶ Resume")
 
     def _on_step_once(self, _btn: Gtk.Button) -> None:
         self.running = False
-        self.btn_run.set_label("▶ Resume")
+        self.btn_run.set_label("▶ PLAY GAME!" if self.kid_mode else "▶ Resume")
         self.active_lab.step_physics()
         self.sim_canvas.queue_draw()
         self.net_canvas.queue_draw()
@@ -976,12 +1212,22 @@ class SynapseStudioWindow(Gtk.Window):
                 self.earned_badges.add(lesson["id"])
                 self._update_badge_header()
                 self._refresh_lesson_view()
-                bonus_msg = f"\n{goal_msg}"
+                if self.kid_mode:
+                    self._populate_sliders()
+                    bonus_msg = f"\n{goal_msg}\n★ BONUS: You unlocked 2 new AI Control Sliders on the left!"
+                else:
+                    bonus_msg = f"\n{goal_msg}"
 
-        self._set_cortex_message(
-            f"⚡ Turbo Evolution completed 25 generations/epochs in {dt_ms} ms on pure CPU!\n"
-            f"   • Current Gen/Epoch: {stats['generation']} | Best Score: {stats['best_fitness']} | All-Time Best: {stats['best_ever']}{bonus_msg}"
-        )
+        if self.kid_mode:
+            self._set_cortex_message(
+                f"⚡ SUPER TRAINED! Your AI practiced 25 times in {dt_ms} ms!\n"
+                f"   • AI Try #{stats['generation']} | Best Score: {stats['best_fitness']} | All-Time High Score: {stats['best_ever']}{bonus_msg}"
+            )
+        else:
+            self._set_cortex_message(
+                f"⚡ Turbo Evolution completed 25 generations/epochs in {dt_ms} ms on pure CPU!\n"
+                f"   • Current Gen/Epoch: {stats['generation']} | Best Score: {stats['best_fitness']} | All-Time Best: {stats['best_ever']}{bonus_msg}"
+            )
 
     def _on_reset_lab(self, _btn: Gtk.Button) -> None:
         lid = self.active_lab_id
@@ -1154,14 +1400,26 @@ class SynapseStudioWindow(Gtk.Window):
         extra = ""
         if "landed_last_gen" in telem:
             extra = f" | Landed: <b><span foreground='#4ade80'>{telem['landed_last_gen']}</span></b>"
-        elif "champion_nodes" in telem:
+        elif "champion_nodes" in telem and not self.kid_mode:
             extra = f" | Nodes: <b><span foreground='#38bdf8'>{telem['champion_nodes']}</span></b>"
-        self.telemetry_lbl.set_markup(
-            f"<b>{telem['lab']}</b>   |   Gen/Ep: <b><span foreground='#38bdf8'>{telem['generation']}</span></b>   "
-            f"|   Best: <b><span foreground='#4ade80'>{telem['best_fitness']}</span></b>   "
-            f"|   Avg: <span foreground='#facc15'>{telem['avg_fitness']}</span>   "
-            f"|   Record: <b><span foreground='#f472b6'>{telem['best_ever']}</span></b>{extra}"
-        )
+
+        rec_val = telem["best_ever"]
+        rec_str = "--" if isinstance(rec_val, (int, float)) and rec_val <= -1e6 else str(rec_val)
+
+        if self.kid_mode:
+            self.telemetry_lbl.set_markup(
+                f"<b><span foreground='#facc15'>★ {telem['lab']}</span></b>   |   "
+                f"AI Try: <b><span foreground='#38bdf8'>#{telem['generation']}</span></b>   |   "
+                f"Current Score: <b><span foreground='#4ade80'>{telem['best_fitness']}</span></b>   |   "
+                f"High Score: <b><span foreground='#f472b6'>{rec_str}</span></b>{extra}"
+            )
+        else:
+            self.telemetry_lbl.set_markup(
+                f"<b>{telem['lab']}</b>   |   Gen/Ep: <b><span foreground='#38bdf8'>{telem['generation']}</span></b>   "
+                f"|   Best: <b><span foreground='#4ade80'>{telem['best_fitness']}</span></b>   "
+                f"|   Avg: <span foreground='#facc15'>{telem['avg_fitness']}</span>   "
+                f"|   Record: <b><span foreground='#f472b6'>{rec_str}</span></b>{extra}"
+            )
 
         self.sim_canvas.queue_draw()
         if self.right_notebook.get_current_page() == 2:
@@ -2220,7 +2478,10 @@ def main():
     win = SynapseStudioWindow()
     win.connect("destroy", Gtk.main_quit)
     win.show_all()
-    win.right_notebook.set_current_page(2)
+    init_mode = os.environ.get("SYNAPSE_INITIAL_MODE", "kid").strip().lower()
+    win.kid_mode = (init_mode != "pro")
+    win._apply_ui_mode()
+    win._populate_sliders()
     init_lab = os.environ.get("SYNAPSE_INITIAL_LAB", "").strip()
     if init_lab and init_lab in win.labs:
         win.lab_combo.set_active_id(init_lab)
