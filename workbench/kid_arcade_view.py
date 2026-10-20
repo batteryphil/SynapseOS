@@ -748,25 +748,31 @@ class SynapseKidsView(Gtk.DrawingArea):
         cr.move_to(bx + bw * 0.29, by + bh * 0.63)
         cr.show_text("Synapse Kids")
 
-        # B. [⭐ Level 1: Space Moon Landing] Orange Banner Pill (Center)
+        # B. [◀ ⭐ Level 1: Space Moon Landing ▶] Orange Banner Pill (Center)
         lx, ly, lw, lh = W * 0.285, H * 0.042, W * 0.445, H * 0.082
-        self.hitboxes["cycle_level"] = (lx, ly, lw, lh)
+        self.hitboxes["prev_level"] = (lx, ly, lw * 0.14, lh)
+        self.hitboxes["cycle_level"] = (lx + lw * 0.14, ly, lw * 0.86, lh)
         self._draw_pill(
             cr, lx, ly, lw, lh,
             (0.94, 0.46, 0.14), (0.78, 0.29, 0.06), (0.99, 0.68, 0.28),
-            hover=(self.hovered_id == "cycle_level"),
+            hover=(self.hovered_id in ("cycle_level", "prev_level")),
         )
-        self._draw_star(cr, lx + lw * 0.075, ly + lh * 0.50, lh * 0.28, lh * 0.13, filled=True)
+        # Left '◀' arrow for previous level
+        cr.set_font_size(max(13.0, H * 0.024))
+        cr.set_source_rgba(1.0, 0.95, 0.80, 0.92)
+        cr.move_to(lx + 14, ly + lh * 0.63)
+        cr.show_text("◂")
+        self._draw_star(cr, lx + lw * 0.11, ly + lh * 0.50, lh * 0.26, lh * 0.12, filled=True)
         lv_title = lv["title_fr"] if is_fr else lv["title_en"]
-        cr.set_font_size(max(15.0, H * 0.029))
+        cr.set_font_size(max(14.5, H * 0.028))
         cr.set_source_rgb(1.0, 1.0, 1.0)
         ext = cr.text_extents(lv_title)
-        cr.move_to(lx + (lw - ext.width) * 0.52, ly + lh * 0.63)
+        cr.move_to(lx + (lw - ext.width) * 0.53, ly + lh * 0.63)
         cr.show_text(lv_title)
-        # Subtle right arrow indicator for cycling levels
-        cr.set_font_size(max(12.0, H * 0.022))
-        cr.set_source_rgba(1.0, 0.95, 0.80, 0.85)
-        cr.move_to(lx + lw - 24, ly + lh * 0.62)
+        # Right '▸' arrow for next level
+        cr.set_font_size(max(13.0, H * 0.024))
+        cr.set_source_rgba(1.0, 0.95, 0.80, 0.92)
+        cr.move_to(lx + lw - 24, ly + lh * 0.63)
         cr.show_text("▸")
 
         # C. [⚙ Mode Professeur / Teacher Mode] Small Top-Right Pill + [FR/EN] Toggle
@@ -833,10 +839,10 @@ class SynapseKidsView(Gtk.DrawingArea):
         if lv["lab_id"] == "moon_lander":
             self._draw_kid_moon_simulation(cr, sx, sy, sw, sh, phase, is_fr)
         else:
-            # Render the selected level's live simulation cleanly below the 32px SIMULATION header bar
-            sub_h = max(80.0, sh - 32.0)
+            # Render the selected level's live simulation cleanly below the 34px SIMULATION header bar
+            sub_h = max(80.0, sh - 34.0)
             cr.save()
-            cr.translate(sx, sy + 32.0)
+            cr.translate(sx, sy + 34.0)
             lid = lv["lab_id"]
             if lid == "raycast_car":
                 self.studio._render_raycast_car(cr, sw, sub_h)
@@ -852,23 +858,47 @@ class SynapseKidsView(Gtk.DrawingArea):
                 self.studio._render_prime_attention(cr, sw, sub_h)
             cr.restore()
 
-        # Top-Left "SIMULATION" title label + interactive click hint
+        # Top-Left "SIMULATION" title + 7 One-Click Level Buttons (L1..L7) + Click Hint
         cr.select_font_face("Sans", cairo.FONT_SLANT_NORMAL, cairo.FONT_WEIGHT_BOLD)
-        cr.set_font_size(max(13.5, H * 0.024))
+        cr.set_font_size(max(13.0, H * 0.023))
         cr.set_source_rgba(0.95, 0.98, 1.0, 0.95)
-        cr.move_to(sx + 16, sy + 23)
+        cr.move_to(sx + 14, sy + 23)
         cr.show_text("SIMULATION")
-        if lv["lab_id"] in ("nn_playground", "moon_lander"):
-            cr.set_font_size(max(10.0, H * 0.016))
-            cr.set_source_rgba(0.45, 0.88, 1.0, 0.88)
-            hint_t = (
-                "★ Clique dans l'écran pour ajouter des points !" if (is_fr and lv["lab_id"] == "nn_playground")
-                else ("★ Click inside canvas to drop Blue/Red dots!" if lv["lab_id"] == "nn_playground"
-                      else ("★ Clique dans le ciel pour lancer la fusée !" if is_fr else "★ Click anywhere in the sky to drop rocket!"))
-            )
-            ext_h = cr.text_extents(hint_t)
-            cr.move_to(sx + sw - ext_h.width - 14, sy + 22)
-            cr.show_text(hint_t)
+
+        # 7 Quick-Jump Level Pills [L1]..[L7] so kids can pick any level in 1 click
+        pill_start_x = sx + 142
+        pill_w, pill_h = 28.0, 20.0
+        for idx_l in range(len(LEVEL_DATA)):
+            px_l = pill_start_x + idx_l * (pill_w + 5.0)
+            py_l = sy + 7.0
+            hid_l = f"level_jump_{idx_l}"
+            self.hitboxes[hid_l] = (px_l, py_l, pill_w, pill_h)
+            is_cur = (idx_l == (self.level_idx % len(LEVEL_DATA)))
+            is_hov = (self.hovered_id == hid_l)
+            self._rounded_rect(cr, px_l, py_l, pill_w, pill_h, 6)
+            if is_cur:
+                cr.set_source_rgb(0.95, 0.52, 0.14)
+            elif is_hov:
+                cr.set_source_rgb(0.24, 0.56, 0.92)
+            else:
+                cr.set_source_rgba(0.12, 0.24, 0.42, 0.85)
+            cr.fill_preserve()
+            cr.set_source_rgba(0.55, 0.82, 1.0, 0.95 if is_cur else 0.55)
+            cr.set_line_width(1.4 if is_cur else 1.0)
+            cr.stroke()
+            cr.set_font_size(10.0)
+            cr.set_source_rgb(1.0, 1.0, 1.0)
+            lbl_l = f"L{idx_l + 1}"
+            ext_l = cr.text_extents(lbl_l)
+            cr.move_to(px_l + (pill_w - ext_l.width) * 0.5, py_l + 14.0)
+            cr.show_text(lbl_l)
+
+        cr.set_font_size(max(9.5, H * 0.015))
+        cr.set_source_rgba(0.45, 0.88, 1.0, 0.90)
+        hint_t = "★ Clique dans l'écran pour interagir !" if is_fr else "★ Click inside screen to interact!"
+        ext_h = cr.text_extents(hint_t)
+        cr.move_to(sx + sw - ext_h.width - 12, sy + 21)
+        cr.show_text(hint_t)
         cr.restore()
 
         # Glowing Blue Border around SIMULATION
@@ -1661,6 +1691,18 @@ class SynapseKidsView(Gtk.DrawingArea):
             self.queue_draw()
         return False
 
+    def _switch_to_level(self, new_idx: int) -> None:
+        self.level_idx = new_idx % len(LEVEL_DATA)
+        new_lid = self.cur_level["lab_id"]
+        self.studio.active_lab_id = new_lid
+        self.studio.lab_combo.set_active_id(new_lid)
+        self.studio._populate_examples_dropdown()
+        self.studio._populate_sliders()
+        self.custom_speech = None
+        if new_lid == "moon_lander":
+            self.reset_rocket_test()
+        self.queue_draw()
+
     def _on_button_press(self, _widget: Gtk.Widget, event: Gdk.EventButton) -> bool:
         if event.type != Gdk.EventType.BUTTON_PRESS:
             return False
@@ -1695,48 +1737,37 @@ class SynapseKidsView(Gtk.DrawingArea):
             self.queue_draw()
             return True
 
+        if clicked_id == "prev_level":
+            self._switch_to_level(self.level_idx - 1)
+            return True
+
         if clicked_id in ("cycle_level", "synapse_kids_logo"):
-            self.level_idx = (self.level_idx + 1) % len(LEVEL_DATA)
-            new_lid = self.cur_level["lab_id"]
-            self.studio.active_lab_id = new_lid
-            self.studio.lab_combo.set_active_id(new_lid)
-            self.studio._populate_examples_dropdown()
-            self.studio._populate_sliders()
-            self.custom_speech = None
-            if new_lid == "moon_lander":
-                self.reset_rocket_test()
-            self.queue_draw()
+            self._switch_to_level(self.level_idx + 1)
+            return True
+
+        if clicked_id.startswith("level_jump_"):
+            target_idx = int(clicked_id.split("_")[-1])
+            self._switch_to_level(target_idx)
             return True
 
         if clicked_id == "badges_btn":
             earned = max(1, len(self.studio.earned_badges))
             self.custom_speech = (
-                f"Bravo ! Tu as gagné {earned} Badge(s) d'Or et 3 Étoiles ! Continue d'explorer les 7 niveaux !"
+                f"Bravo ! Tu as gagné {earned} Badge(s) d'Or et 3 Étoiles ! Clique sur L1..L7 pour jouer aux 7 niveaux !"
                 if is_fr
-                else f"Awesome! You have earned {earned} Gold Badge(s) and 3 Stars! Click the orange banner to try all 7 levels!"
+                else f"Awesome! You have earned {earned} Gold Badge(s) and 3 Stars! Click L1..L7 to play all 7 levels!"
             )
             self.queue_draw()
             return True
 
         if clicked_id == "sim_box":
             hx, hy, hw, hh = self.hitboxes["sim_box"]
+            sub_y = hy + 34.0
+            sub_h = max(80.0, hh - 34.0)
             nx = ((ex - hx) / max(1.0, hw)) * 2.0 - 1.0
-            ny = ((ey - hy) / max(1.0, hh)) * 2.0 - 1.0
-            if lid == "nn_playground" and hasattr(lab, "add_interactive_dots"):
-                # Toggle between adding Blue (1.0) and Red (0.0) dot clusters on click
-                self._next_dot_label = 0.0 if getattr(self, "_next_dot_label", 0.0) > 0.5 else 1.0
-                color_en = "BLUE" if self._next_dot_label > 0.5 else "RED"
-                color_fr = "BLEUS" if self._next_dot_label > 0.5 else "ROUGES"
-                lab.add_interactive_dots(nx, ny, label=self._next_dot_label, count=7)
-                self.custom_speech = (
-                    f"Hop ! Tu as ajouté des points {color_fr} ! Regarde la frontière dorée s'adapter en direct !"
-                    if is_fr
-                    else f"Pop! You dropped new {color_en} dots! Watch the golden AI boundary curve around them!"
-                )
-                self.queue_draw()
-                return True
-            elif lid == "moon_lander":
-                # Clicking in the Moon Lander sky launches or fires retro-thrusters toward that spot
+            ny = ((ey - sub_y) / max(1.0, sub_h)) * 2.0 - 1.0
+
+            if lid == "moon_lander":
                 self.rocket_x = max(0.18, min(0.46, (ex - hx) / max(1.0, hw)))
                 self.rocket_y = max(0.14, min(0.45, (ey - hy) / max(1.0, hh)))
                 self.rocket_vy = 0.0040
@@ -1748,8 +1779,75 @@ class SynapseKidsView(Gtk.DrawingArea):
                     if is_fr
                     else "Rocket dropped from your click! Watch the AI brain fire retro-thrusters to land!"
                 )
-                self.queue_draw()
-                return True
+            elif lid == "raycast_car":
+                for car in getattr(lab, "cars", []):
+                    if car.alive:
+                        car.speed = lab.params.get("max_speed", 5.5)
+                self.custom_speech = (
+                    "Turbo Nitro activé ! Toutes les voitures accélèrent avec leurs lasers Lidar !"
+                    if is_fr
+                    else "Nitro Turbo boost! Watch the Cyber Racecars zoom around the corner with Lidar lasers!"
+                )
+            elif lid == "rl_gridworld":
+                col = max(0, min(lab.cols - 1, int(((ex - hx) / max(1.0, hw)) * lab.cols)))
+                row = max(0, min(lab.rows - 1, int(((ey - sub_y) / max(1.0, sub_h)) * lab.rows)))
+                cell = (col, row)
+                if cell not in (lab.start_pos, lab.goal_pos) and cell not in lab.wall_cells:
+                    if cell in lab.lava_cells:
+                        lab.lava_cells.remove(cell)
+                        action_en, action_fr = "removed a Lava tile", "enlevé une case de lave"
+                    else:
+                        lab.lava_cells.add(cell)
+                        action_en, action_fr = "placed a new Red Lava trap", "placé un piège de lave rouge"
+                    lab.fast_forward_generations(15)
+                    self.custom_speech = (
+                        f"Tu as {action_fr} en ({col},{row}) ! Regarde le robot calculer un nouveau chemin !"
+                        if is_fr
+                        else f"You {action_en} at ({col},{row})! Watch the robot learn a new safe path around it!"
+                    )
+            elif lid == "cartpole_rl":
+                push = 1.35 if nx >= 0.0 else -1.35
+                for ag in getattr(lab, "agents", []):
+                    if ag.alive:
+                        ag.v_theta += push
+                self.custom_speech = (
+                    "Hop ! Tu as poussé le bâton doré ! Regarde le chariot IA sprinter pour le rattraper !"
+                    if is_fr
+                    else "Boing! You nudged the Golden Pole! Watch the AI cart sprint to catch and balance it!"
+                )
+            elif lid == "nn_playground" and hasattr(lab, "add_interactive_dots"):
+                self._next_dot_label = 0.0 if getattr(self, "_next_dot_label", 0.0) > 0.5 else 1.0
+                color_en = "BLUE" if self._next_dot_label > 0.5 else "RED"
+                color_fr = "BLEUS" if self._next_dot_label > 0.5 else "ROUGES"
+                lab.add_interactive_dots(nx, ny, label=self._next_dot_label, count=7)
+                self.custom_speech = (
+                    f"Hop ! Tu as ajouté des points {color_fr} ! Regarde la frontière dorée s'adapter en direct !"
+                    if is_fr
+                    else f"Pop! You dropped new {color_en} dots! Watch the golden AI boundary curve around them!"
+                )
+            elif lid == "swarm_ecosystem" and hasattr(lab, "drop_food_cluster"):
+                gx = ((ex - hx) / max(1.0, hw)) * lab.width
+                gy = ((ey - sub_y) / max(1.0, sub_h)) * lab.height
+                lab.drop_food_cluster(gx, gy, count=6)
+                self.custom_speech = (
+                    "Miam ! Tu as lâché 6 perles d'énergie dorées ! Regarde l'essaim vert nager vers ton clic !"
+                    if is_fr
+                    else "Yum! You dropped 6 Golden Energy Orbs! Watch the green swimmer flock rush to eat them!"
+                )
+            elif lid == "prime_attention":
+                gaps = [64.0, 128.0, 256.0, 512.0]
+                cur_g = lab.params.get("distractor_gap", 256.0)
+                next_g = gaps[(gaps.index(cur_g) + 1) % len(gaps)] if cur_g in gaps else 128.0
+                lab.update_param("distractor_gap", next_g)
+                lab.fast_forward_generations(5)
+                self.studio._populate_sliders()
+                self.custom_speech = (
+                    f"Test à {int(next_g)} mots de distance ! Le Coffre Doré PRIME garde la clé secrète en mémoire !"
+                    if is_fr
+                    else f"Testing passkey recall across {int(next_g)} words! Notice how the Golden PRIME Vault still remembers!"
+                )
+            self.queue_draw()
+            return True
 
         if clicked_id == "btn_smarter":
             self.smart_boost += 1
@@ -1761,11 +1859,38 @@ class SynapseKidsView(Gtk.DrawingArea):
                 new_n = 4 if cur_n >= 16 else min(16, cur_n + 4)
                 lab.update_param("hidden_neurons", float(new_n))
                 lab.fast_forward_generations(20)
-                self.studio._populate_sliders()
                 self.custom_speech = (
-                    f"Cerveau agrandi à {new_n} neurones ! La frontière dorée peut maintenant courber autour des formes complexes !"
+                    f"Cerveau agrandi à {new_n} neurones ! La frontière dorée courbe autour des formes complexes !"
                     if is_fr
                     else f"Brain upgraded to {new_n} Hidden Neurons! Watch the golden boundary curve tightly around every dot!"
+                )
+            elif lid == "rl_gridworld":
+                lab.update_param("gamma", 0.98)
+                lab.fast_forward_generations(35)
+                self.custom_speech = (
+                    "35 explorations terminées ! Suis les flèches dorées : le robot connaît le chemin parfait !"
+                    if is_fr
+                    else "Trained 35 maze runs! Look at the golden arrows — your robot mapped the shortest path to the treasure!"
+                )
+            elif lid == "swarm_ecosystem":
+                cur_p = int(round(lab.params.get("num_prey", 35.0)))
+                new_p = 25 if cur_p >= 65 else min(70, cur_p + 10)
+                lab.update_param("num_prey", float(new_p))
+                lab.fast_forward_generations(8)
+                self.custom_speech = (
+                    f"Essaim renforcé à {new_p} nageurs intelligents ! Ils esquivent les requins rouges en équipe !"
+                    if is_fr
+                    else f"Flock upgraded to {new_p} smart swimmers! Watch them team up and dodge the red sharks!"
+                )
+            elif lid == "prime_attention":
+                cur_h = int(round(lab.params.get("num_heads", 8.0)))
+                new_h = 8 if cur_h >= 24 else min(24, cur_h + 4)
+                lab.update_param("num_heads", float(new_h))
+                lab.fast_forward_generations(8)
+                self.custom_speech = (
+                    f"Coffre PRIME amélioré avec {new_h} têtes d'attention ! La mémoire longue distance grimpe !"
+                    if is_fr
+                    else f"Upgraded PRIME Vault to {new_h} Attention Heads! Watch the green recall bar climb higher!"
                 )
             else:
                 lab.fast_forward_generations(15)
@@ -1778,6 +1903,7 @@ class SynapseKidsView(Gtk.DrawingArea):
                 )
                 if lid == "moon_lander":
                     self.reset_rocket_test()
+            self.studio._populate_sliders()
             self.queue_draw()
             return True
 
@@ -1787,7 +1913,6 @@ class SynapseKidsView(Gtk.DrawingArea):
             self.obj1_done = True
             self.obj2_done = True
             if lid == "nn_playground":
-                # Cycle Dataset Pattern: 0 (XOR) -> 1 (Rings) -> 2 (Moons) -> 3 (Spiral)
                 cur_ds = int(round(lab.params.get("dataset_id", 3.0)))
                 next_ds = (cur_ds + 1) % 4
                 names_en = ["XOR Quadrants", "Concentric Rings", "Two Moons", "Twin Spiral"]
@@ -1795,46 +1920,84 @@ class SynapseKidsView(Gtk.DrawingArea):
                 lab.update_param("dataset_id", float(next_ds))
                 lab.update_param("learning_rate", 0.14)
                 lab.fast_forward_generations(12)
-                self.studio._populate_sliders()
                 self.custom_speech = (
                     f"Nouvelle forme : {names_fr[next_ds]} ! Regarde le cerveau trier les couleurs en direct !"
                     if is_fr
                     else f"Switched pattern to {names_en[next_ds]}! Watch the AI brain re-carve the color boundary live!"
                 )
             elif lid == "moon_lander":
-                if "thruster_power" in lab.params:
-                    lab.update_param("thruster_power", 0.34)
+                lab.update_param("thruster_power", 2.2)
+                lab.update_param("fuel_capacity", 220.0)
                 self.reset_rocket_test()
                 self.custom_speech = (
                     "Plein de carburant ajouté ! Les moteurs de la fusée sont maintenant super puissants !"
                     if is_fr
                     else "Extra fuel added! Your rocket thrusters are now super strong for a soft landing!"
                 )
-            else:
-                # Boost primary power/range parameter for other levels
-                for k, v in [("sensor_range", 210.0), ("learning_rate", 0.45), ("motor_force", 16.0), ("food_count", 45.0), ("window_size", 48.0)]:
-                    if k in lab.params:
-                        lab.update_param(k, v)
-                self.studio._populate_sliders()
+            elif lid == "raycast_car":
+                cur_r = lab.params.get("sensor_range", 125.0)
+                new_r = 110.0 if cur_r >= 200.0 else min(220.0, cur_r + 45.0)
+                lab.update_param("sensor_range", new_r)
+                lab.update_param("track_width", 46.0)
                 self.custom_speech = (
-                    "Super boost activé ! Les capteurs et moteurs de l'IA sont à pleine puissance !"
+                    f"Lasers Lidar poussés à {int(new_r)} px ! La voiture voit les virages de très loin !"
                     if is_fr
-                    else "Super boost activated! Sensors and motors are now running at maximum power!"
+                    else f"Lidar lasers boosted to {int(new_r)} px! Now the racecar sees corners way ahead!"
                 )
+            elif lid == "rl_gridworld":
+                lab.update_param("alpha", 0.65)
+                lab.update_param("goal_reward", 220.0)
+                lab.fast_forward_generations(25)
+                self.custom_speech = (
+                    "Mémoire rapide activée (α=0.65) ! Le robot apprend deux fois plus vite à chaque essai !"
+                    if is_fr
+                    else "Fast Memory activated (α=0.65)! Your robot updates its map twice as fast on every step!"
+                )
+            elif lid == "cartpole_rl":
+                cur_f = lab.params.get("force_mag", 11.0)
+                new_f = 10.0 if cur_f >= 21.0 else min(24.0, cur_f + 5.0)
+                lab.update_param("force_mag", new_f)
+                for ag in getattr(lab, "agents", []):
+                    if ag.alive:
+                        ag.v_theta += 0.9
+                self.custom_speech = (
+                    f"Moteurs poussés à {int(new_f)} N ! Le chariot rattrape le bâton à toute vitesse !"
+                    if is_fr
+                    else f"Motors boosted to {int(new_f)} Newtons! Watch the cart snap the pole right back to center!"
+                )
+            elif lid == "swarm_ecosystem":
+                cur_fd = int(round(lab.params.get("food_count", 28.0)))
+                new_fd = 25 if cur_fd >= 55 else min(60, cur_fd + 15)
+                lab.update_param("food_count", float(new_fd))
+                self.custom_speech = (
+                    f"Pluie de nourriture ! Il y a maintenant {new_fd} perles d'énergie dorées dans l'océan !"
+                    if is_fr
+                    else f"Food shower! There are now {new_fd} glowing Golden Energy Orbs for your flock to eat!"
+                )
+            elif lid == "prime_attention":
+                wins = [32.0, 64.0, 128.0, 256.0]
+                cur_w = lab.params.get("window_size", 64.0)
+                new_w = wins[(wins.index(cur_w) + 1) % len(wins)] if cur_w in wins else 128.0
+                lab.update_param("window_size", new_w)
+                lab.fast_forward_generations(5)
+                self.custom_speech = (
+                    f"Fenêtre glissante réglée sur W={int(new_w)} mots ! Regarde la courbe bleue et verte bouger !"
+                    if is_fr
+                    else f"Sliding Window changed to W={int(new_w)} words! Watch the Blue and Green recall curves shift!"
+                )
+            self.studio._populate_sliders()
             self.queue_draw()
             return True
 
         if clicked_id == "btn_gravity":
-            self.light_grav = not self.light_grav if lid == "nn_playground" else True
+            self.light_grav = not self.light_grav if lid in ("nn_playground", "raycast_car", "prime_attention") else True
             self.stars_score = 3
             self.obj1_done = True
             self.obj2_done = True
             if lid == "nn_playground":
-                # Toggle between scrambled noisy dots (0.22) and clean organized dots (0.03)
                 cur_noise = lab.params.get("noise", 0.08)
                 new_noise = 0.22 if cur_noise < 0.12 else 0.03
                 lab.update_param("noise", new_noise)
-                self.studio._populate_sliders()
                 if new_noise > 0.12:
                     self.custom_speech = (
                         "Points mélangés ! Les points rouges et bleus bougent partout — regarde l'IA s'adapter !"
@@ -1848,24 +2011,71 @@ class SynapseKidsView(Gtk.DrawingArea):
                         else "Clean dots activated! Now the Color Sorter brain can reach nearly 100% accuracy!"
                     )
             elif lid == "moon_lander":
-                if "gravity" in lab.params:
-                    lab.update_param("gravity", 0.06)
+                lab.update_param("gravity", 0.85)
                 self.reset_rocket_test()
                 self.custom_speech = (
                     "Gravité lunaire activée ! La fusée flotte tout doucement vers la zone d'alunissage !"
                     if is_fr
                     else "Light Moon Gravity activated! Watch the lander float gently down onto the landing pad!"
                 )
-            else:
-                for k, v in [("max_speed", 5.5), ("epsilon", 0.05), ("gravity", 6.5), ("predator_speed", 1.4), ("temperature", 0.45)]:
-                    if k in lab.params:
-                        lab.update_param(k, v)
-                self.studio._populate_sliders()
+            elif lid == "raycast_car":
+                cur_s = lab.params.get("max_speed", 4.5)
+                new_s = 3.5 if cur_s > 5.0 else 6.8
+                lab.update_param("max_speed", new_s)
+                lab.update_param("turn_rate", 0.12)
                 self.custom_speech = (
-                    "Mode précision activé ! L'IA contrôle la simulation tout en douceur !"
+                    f"Vitesse réglée à {new_s:.1f} ! Les voitures prennent les virages avec une agilité maximale !"
                     if is_fr
-                    else "Precision mode activated! The AI is now in smooth, high-accuracy control!"
+                    else f"Car speed set to {new_s:.1f} with high steering agility! Watch them carve the circuit!"
                 )
+            elif lid == "rl_gridworld":
+                lab.update_param("epsilon", 0.02)
+                lab.update_param("wind_prob", 0.0)
+                lab.fast_forward_generations(15)
+                self.custom_speech = (
+                    "Fini le hasard (ε=0.02) ! Le robot suit directement les flèches dorées jusqu'au trésor !"
+                    if is_fr
+                    else "Zero-slip precision mode (ε=0.02)! The robot now marches straight along the golden arrows to the treasure!"
+                )
+            elif lid == "cartpole_rl":
+                lab.update_param("gravity", 3.2)
+                lab.update_param("wind_gust", 0.35)
+                for ag in getattr(lab, "agents", []):
+                    if ag.alive:
+                        ag.v_theta -= 0.85
+                self.custom_speech = (
+                    "Gravité lunaire activée (3.2 m/s²) ! Le bâton doré flotte au ralenti !"
+                    if is_fr
+                    else "Moon Gravity (3.2 m/s²) activated! The Golden Pole moves in gentle slow-motion!"
+                )
+            elif lid == "swarm_ecosystem":
+                lab.update_param("prey_speed", 6.2)
+                lab.update_param("vision_radius", 135.0)
+                lab.update_param("predator_speed", 3.0)
+                self.custom_speech = (
+                    "Super vitesse activée ! Les nageurs verts sont maintenant bien plus rapides que les requins !"
+                    if is_fr
+                    else "Swimmer Speed Boost! Your green flock now swims at 6.2x speed and easily outruns the sharks!"
+                )
+            elif lid == "prime_attention":
+                cur_qk = int(round(lab.params.get("use_qk_norm", 1.0)))
+                new_qk = 0.0 if cur_qk >= 1 else 1.0
+                lab.update_param("use_qk_norm", new_qk)
+                lab.update_param("decay", 0.9995)
+                lab.update_param("alpha", 0.25)
+                if new_qk >= 1.0:
+                    self.custom_speech = (
+                        "Super Focus QK-Norm ACTIVÉ ! Le Coffre PRIME bloque le bruit et garde ~95% de précision !"
+                        if is_fr
+                        else "Sharp Focus (QK-Norm ON)! The Golden PRIME Vault blocks distractor noise for ~95% recall!"
+                    )
+                else:
+                    self.custom_speech = (
+                        "QK-Norm DÉSACTIVÉ ! Regarde la barre verte chuter à cause du rebond parabolique Taylor !"
+                        if is_fr
+                        else "QK-Norm turned OFF! Notice how the green recall bar drops from Taylor polynomial rebound!"
+                    )
+            self.studio._populate_sliders()
             self.queue_draw()
             return True
 
@@ -1887,10 +2097,13 @@ class SynapseKidsView(Gtk.DrawingArea):
                 )
             else:
                 self.studio._on_reset_lab(None)
+                if lid == "cartpole_rl":
+                    for ag in getattr(self.studio.active_lab, "agents", []):
+                        ag.v_theta += 0.95
                 self.custom_speech = (
                     "Simulation relancée ! Regarde l'IA passer le test en direct !"
                     if is_fr
-                    else "Simulation relaunched! Watch your trained AI run a fresh live test!"
+                    else "Simulation relaunched! Watch your AI run a fresh live test!"
                 )
             self.queue_draw()
             return True

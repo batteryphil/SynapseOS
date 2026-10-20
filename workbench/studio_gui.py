@@ -711,6 +711,9 @@ class SynapseStudioWindow(Gtk.Window):
             lab.reset_ecosystem()
         elif hasattr(lab, "rebuild_simulation"):
             lab.rebuild_simulation()
+        elif hasattr(lab, "reset_weights"):
+            lab.reset_weights()
+            lab.rebuild_dataset()
 
         self._populate_sliders()
         self.sim_canvas.queue_draw()
@@ -1056,6 +1059,11 @@ class SynapseStudioWindow(Gtk.Window):
             lab.reset_q_table()
         elif hasattr(lab, "reset_ecosystem"):
             lab.reset_ecosystem()
+        elif hasattr(lab, "rebuild_simulation"):
+            lab.rebuild_simulation()
+        elif hasattr(lab, "reset_weights"):
+            lab.reset_weights()
+            lab.rebuild_dataset()
 
         self._populate_sliders()
         self._set_cortex_message(
@@ -1210,7 +1218,17 @@ class SynapseStudioWindow(Gtk.Window):
 
     def _on_export_py(self, _btn: Gtk.Button) -> None:
         code = generate_lab_python_code(self.active_lab_id, self.active_lab.params, self.active_lab.get_telemetry())
-        out_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", f"exported_{self.active_lab_id}.py"))
+        fname = f"exported_{self.active_lab_id}.py"
+        candidate_dirs = [
+            os.path.expanduser("~"),
+            os.path.abspath(os.path.join(os.path.dirname(__file__), "..")),
+            "/tmp",
+        ]
+        out_path = os.path.join("/tmp", fname)
+        for d in candidate_dirs:
+            if os.path.isdir(d) and os.access(d, os.W_OK):
+                out_path = os.path.join(d, fname)
+                break
         with open(out_path, "w", encoding="utf-8") as f:
             f.write(code)
         os.chmod(out_path, 0o755)
@@ -1397,12 +1415,16 @@ class SynapseStudioWindow(Gtk.Window):
     # CAIRO 60 FPS SIMULATION VIEWPORT RENDERERS
     # ==========================================================================
     def _on_sim_canvas_click(self, widget: Gtk.DrawingArea, event: Gdk.EventButton) -> bool:
+        if event.type != Gdk.EventType.BUTTON_PRESS:
+            return False
         alloc = widget.get_allocation()
         w, h = max(1.0, float(alloc.width)), max(1.0, float(alloc.height))
-        if self.active_lab_id == "nn_playground":
-            lab: NeuralPlaygroundLab = self.labs["nn_playground"]
-            nx = (event.x / w) * 2.0 - 1.0
-            ny = (event.y / h) * 2.0 - 1.0
+        lid = self.active_lab_id
+        lab = self.active_lab
+        nx = (event.x / w) * 2.0 - 1.0
+        ny = (event.y / h) * 2.0 - 1.0
+
+        if lid == "nn_playground":
             if event.button == 3:
                 lbl = 0.0
             elif event.button == 2:
@@ -1411,9 +1433,51 @@ class SynapseStudioWindow(Gtk.Window):
                 self._pro_dot_toggle = 0.0 if getattr(self, "_pro_dot_toggle", 0.0) > 0.5 else 1.0
                 lbl = self._pro_dot_toggle
             lab.add_interactive_dots(nx, ny, label=lbl, count=7)
-            self.sim_canvas.queue_draw()
-            return True
-        return False
+            c_name = "Blue (Class +1)" if lbl > 0.5 else "Red (Class 0)"
+            self._set_cortex_message(f"★ Added 7 {c_name} sample points at ({nx:+.2f}, {ny:+.2f})! Watch backpropagation adapt the decision boundary live!")
+        elif lid == "rl_gridworld":
+            col = max(0, min(lab.cols - 1, int((event.x / w) * lab.cols)))
+            row = max(0, min(lab.rows - 1, int((event.y / h) * lab.rows)))
+            cell = (col, row)
+            if cell not in (lab.start_pos, lab.goal_pos) and cell not in lab.wall_cells:
+                if cell in lab.lava_cells:
+                    lab.lava_cells.remove(cell)
+                    act = "Removed Lava cliff"
+                else:
+                    lab.lava_cells.add(cell)
+                    act = "Placed Lava cliff"
+                lab.fast_forward_generations(15)
+                self._set_cortex_message(f"★ {act} at grid cell ({col}, {row}) and ran 15 Q-learning episodes to re-route policy arrows!")
+        elif lid == "cartpole_rl":
+            push = 1.35 if nx >= 0.0 else -1.35
+            for ag in getattr(lab, "agents", []):
+                if ag.alive:
+                    ag.v_theta += push
+            self._set_cortex_message(f"★ Applied angular impulse ({push:+.2f} rad/s) to CartPole fleet! Watch the NEAT controllers counter-steer!")
+        elif lid == "swarm_ecosystem" and hasattr(lab, "drop_food_cluster"):
+            lab.drop_food_cluster((event.x / w) * lab.width, (event.y / h) * lab.height, count=6)
+            self._populate_sliders()
+            self._set_cortex_message("★ Dropped 6 energy resource nodes into the Swarm Ecosystem at cursor!")
+        elif lid == "raycast_car":
+            for car in getattr(lab, "cars", []):
+                if car.alive:
+                    car.speed = lab.params.get("max_speed", 5.5)
+            self._set_cortex_message("★ Triggered full-throttle speed impulse across all active Lidar racecars!")
+        elif lid == "moon_lander":
+            for r in getattr(lab, "rockets", []):
+                if r.alive and not r.landed:
+                    r.vy -= 1.8
+            self._set_cortex_message("★ Fired manual upward retro-thruster impulse across active Moon Landers!")
+        elif lid == "prime_attention":
+            gaps = [64.0, 128.0, 256.0, 512.0, 1024.0]
+            cur_g = lab.params.get("distractor_gap", 256.0)
+            next_g = gaps[(gaps.index(cur_g) + 1) % len(gaps)] if cur_g in gaps else 256.0
+            lab.update_param("distractor_gap", next_g)
+            self._populate_sliders()
+            self._set_cortex_message(f"★ Cycled Passkey Distractor Gap to N={int(next_g)} tokens!")
+
+        self.sim_canvas.queue_draw()
+        return True
 
     def _draw_sim_canvas(self, widget: Gtk.DrawingArea, cr: cairo.Context) -> bool:
         alloc = widget.get_allocation()

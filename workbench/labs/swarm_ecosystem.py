@@ -108,6 +108,22 @@ class SwarmEcosystemLab:
                 self.predators.append(SwarmAgent(random.uniform(40, self.width - 40), random.uniform(40, self.height - 40), True))
             while len(self.predators) > max(1, target):
                 self.predators.pop()
+        elif key == "food_count":
+            target = int(round(value))
+            while len(self.foods) < target:
+                self.foods.append((random.uniform(25, self.width - 25), random.uniform(25, self.height - 25)))
+            while len(self.foods) > max(5, target):
+                self.foods.pop()
+
+    def drop_food_cluster(self, cx: float, cy: float, count: int = 6) -> None:
+        """Drop a cluster of golden energy food orbs around (cx, cy) when the user clicks the canvas."""
+        for _ in range(count):
+            fx = max(20.0, min(self.width - 20.0, cx + random.gauss(0.0, 22.0)))
+            fy = max(20.0, min(self.height - 20.0, cy + random.gauss(0.0, 22.0)))
+            if len(self.foods) >= 65:
+                self.foods.pop(0)
+            self.foods.append((fx, fy))
+        self.params["food_count"] = float(len(self.foods))
 
     def step_physics(self) -> bool:
         vis = self.params["vision_radius"]

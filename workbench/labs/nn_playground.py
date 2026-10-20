@@ -161,6 +161,9 @@ class NeuralPlaygroundLab:
         self.history_best = []
         self.history_avg = []
 
+    def reset_weights(self) -> None:
+        self.rebuild_network()
+
     def reset_generation(self) -> None:
         """Compatibility helper so Reset/Preset buttons re-seed both dataset and weights."""
         self.rebuild_dataset()

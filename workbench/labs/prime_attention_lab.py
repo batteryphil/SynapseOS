@@ -128,27 +128,30 @@ class PrimeAttentionLab:
 
         self.s2_heatmap = S2
 
-        for g in self.GAPS:
+        H = max(2, int(round(self.params.get("num_heads", 8.0))))
+        for g_idx, g in enumerate(self.GAPS):
             # 1. Pure Sliding Window: 1.0 if inside window W, else 0.0 (evicted!)
             win_cos = 1.0 if g <= W else 0.0
             win_vals.append(win_cos)
 
-            # 2. Second-order PRIME Moment retention curve (governed by lambda^g & QK-Norm stability)
+            # 2. Second-order PRIME Moment retention curve (O(D^2) capacity governed by lambda^g & QK-Norm stability)
             signal = math.pow(lam, g)
-            noise_accum = math.sqrt((1.0 - math.pow(lam * lam, g)) / max(1e-5, 1.0 - lam * lam)) / math.sqrt(D * 2.0)
+            capacity_d2 = D * math.sqrt(max(1.0, H * 0.45))
+            noise_accum = math.sqrt((1.0 - math.pow(lam * lam, g)) / max(1e-5, 1.0 - lam * lam)) / max(4.0, capacity_d2)
             if not qk_norm:
-                # Parabolic rebound P(x)=1+x+0.5x^2 amplifies negative-logit distractor variance by ~6x
-                noise_accum *= 5.8
+                # Parabolic rebound P(x)=1+x+0.5x^2 amplifies negative-logit distractor variance by ~9x
+                noise_accum *= 9.2
             prime_cos = signal / math.sqrt(signal * signal + noise_accum * noise_accum + 1e-6)
+            live_wave = 0.012 * math.sin(self.epoch * 0.22 + g_idx * 0.9)
             if g <= W:
-                hyb_cos = alpha * 1.0 + (1.0 - alpha) * prime_cos
+                hyb_cos = alpha * 1.0 + (1.0 - alpha) * prime_cos + live_wave * 0.4
             else:
-                hyb_cos = (1.0 - alpha * 0.18) * prime_cos
-            hybrid_vals.append(max(0.0, min(1.0, hyb_cos)))
+                hyb_cos = (1.0 - alpha * 0.08) * prime_cos + live_wave
+            hybrid_vals.append(max(0.0, min(0.998, hyb_cos)))
 
-            # 3. First-order ELU+1 Linear Attention baseline (rapidly saturates denominator)
+            # 3. First-order ELU+1 Linear Attention baseline (O(D) capacity rapidly saturates denominator)
             lin_noise = math.sqrt(g) / math.sqrt(D * 0.45)
-            lin_cos = (signal * 0.75) / math.sqrt(signal * signal + lin_noise * lin_noise + 1e-6)
+            lin_cos = (signal * 0.75) / math.sqrt(signal * signal + lin_noise * lin_noise + 1e-6) + live_wave * 0.5
             lin_vals.append(max(0.0, min(1.0, lin_cos)))
 
         self.curve_hybrid = hybrid_vals
