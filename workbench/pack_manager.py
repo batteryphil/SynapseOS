@@ -473,6 +473,118 @@ LEARNING_PACKS: Dict[str, Dict[str, Any]] = {
 
 PACK_ORDER = ["pack_1_core", "pack_2_mastery", "pack_3_olympiad"]
 
+PLAYER_AVATARS: List[Dict[str, str]] = [
+    {"id": "astro_kid", "name_en": "Cadet Nova", "name_fr": "Cadet Nova", "role_en": "Lunar Explorer", "role_fr": "Explorateur Lunaire"},
+    {"id": "cyber_bot", "name_en": "Bot-X9", "name_fr": "Bot-X9", "role_en": "Neural Droid", "role_fr": "Droïde Neuronal"},
+    {"id": "star_fox", "name_en": "Pilot Vega", "name_fr": "Pilote Véga", "role_en": "Star Fox Ace", "role_fr": "As Stellaire"},
+    {"id": "code_wizard", "name_en": "Mage Pixel", "name_fr": "Mage Pixel", "role_en": "Code Alchemist", "role_fr": "Alchimiste Code"},
+    {"id": "astro_cat", "name_en": "Captain Whiskers", "name_fr": "Capitaine Moustache", "role_en": "Cosmic Cat", "role_fr": "Chat Cosmique"},
+    {"id": "neon_ninja", "name_en": "Ninja Zero", "name_fr": "Ninja Zéro", "role_en": "Cyber Shinobi", "role_fr": "Cyber Shinobi"},
+]
+
+TROPHY_SHOP_ITEMS: List[Dict[str, Any]] = [
+    {
+        "id": "gold_hull",
+        "title_en": "Golden Rocket Hull",
+        "title_fr": "Fusée d'Or massif",
+        "name_en": "Golden Rocket Hull",
+        "name_fr": "Fusée d'Or massif",
+        "desc_en": "Paints your Moon Lander in gleaming 24K Gold!",
+        "desc_fr": "Peint ton alunisseur en Or 24 carats !",
+        "cost": 100,
+    },
+    {
+        "id": "pet_crown",
+        "title_en": "Royal Crown for Lumi",
+        "title_fr": "Couronne Royale Lumi",
+        "name_en": "Royal Crown for Lumi",
+        "name_fr": "Couronne Royale Lumi",
+        "desc_en": "Lumi wears a sparkling Golden Crown on screen!",
+        "desc_fr": "Lumi porte une couronne royale dorée !",
+        "cost": 150,
+    },
+    {
+        "id": "holo_globe",
+        "title_en": "3D Hologram Planet",
+        "title_fr": "Planète Hologramme",
+        "name_en": "3D Hologram Planet",
+        "name_fr": "Planète Hologramme",
+        "desc_en": "Projects a spinning neon ringed planet in space!",
+        "desc_fr": "Projette une planète néon à anneaux !",
+        "cost": 200,
+    },
+    {
+        "id": "neon_banner",
+        "title_en": "Champion Star Aura",
+        "title_fr": "Aura Étoile Champion",
+        "name_en": "Champion Star Aura",
+        "name_fr": "Aura Étoile Champion",
+        "desc_en": "Surrounds Lumi & your Trophy Room with gold stars!",
+        "desc_fr": "Entoure Lumi et ta salle d'étoiles d'or !",
+        "cost": 250,
+    },
+]
+
+ALL_TROPHY_PEDESTALS: List[Dict[str, str]] = [
+    {"id": "m1_moon_gravity", "title_en": "Eagle Lander", "title_fr": "Aigle Lunaire", "name_en": "Eagle Lander", "name_fr": "Aigle Lunaire"},
+    {"id": "pack_1_core_L2", "title_en": "Lidar Pilot", "title_fr": "Pilote Lidar", "name_en": "Lidar Pilot", "name_fr": "Pilote Lidar"},
+    {"id": "pack_1_core_L3", "title_en": "Maze Navigator", "title_fr": "Maître Labyrinthe", "name_en": "Maze Navigator", "name_fr": "Maître Labyrinthe"},
+    {"id": "pack_1_core_L4", "title_en": "Pole Acrobat", "title_fr": "Acrobate Équilibre", "name_en": "Pole Acrobat", "name_fr": "Acrobate Équilibre"},
+    {"id": "pack_1_core_L5", "title_en": "Color Brain", "title_fr": "Cerveau Couleurs", "name_en": "Color Brain", "name_fr": "Cerveau Couleurs"},
+    {"id": "pack_1_core_L6", "title_en": "Flock Guardian", "title_fr": "Gardien Essaim", "name_en": "Flock Guardian", "name_fr": "Gardien Essaim"},
+    {"id": "pack_1_core_L7", "title_en": "Vault Keeper", "title_fr": "Gardien Coffre", "name_en": "Vault Keeper", "name_fr": "Gardien Coffre"},
+    {"id": "trophy_pack_1_core_complete", "title_en": "Pack 1 Graduate", "title_fr": "Diplômé Pack 1", "name_en": "Pack 1 Graduate", "name_fr": "Diplômé Pack 1"},
+    {"id": "trophy_pack_2_mastery_complete", "title_en": "Pack 2 Master", "title_fr": "Maître Pack 2", "name_en": "Pack 2 Master", "name_fr": "Maître Pack 2"},
+    {"id": "trophy_pack_3_olympiad_complete", "title_en": "AI Olympian", "title_fr": "Olympien IA", "name_en": "AI Olympian", "name_fr": "Olympien IA"},
+    {"id": "daily_champion", "title_en": "Daily Hero", "title_fr": "Héros du Jour", "name_en": "Daily Hero", "name_fr": "Héros du Jour"},
+    {"id": "python_coder_star", "title_en": "Python Coder", "title_fr": "Codeur Python", "name_en": "Python Coder", "name_fr": "Codeur Python"},
+]
+
+WORLD_MAP_ZONES: List[Dict[str, Any]] = [
+    {"idx": 0, "lab_id": "moon_lander", "x": 0.16, "y": 0.72, "name_en": "1. Lunar Base", "name_fr": "1. Base Lunaire", "color": (0.95, 0.55, 0.18)},
+    {"idx": 1, "lab_id": "raycast_car", "x": 0.30, "y": 0.32, "name_en": "2. Cyber Speedway", "name_fr": "2. Circuit Laser", "color": (0.18, 0.78, 0.96)},
+    {"idx": 2, "lab_id": "rl_gridworld", "x": 0.48, "y": 0.74, "name_en": "3. Volcano Maze", "name_fr": "3. Volcan Trésor", "color": (0.96, 0.32, 0.28)},
+    {"idx": 3, "lab_id": "cartpole_rl", "x": 0.52, "y": 0.28, "name_en": "4. Acrobat Spire", "name_fr": "4. Tour Équilibre", "color": (0.98, 0.80, 0.22)},
+    {"idx": 4, "lab_id": "nn_playground", "x": 0.70, "y": 0.66, "name_en": "5. Prism Brain Dome", "name_fr": "5. Dôme Neuronal", "color": (0.68, 0.42, 0.98)},
+    {"idx": 5, "lab_id": "swarm_ecosystem", "x": 0.78, "y": 0.28, "name_en": "6. Coral Lagoon", "name_fr": "6. Lagon Corail", "color": (0.18, 0.88, 0.55)},
+    {"idx": 6, "lab_id": "prime_attention", "x": 0.88, "y": 0.58, "name_en": "7. Golden PRIME Vault", "name_fr": "7. Coffre d'Or PRIME", "color": (1.0, 0.84, 0.25)},
+]
+
+
+def _default_daily_missions() -> List[Dict[str, Any]]:
+    return [
+        {
+            "id": "dm_test_labs",
+            "title_en": "Run or land in 2 AI Labs",
+            "title_fr": "Tester 2 laboratoires IA",
+            "progress": 1,
+            "target": 2,
+            "reward_coins": 50,
+            "done": False,
+            "completed": False,
+        },
+        {
+            "id": "dm_boost_brain",
+            "title_en": "Boost an AI Brain 2 times",
+            "title_fr": "Améliorer un cerveau 2 fois",
+            "progress": 1,
+            "target": 2,
+            "reward_coins": 50,
+            "done": False,
+            "completed": False,
+        },
+        {
+            "id": "dm_ask_lumi",
+            "title_en": "Ask Lumi 1 AI question",
+            "title_fr": "Poser 1 question à Lumi",
+            "progress": 0,
+            "target": 1,
+            "reward_coins": 75,
+            "done": False,
+            "completed": False,
+        },
+    ]
+
 
 class LearningPackManager:
     """
@@ -494,13 +606,47 @@ class LearningPackManager:
         self._ensure_active_pack_on_disk()
 
     def _load_profile(self) -> Dict[str, Any]:
-        default_profile = {
+        default_profile: Dict[str, Any] = {
             "active_pack_id": "pack_1_core",
             "current_pack_id": "pack_1_core",
             "completed_packs": [],
             "earned_badges": ["m1_moon_gravity"],
             "lifetime_points": 300,
             "lifetime_stars": 3,
+            "coins": 250,
+            "unlocked_decorations": [],
+            "avatar_idx": 0,
+            "player_name": "Cadet Nova",
+            "daily_missions": _default_daily_missions(),
+            "teacher_pin": "1234",
+            "pin_lock_enabled": False,
+            "lab_time_seconds": {
+                "moon_lander": 145,
+                "raycast_car": 80,
+                "rl_gridworld": 65,
+                "cartpole_rl": 50,
+                "nn_playground": 95,
+                "swarm_ecosystem": 60,
+                "prime_attention": 75,
+            },
+            "lab_runs_count": {
+                "moon_lander": 6,
+                "raycast_car": 4,
+                "rl_gridworld": 3,
+                "cartpole_rl": 3,
+                "nn_playground": 5,
+                "swarm_ecosystem": 3,
+                "prime_attention": 4,
+            },
+            "sandbox_stats": {
+                "runs": 4,
+                "passes": 3,
+                "successes": 3,
+                "errors": 1,
+                "syntax_errors": 1,
+                "struggled_concepts": ["Reward Thresholds & Conditionals (if/else)"],
+                "struggle_concepts": ["Reward Thresholds & Conditionals (if/else)"],
+            },
             "packs_installed_count": 1,
             "last_freed_bytes": 0,
         }
@@ -521,6 +667,7 @@ class LearningPackManager:
         earned_badges: Optional[set] = None,
         bonus_points: int = 0,
         bonus_stars: int = 0,
+        bonus_coins: int = 0,
     ) -> None:
         if earned_badges is not None:
             merged = set(self.profile.get("earned_badges", [])) | set(earned_badges)
@@ -529,6 +676,8 @@ class LearningPackManager:
             self.profile["lifetime_points"] = int(self.profile.get("lifetime_points", 300)) + bonus_points
         if bonus_stars > 0:
             self.profile["lifetime_stars"] = int(self.profile.get("lifetime_stars", 3)) + bonus_stars
+        if bonus_coins != 0:
+            self.profile["coins"] = max(0, int(self.profile.get("coins", 250)) + bonus_coins)
         self.profile["current_pack_id"] = self.profile.get("active_pack_id", "pack_1_core")
 
         try:
@@ -537,16 +686,139 @@ class LearningPackManager:
         except Exception:
             pass
 
-    def award_badge(self, badge_id: str, points: int = 100, stars: int = 3) -> bool:
-        """Award a trophy badge to the student profile if not already earned. Persists to disk immediately."""
+    def award_badge(self, badge_id: str, points: int = 100, stars: int = 3, coins: int = 50) -> bool:
+        """Award a trophy badge + coins to the student profile if not already earned. Persists to disk immediately."""
         existing = set(self.profile.get("earned_badges", []))
         was_new = badge_id not in existing
         existing.add(badge_id)
         if was_new:
-            self.save_profile(earned_badges=existing, bonus_points=points, bonus_stars=stars)
+            self.save_profile(earned_badges=existing, bonus_points=points, bonus_stars=stars, bonus_coins=coins)
         else:
             self.save_profile(earned_badges=existing)
         return was_new
+
+    def get_current_avatar(self) -> Dict[str, str]:
+        idx = int(self.profile.get("avatar_idx", 0)) % len(PLAYER_AVATARS)
+        return PLAYER_AVATARS[idx]
+
+    def cycle_avatar(self) -> Dict[str, str]:
+        idx = (int(self.profile.get("avatar_idx", 0)) + 1) % len(PLAYER_AVATARS)
+        self.profile["avatar_idx"] = idx
+        av = PLAYER_AVATARS[idx]
+        self.profile["player_name"] = av["name_en"]
+        self.save_profile()
+        return av
+
+    def buy_or_toggle_shop_item(self, item_id: str, lang: str = "en") -> Dict[str, Any]:
+        """Buy or toggle a Trophy Room decoration using earned coins."""
+        is_fr = (lang == "fr")
+        item = next((it for it in TROPHY_SHOP_ITEMS if it["id"] == item_id), None)
+        if not item:
+            return {"ok": False, "msg": "Objet introuvable." if is_fr else "Item not found."}
+        unlocked = list(self.profile.get("unlocked_decorations", []))
+        if item_id in unlocked:
+            msg_en = f"★ '{item['title_en']}' is already unlocked and equipped in your room & simulation!"
+            msg_fr = f"★ '{item['title_fr']}' est déjà débloqué et équipé !"
+            return {"ok": True, "msg": msg_fr if is_fr else msg_en}
+        coins = int(self.profile.get("coins", 250))
+        cost = int(item["cost"])
+        if coins < cost:
+            need = cost - coins
+            msg_en = f"You need {need} more Coins 🪙 to unlock '{item['title_en']}'! Complete levels or Daily Missions!"
+            msg_fr = f"Il te manque {need} pièces 🪙 pour débloquer '{item['title_fr']}' ! Finis des missions !"
+            return {"ok": False, "msg": msg_fr if is_fr else msg_en}
+        self.profile["coins"] = coins - cost
+        unlocked.append(item_id)
+        self.profile["unlocked_decorations"] = unlocked
+        self.award_badge(f"shop_{item_id}", points=50, stars=1, coins=0)
+        self.save_profile()
+        msg_en = f"★ UNLOCKED '{item['title_en']}' (-{cost} Coins)! Check out your new decoration!"
+        msg_fr = f"★ DÉBLOQUÉ : '{item['title_fr']}' (-{cost} Pièces) ! Regarde ta nouvelle déco !"
+        return {"ok": True, "msg": msg_fr if is_fr else msg_en}
+
+    def record_daily_progress(self, mission_id: str, inc: int = 1) -> Optional[Dict[str, Any]]:
+        """Increment progress on a Daily Mission and award coins + badge when completed."""
+        alias_map = {
+            "dm_run_lab": "dm_test_labs",
+            "dm_boost": "dm_boost_brain",
+        }
+        target_id = alias_map.get(mission_id, mission_id)
+        missions = self.profile.get("daily_missions", _default_daily_missions())
+        completed_mission: Optional[Dict[str, Any]] = None
+        for m in missions:
+            if m.get("id") in (mission_id, target_id) and not (m.get("done", False) or m.get("completed", False)):
+                m["progress"] = min(int(m["target"]), int(m.get("progress", 0)) + inc)
+                if m["progress"] >= int(m["target"]):
+                    m["done"] = True
+                    m["completed"] = True
+                    reward_c = int(m.get("reward_coins", 50))
+                    self.profile["coins"] = int(self.profile.get("coins", 250)) + reward_c
+                    self.profile["lifetime_points"] = int(self.profile.get("lifetime_points", 300)) + 100
+                    completed_mission = m
+        self.profile["daily_missions"] = missions
+        if all(m.get("done", False) or m.get("completed", False) for m in missions):
+            self.award_badge("daily_champion", points=150, stars=3, coins=50)
+        else:
+            self.save_profile()
+        return completed_mission
+
+    def record_lab_activity(
+        self,
+        lab_id: str,
+        seconds_delta: float = 0,
+        runs_delta: int = 0,
+        add_seconds: float = 0,
+        add_run: bool = False,
+    ) -> None:
+        sec_add = int(round(seconds_delta + add_seconds))
+        run_add = int(runs_delta) + (1 if add_run else 0)
+        t_map = dict(self.profile.get("lab_time_seconds", {}))
+        r_map = dict(self.profile.get("lab_runs_count", {}))
+        if sec_add > 0:
+            t_map[lab_id] = int(t_map.get(lab_id, 0)) + sec_add
+            self.profile["lab_time_seconds"] = t_map
+        if run_add > 0:
+            r_map[lab_id] = int(r_map.get(lab_id, 0)) + run_add
+            self.profile["lab_runs_count"] = r_map
+        if sec_add > 0 or run_add > 0:
+            self.save_profile()
+
+    def record_sandbox_run(self, passed: bool, output_text: str = "", error_snippet: str = "") -> None:
+        err_str = (output_text or error_snippet).lower()
+        stats = dict(
+            self.profile.get(
+                "sandbox_stats",
+                {
+                    "runs": 0,
+                    "passes": 0,
+                    "successes": 0,
+                    "errors": 0,
+                    "syntax_errors": 0,
+                    "struggled_concepts": [],
+                    "struggle_concepts": [],
+                },
+            )
+        )
+        stats["runs"] = int(stats.get("runs", 0)) + 1
+        struggles = list(stats.get("struggled_concepts") or stats.get("struggle_concepts") or [])
+        if passed:
+            stats["passes"] = int(stats.get("passes", stats.get("successes", 0))) + 1
+            stats["successes"] = stats["passes"]
+            self.award_badge("python_coder_star", points=100, stars=2, coins=50)
+        else:
+            stats["errors"] = int(stats.get("errors", stats.get("syntax_errors", 0))) + 1
+            stats["syntax_errors"] = stats["errors"]
+            concept = "Python Syntax / Indentation"
+            if "nameerror" in err_str or "not defined" in err_str:
+                concept = "Variable Names & Scope"
+            elif "zero" in err_str or "typeerror" in err_str or "valueerror" in err_str:
+                concept = "Math Operations & Data Types"
+            if concept not in struggles:
+                struggles.append(concept)
+            stats["struggled_concepts"] = struggles[-4:]
+            stats["struggle_concepts"] = stats["struggled_concepts"]
+        self.profile["sandbox_stats"] = stats
+        self.save_profile()
 
     def _ensure_active_pack_on_disk(self) -> None:
         pid = self.profile.get("active_pack_id", "pack_1_core")

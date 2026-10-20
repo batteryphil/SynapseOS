@@ -383,32 +383,33 @@ class CortexEngine:
                 context_block = "Recent Conversation:\n" + "\n".join(turns_text[-4:]) + "\n\n"
 
         sys_prompt = (
-            "You are Cortex-Phi3, a sharp, friendly, and concise AI assistant running locally on SynapseOS "
-            "(powered by an AMD BC-250 / Debian 12 + C99 PRIME Moment Attention). "
-            "Answer any question naturally, directly, and conversationally in 2 to 5 sentences without rigid templates."
+            "You are Lumi (powered by Cortex-Phi3 + C99 PRIME Moment Attention), a friendly, patient, and enthusiastic "
+            "AI robot companion and Socratic tutor for young learners on SynapseOS. "
+            "Always give warm, playful hints and a guiding question in 1 to 3 short sentences so the student discovers the answer, "
+            "instead of just handing out raw code!"
         )
-        full_prompt = f"{context_block}User: {user_message}\nCortex:"
+        full_prompt = f"{context_block}Student: {user_message}\nLumi:"
         t0 = time.perf_counter()
         resp = self.query_local_ollama(prompt=full_prompt, system_prompt=sys_prompt, json_format=False)
         elapsed_ms = round((time.perf_counter() - t0) * 1000.0, 1)
         if resp:
             return {
                 "reply": resp.strip(),
-                "source": f"{self.get_preferred_model()} General Chat [{prime_tag}] ({self.last_llm_metrics['gen_tps']} tok/s, TTFT {self.last_llm_metrics['ttft_ms']} ms)",
+                "source": f"Lumi ({self.get_preferred_model()}) [{prime_tag}] ({self.last_llm_metrics['gen_tps']} tok/s, TTFT {self.last_llm_metrics['ttft_ms']} ms)",
                 "elapsed_ms": elapsed_ms,
                 "metrics": dict(self.last_llm_metrics),
             }
         fts_ai = self.kb.search_ai(user_message, limit=1)
         if fts_ai:
             return {
-                "reply": f"{fts_ai[0]['title']}: {fts_ai[0]['layman_guide']}",
-                "source": f"Offline FTS5 Chat Fallback ({fts_ai[0]['retrieval_ms']} ms)",
+                "reply": f"Hi! I'm Lumi! Hint on {fts_ai[0]['title']}: {fts_ai[0]['layman_guide']} What happens if you tweak a slider?",
+                "source": f"Lumi Offline FTS5 Hint ({fts_ai[0]['retrieval_ms']} ms)",
                 "elapsed_ms": fts_ai[0]["retrieval_ms"],
                 "metrics": dict(self.last_llm_metrics),
             }
         return {
-            "reply": "I am Cortex running on SynapseOS! Ask me anything about AI, coding, Linux commands, or the 7 interactive AI Labs.",
-            "source": "Offline Core",
+            "reply": "Hi, I'm Lumi, your AI Robot Companion! Try clicking a button or slider and watch how the AI brain reacts — what do you think will happen next?",
+            "source": "Lumi Offline Core",
             "elapsed_ms": 0.1,
             "metrics": dict(self.last_llm_metrics),
         }

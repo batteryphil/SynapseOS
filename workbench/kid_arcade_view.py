@@ -14,6 +14,7 @@ Matches the "Synapse Kids" design:
 """
 
 import math
+import time
 import threading
 from typing import Dict, Any, List, Tuple, Optional, Callable
 
@@ -21,6 +22,13 @@ import gi
 gi.require_version("Gtk", "3.0")
 from gi.repository import Gtk, Gdk, GLib
 import cairo
+
+from workbench.pack_manager import (
+    PLAYER_AVATARS,
+    TROPHY_SHOP_ITEMS,
+    ALL_TROPHY_PEDESTALS,
+    WORLD_MAP_ZONES,
+)
 
 
 LEVEL_DATA: List[Dict[str, Any]] = [
@@ -171,6 +179,16 @@ class SynapseKidsView(Gtk.DrawingArea):
         self.hovered_id: Optional[str] = None
         self.hitboxes: Dict[str, Tuple[float, float, float, float]] = {}
 
+        # Viewport Mode: "sim" (Live AI Lab), "map" (2D World Map), "trophies" (Trophy Room & Coin Shop), "pin" (Teacher PIN Gate)
+        self.view_mode: str = "sim"
+        self.pin_buffer: str = ""
+
+        # Lumi Virtual Pet reactive emotional state: "happy", "cheering", "thinking", "dizzy", "sleepy"
+        self.pet_mood: str = "happy"
+        self.pet_mood_timer: int = 0
+        self.last_interaction_ts: float = time.monotonic()
+        self._tick_counter: int = 0
+
         # Gamified kid state for Level 1 Moon Lander hero simulation
         self.smart_boost: int = 1
         self.fuel_boost: bool = True
@@ -205,6 +223,12 @@ class SynapseKidsView(Gtk.DrawingArea):
     def cur_level(self) -> Dict[str, Any]:
         return LEVEL_DATA[self.level_idx % len(LEVEL_DATA)]
 
+    def set_pet_mood(self, mood: str, duration_ticks: int = 130) -> None:
+        """Set Lumi's Virtual Pet emotional state (cheering, thinking, dizzy, happy, sleepy)."""
+        self.pet_mood = mood
+        self.pet_mood_timer = duration_ticks
+        self.last_interaction_ts = time.monotonic()
+
     def reset_rocket_test(self) -> None:
         """Launch a fresh test run of the hero Moon Lander rocket from high in space."""
         self.rocket_x = 0.31
@@ -218,7 +242,19 @@ class SynapseKidsView(Gtk.DrawingArea):
         self.landed_timer = 0
 
     def step_kid_simulation(self) -> None:
-        """Step the playful hero rocket physics for Level 1 so it visibly descends, brakes, and lands on the Moon."""
+        """Step the playful hero rocket physics, Lumi Virtual Pet mood timer, and lab engagement counter."""
+        self._tick_counter += 1
+        # Track time spent in active lab once every ~55 ticks (1 second) for the Teacher/Parent Dashboard
+        if self._tick_counter % 55 == 0 and hasattr(self.studio, "pack_mgr"):
+            self.studio.pack_mgr.record_lab_activity(self.cur_level["lab_id"], seconds_delta=1)
+
+        if self.pet_mood_timer > 0:
+            self.pet_mood_timer -= 1
+            if self.pet_mood_timer == 0 and not self.asking_ai:
+                self.pet_mood = "happy"
+        elif not self.asking_ai and (time.monotonic() - self.last_interaction_ts) > 25.0:
+            self.pet_mood = "sleepy"
+
         if self.cur_level["lab_id"] != "moon_lander":
             return
 
@@ -264,6 +300,7 @@ class SynapseKidsView(Gtk.DrawingArea):
                 self.obj1_done = True
                 self.obj2_done = True
                 self.stars_score = 3
+                self.set_pet_mood("cheering", 140)
                 if hasattr(self.studio, "award_kid_level_trophy"):
                     self.studio.award_kid_level_trophy(self.cur_level.get("level", 1))
                 else:
@@ -277,6 +314,7 @@ class SynapseKidsView(Gtk.DrawingArea):
                 self.obj1_done = False
                 self.obj2_done = False
                 self.stars_score = 1
+                self.set_pet_mood("dizzy", 140)
 
     # ==========================================================================
     # CAIRO GEOMETRY & VECTOR ICON HELPERS
@@ -491,11 +529,31 @@ class SynapseKidsView(Gtk.DrawingArea):
         scale: float,
         anim_phase: float,
     ) -> None:
-        """Draws the cute blue/white robot buddy from the top-right card."""
+        """Draws Lumi the Virtual Pet & Socratic AI Companion with reactive emotional expressions & unlockable Crown."""
+        mood = "thinking" if self.asking_ai else self.pet_mood
+        unlocked: List[str] = []
+        if hasattr(self.studio, "pack_mgr"):
+            unlocked = list(self.studio.pack_mgr.profile.get("unlocked_decorations", []))
+
         cr.save()
-        bob = math.sin(anim_phase * 0.9) * 2.5
+        if mood == "cheering":
+            bob = -abs(math.sin(anim_phase * 3.8)) * 7.5
+        elif mood == "sleepy":
+            bob = math.sin(anim_phase * 0.45) * 1.5
+        else:
+            bob = math.sin(anim_phase * 0.9) * 2.5
         cr.translate(cx, cy + bob)
+        if mood == "dizzy":
+            cr.rotate(math.sin(anim_phase * 4.5) * 0.14)
         cr.scale(scale, scale)
+
+        # Optional Champion Star Aura ("neon_banner" decoration) or "cheering" mood stars
+        if mood == "cheering" or "neon_banner" in unlocked:
+            for s_i in range(3):
+                ang = anim_phase * 2.2 + s_i * (2.0 * math.pi / 3.0)
+                sx_o = math.cos(ang) * 42.0
+                sy_o = -8.0 + math.sin(ang) * 28.0
+                self._draw_star(cr, sx_o, sy_o, outer_r=6.0, inner_r=2.8, filled=True)
 
         # Antenna
         cr.set_source_rgb(0.55, 0.72, 0.90)
@@ -503,9 +561,42 @@ class SynapseKidsView(Gtk.DrawingArea):
         cr.move_to(0, -34)
         cr.line_to(0, -46)
         cr.stroke()
-        cr.set_source_rgb(0.22, 0.85, 0.98)
+        ant_col = (0.98, 0.78, 0.18) if mood == "cheering" else ((0.98, 0.32, 0.25) if mood == "dizzy" else (0.22, 0.85, 0.98))
+        cr.set_source_rgb(*ant_col)
         cr.arc(0, -48, 4.5, 0, 2 * math.pi)
         cr.fill()
+
+        # Thinking sonar rings around antenna
+        if mood == "thinking":
+            for r_i in range(2):
+                rad_s = 7.0 + ((anim_phase * 14.0 + r_i * 9.0) % 18.0)
+                alpha_s = max(0.0, 0.85 - rad_s / 24.0)
+                cr.set_source_rgba(0.28, 0.92, 1.0, alpha_s)
+                cr.set_line_width(1.6)
+                cr.arc(0, -48, rad_s, 0, 2 * math.pi)
+                cr.stroke()
+
+        # Unlockable Royal Golden Crown ("pet_crown" decoration from Trophy Room Shop!)
+        if "pet_crown" in unlocked:
+            cr.save()
+            cr.move_to(-18, -33)
+            cr.line_to(-21, -48)
+            cr.line_to(-9, -40)
+            cr.line_to(0, -52)
+            cr.line_to(9, -40)
+            cr.line_to(21, -48)
+            cr.line_to(18, -33)
+            cr.close_path()
+            cr.set_source_rgb(0.99, 0.82, 0.16)
+            cr.fill_preserve()
+            cr.set_source_rgb(0.78, 0.52, 0.05)
+            cr.set_line_width(1.6)
+            cr.stroke()
+            # Crown ruby gem
+            cr.set_source_rgb(0.96, 0.20, 0.32)
+            cr.arc(0, -39, 2.6, 0, 2 * math.pi)
+            cr.fill()
+            cr.restore()
 
         # Ear pods
         cr.set_source_rgb(0.16, 0.52, 0.88)
@@ -527,25 +618,62 @@ class SynapseKidsView(Gtk.DrawingArea):
         cr.set_source_rgb(0.06, 0.12, 0.24)
         cr.fill()
 
-        # Glowing Cyan Eyes
-        cr.set_source_rgb(0.25, 0.88, 1.0)
-        cr.arc(-9, -15, 4.2, 0, 2 * math.pi)
-        cr.fill()
-        cr.arc(9, -15, 4.2, 0, 2 * math.pi)
-        cr.fill()
-
-        # Eye sparkles
-        cr.set_source_rgb(1.0, 1.0, 1.0)
-        cr.arc(-10.2, -16.5, 1.4, 0, 2 * math.pi)
-        cr.fill()
-        cr.arc(7.8, -16.5, 1.4, 0, 2 * math.pi)
-        cr.fill()
-
-        # Happy Smile
-        cr.set_source_rgb(0.25, 0.88, 1.0)
-        cr.set_line_width(2.2)
-        cr.arc(0, -10, 6.0, 0.15 * math.pi, 0.85 * math.pi)
-        cr.stroke()
+        # Reactive Virtual Pet Eyes & Mouth
+        if mood == "cheering":
+            # Happy ^ ^ chevron eyes + big open smile
+            cr.set_source_rgb(0.35, 0.98, 0.65)
+            cr.set_line_width(2.6)
+            for ex_c in (-9.0, 9.0):
+                cr.move_to(ex_c - 4.5, -13)
+                cr.line_to(ex_c, -18.5)
+                cr.line_to(ex_c + 4.5, -13)
+                cr.stroke()
+            cr.set_source_rgb(0.99, 0.85, 0.28)
+            cr.arc(0, -10, 6.8, 0.10 * math.pi, 0.90 * math.pi)
+            cr.fill()
+        elif mood == "dizzy":
+            # X / Oops eyes + wavy mouth
+            cr.set_source_rgb(0.99, 0.45, 0.22)
+            cr.set_line_width(2.4)
+            for ex_c in (-9.0, 9.0):
+                cr.move_to(ex_c - 3.8, -18.5)
+                cr.line_to(ex_c + 3.8, -11.5)
+                cr.stroke()
+                cr.move_to(ex_c + 3.8, -18.5)
+                cr.line_to(ex_c - 3.8, -11.5)
+                cr.stroke()
+            cr.arc(0, -6.5, 4.5, 1.15 * math.pi, 1.85 * math.pi)
+            cr.stroke()
+        elif mood == "sleepy":
+            # Closed sleepy U-eyes + floating Zzz
+            cr.set_source_rgb(0.55, 0.82, 0.98)
+            cr.set_line_width(2.2)
+            for ex_c in (-9.0, 9.0):
+                cr.arc(ex_c, -15, 4.0, 0.1 * math.pi, 0.9 * math.pi)
+                cr.stroke()
+            cr.arc(0, -8, 2.5, 0, 2 * math.pi)
+            cr.stroke()
+            cr.select_font_face("Sans", cairo.FONT_SLANT_ITALIC, cairo.FONT_WEIGHT_BOLD)
+            cr.set_font_size(10.0)
+            cr.set_source_rgba(0.75, 0.92, 1.0, 0.88)
+            cr.move_to(24, -34 - (anim_phase * 6.0) % 10.0)
+            cr.show_text("Zzz")
+        else:
+            # Default Happy / Thinking Glowing Cyan Eyes
+            cr.set_source_rgb(0.25, 0.88, 1.0)
+            cr.arc(-9, -15, 4.2, 0, 2 * math.pi)
+            cr.fill()
+            cr.arc(9, -15, 4.2, 0, 2 * math.pi)
+            cr.fill()
+            cr.set_source_rgb(1.0, 1.0, 1.0)
+            cr.arc(-10.2, -16.5, 1.4, 0, 2 * math.pi)
+            cr.fill()
+            cr.arc(7.8, -16.5, 1.4, 0, 2 * math.pi)
+            cr.fill()
+            cr.set_source_rgb(0.25, 0.88, 1.0)
+            cr.set_line_width(2.2)
+            cr.arc(0, -10, 6.0, 0.15 * math.pi, 0.85 * math.pi)
+            cr.stroke()
 
         # Robot Torso
         self._rounded_rect(cr, -20, 8, 40, 28, 11)
@@ -555,21 +683,24 @@ class SynapseKidsView(Gtk.DrawingArea):
         cr.set_line_width(2.0)
         cr.stroke()
 
-        # Blue belly plate
+        # Blue belly plate with pulsing heart/core
         self._rounded_rect(cr, -13, 13, 26, 16, 6)
         cr.set_source_rgb(0.18, 0.56, 0.92)
         cr.fill()
 
-        # Left Arm (relaxed)
+        # Left Arm (cheers up when cheering!)
         cr.set_source_rgb(0.78, 0.88, 0.98)
         cr.set_line_width(6.5)
         cr.set_line_cap(cairo.LINE_CAP_ROUND)
         cr.move_to(-22, 14)
-        cr.line_to(-30, 25)
+        if mood == "cheering":
+            cr.line_to(-32, 0)
+        else:
+            cr.line_to(-30, 25)
         cr.stroke()
 
         # Right Arm (waving hello!)
-        wave = math.sin(anim_phase * 2.2) * 0.22
+        wave = math.sin(anim_phase * (4.0 if mood == "cheering" else 2.2)) * 0.25
         cr.save()
         cr.translate(22, 14)
         cr.rotate(-0.6 + wave)
@@ -585,6 +716,77 @@ class SynapseKidsView(Gtk.DrawingArea):
         self._rounded_rect(cr, 4, 35, 11, 7, 3)
         cr.fill()
 
+        cr.restore()
+
+    def _draw_avatar_badge(
+        self,
+        cr: cairo.Context,
+        cx: float,
+        cy: float,
+        r: float,
+        avatar_id: str,
+    ) -> None:
+        """Draws a procedural vector Cadet Avatar face inside a circular medallion."""
+        cr.save()
+        cr.translate(cx, cy)
+        # Medallion background
+        colors = {
+            "astro_kid": (0.18, 0.58, 0.96),
+            "cyber_bot": (0.14, 0.78, 0.68),
+            "star_fox": (0.94, 0.52, 0.16),
+            "code_wizard": (0.58, 0.32, 0.92),
+            "astro_cat": (0.92, 0.36, 0.62),
+            "neon_ninja": (0.18, 0.82, 0.42),
+        }
+        r_c, g_c, b_c = colors.get(avatar_id, (0.18, 0.58, 0.96))
+        cr.arc(0, 0, r, 0, 2 * math.pi)
+        cr.set_source_rgb(r_c, g_c, b_c)
+        cr.fill_preserve()
+        cr.set_source_rgb(0.98, 0.88, 0.38)
+        cr.set_line_width(2.0)
+        cr.stroke()
+
+        # Pointed ears for star_fox / astro_cat / wizard hat for code_wizard
+        if avatar_id in ("star_fox", "astro_cat"):
+            cr.set_source_rgb(0.98, 0.72, 0.28 if avatar_id == "star_fox" else 0.78)
+            for s_e in (-1, 1):
+                cr.move_to(s_e * r * 0.25, -r * 0.45)
+                cr.line_to(s_e * r * 0.65, -r * 0.85)
+                cr.line_to(s_e * r * 0.70, -r * 0.20)
+                cr.close_path()
+                cr.fill()
+        elif avatar_id == "code_wizard":
+            cr.set_source_rgb(0.98, 0.82, 0.22)
+            cr.move_to(-r * 0.6, -r * 0.35)
+            cr.line_to(0, -r * 0.95)
+            cr.line_to(r * 0.6, -r * 0.35)
+            cr.close_path()
+            cr.fill()
+
+        # Visor / Face
+        cr.arc(0, r * 0.08, r * 0.58, 0, 2 * math.pi)
+        cr.set_source_rgb(0.08, 0.14, 0.26 if avatar_id != "neon_ninja" else 0.10)
+        cr.fill()
+
+        # Glowing Eyes
+        cr.set_source_rgb(0.35, 0.96, 1.0 if avatar_id != "neon_ninja" else 0.45)
+        cr.arc(-r * 0.22, r * 0.04, r * 0.13, 0, 2 * math.pi)
+        cr.fill()
+        cr.arc(r * 0.22, r * 0.04, r * 0.13, 0, 2 * math.pi)
+        cr.fill()
+
+        # Smile (or ninja headband)
+        if avatar_id == "neon_ninja":
+            cr.set_source_rgb(0.98, 0.28, 0.32)
+            cr.set_line_width(2.2)
+            cr.move_to(-r * 0.55, -r * 0.18)
+            cr.line_to(r * 0.55, -r * 0.18)
+            cr.stroke()
+        else:
+            cr.set_source_rgb(0.95, 0.98, 1.0)
+            cr.set_line_width(1.6)
+            cr.arc(0, r * 0.16, r * 0.22, 0.15 * math.pi, 0.85 * math.pi)
+            cr.stroke()
         cr.restore()
 
     def _draw_trophy_icon(self, cr: cairo.Context, cx: float, cy: float, s: float) -> None:
@@ -736,23 +938,47 @@ class SynapseKidsView(Gtk.DrawingArea):
         # ======================================================================
         # TOP HEADER BAR
         # ======================================================================
-        # A. [🚀 Synapse Kids] Pill (Left)
-        bx, by, bw, bh = W * 0.032, H * 0.042, W * 0.225, H * 0.082
+        # A1. [🚀 Synapse Kids] Pill (Left)
+        bx, by, bw, bh = W * 0.032, H * 0.042, W * 0.138, H * 0.082
         self.hitboxes["synapse_kids_logo"] = (bx, by, bw, bh)
         self._draw_pill(
             cr, bx, by, bw, bh,
             (0.14, 0.48, 0.92), (0.08, 0.30, 0.68), (0.38, 0.75, 0.98),
             hover=(self.hovered_id == "synapse_kids_logo"),
         )
-        self._draw_cute_rocket(cr, bx + bw * 0.16, by + bh * 0.52, scale=min(W, H) / 1450.0, angle=0.65, thrusting=True, anim_phase=phase)
+        self._draw_cute_rocket(cr, bx + bw * 0.20, by + bh * 0.52, scale=min(W, H) / 1600.0, angle=0.65, thrusting=True, anim_phase=phase)
         cr.select_font_face("Sans", cairo.FONT_SLANT_NORMAL, cairo.FONT_WEIGHT_BOLD)
-        cr.set_font_size(max(15.0, H * 0.030))
+        cr.set_font_size(max(12.0, H * 0.022))
         cr.set_source_rgb(1.0, 1.0, 1.0)
-        cr.move_to(bx + bw * 0.29, by + bh * 0.63)
-        cr.show_text("Synapse Kids")
+        cr.move_to(bx + bw * 0.34, by + bh * 0.63)
+        cr.show_text("Synapse")
 
-        # B. [◀ ⭐ Level 1: Space Moon Landing ▶] Orange Banner Pill (Center)
-        lx, ly, lw, lh = W * 0.285, H * 0.042, W * 0.445, H * 0.082
+        # A2. [🧑‍🚀 Cadet Avatar & Profile] Pill (Clickable to cycle 6 Avatars)
+        avx, avy, avw, avh = W * 0.175, H * 0.042, W * 0.112, H * 0.082
+        self.hitboxes["avatar_btn"] = (avx, avy, avw, avh)
+        av_idx = 0
+        av_name = "Cadet Nova"
+        if hasattr(self.studio, "pack_mgr"):
+            av_idx = int(self.studio.pack_mgr.profile.get("avatar_idx", 0)) % len(PLAYER_AVATARS)
+            av = PLAYER_AVATARS[av_idx]
+            av_name = av["name_fr"] if is_fr else av["name_en"]
+        self._draw_pill(
+            cr, avx, avy, avw, avh,
+            (0.22, 0.30, 0.54), (0.12, 0.18, 0.36), (0.52, 0.72, 0.98),
+            hover=(self.hovered_id == "avatar_btn"),
+        )
+        self._draw_avatar_badge(cr, avx + avh * 0.46, avy + avh * 0.50, avh * 0.36, av_idx)
+        cr.set_font_size(max(10.0, H * 0.017))
+        cr.set_source_rgb(0.98, 0.95, 0.82)
+        cr.move_to(avx + avh * 0.88, avy + avh * 0.46)
+        cr.show_text(av_name[:11])
+        cr.set_font_size(max(8.5, H * 0.013))
+        cr.set_source_rgba(0.65, 0.88, 1.0, 0.92)
+        cr.move_to(avx + avh * 0.88, avy + avh * 0.76)
+        cr.show_text("↻ Avatar" if not is_fr else "↻ Profil")
+
+        # B1. [◀ ⭐ Level 1: Space Moon Landing ▶] Orange Banner Pill (Center)
+        lx, ly, lw, lh = W * 0.293, H * 0.042, W * 0.332, H * 0.082
         self.hitboxes["prev_level"] = (lx, ly, lw * 0.14, lh)
         self.hitboxes["cycle_level"] = (lx + lw * 0.14, ly, lw * 0.86, lh)
         self._draw_pill(
@@ -761,32 +987,53 @@ class SynapseKidsView(Gtk.DrawingArea):
             hover=(self.hovered_id in ("cycle_level", "prev_level")),
         )
         # Left '◀' arrow for previous level
-        cr.set_font_size(max(13.0, H * 0.024))
+        cr.set_font_size(max(12.0, H * 0.022))
         cr.set_source_rgba(1.0, 0.95, 0.80, 0.92)
-        cr.move_to(lx + 14, ly + lh * 0.63)
+        cr.move_to(lx + 11, ly + lh * 0.63)
         cr.show_text("◂")
-        self._draw_star(cr, lx + lw * 0.11, ly + lh * 0.50, lh * 0.26, lh * 0.12, filled=True)
+        self._draw_star(cr, lx + lw * 0.10, ly + lh * 0.50, lh * 0.24, lh * 0.11, filled=True)
         lv_title = lv["title_fr"] if is_fr else lv["title_en"]
-        cr.set_font_size(max(14.5, H * 0.028))
+        cr.set_font_size(max(12.0, H * 0.022))
         cr.set_source_rgb(1.0, 1.0, 1.0)
         ext = cr.text_extents(lv_title)
-        cr.move_to(lx + (lw - ext.width) * 0.53, ly + lh * 0.63)
+        cr.move_to(lx + (lw - ext.width) * 0.54, ly + lh * 0.63)
         cr.show_text(lv_title)
         # Right '▸' arrow for next level
-        cr.set_font_size(max(13.0, H * 0.024))
+        cr.set_font_size(max(12.0, H * 0.022))
         cr.set_source_rgba(1.0, 0.95, 0.80, 0.92)
-        cr.move_to(lx + lw - 24, ly + lh * 0.63)
+        cr.move_to(lx + lw - 20, ly + lh * 0.63)
         cr.show_text("▸")
 
+        # B2. [🗺️ World Map / Carte] Interactive 2D World Map Toggle Pill
+        mx, my, mw, mh = W * 0.631, H * 0.042, W * 0.105, H * 0.082
+        self.hitboxes["map_btn"] = (mx, my, mw, mh)
+        is_map = (self.view_mode == "map")
+        self._draw_pill(
+            cr, mx, my, mw, mh,
+            (0.56, 0.24, 0.88) if not is_map else (0.16, 0.76, 0.52),
+            (0.34, 0.12, 0.62) if not is_map else (0.08, 0.48, 0.32),
+            (0.82, 0.58, 1.0) if not is_map else (0.52, 0.98, 0.75),
+            hover=(self.hovered_id == "map_btn"),
+            glow=is_map,
+        )
+        cr.set_font_size(max(11.5, H * 0.020))
+        cr.set_source_rgb(1.0, 1.0, 1.0)
+        map_lbl = ("▶ Labo" if is_fr else "▶ Sim Lab") if is_map else ("❖ Carte" if is_fr else "❖ World Map")
+        ext_mp = cr.text_extents(map_lbl)
+        cr.move_to(mx + (mw - ext_mp.width) * 0.5, my + mh * 0.63)
+        cr.show_text(map_lbl)
+
         # C. [⚙ Mode Professeur / Teacher Mode] Small Top-Right Pill + [FR/EN] Toggle
-        tx, ty, tw, th = W * 0.755, H * 0.026, W * 0.145, H * 0.040
+        tx, ty, tw, th = W * 0.742, H * 0.026, W * 0.156, H * 0.040
         self.hitboxes["teacher_mode"] = (tx, ty, tw, th)
         self._draw_pill(
             cr, tx, ty, tw, th,
             (0.16, 0.22, 0.34), (0.10, 0.14, 0.22), (0.45, 0.58, 0.78),
             hover=(self.hovered_id == "teacher_mode"),
         )
-        t_label = "⚙ Mode Professeur" if is_fr else "⚙ Teacher Mode"
+        pin_locked = bool(self.studio.pack_mgr.profile.get("pin_lock_enabled", False)) if hasattr(self.studio, "pack_mgr") else False
+        lock_ic = "[PIN] " if pin_locked else "⚙ "
+        t_label = f"{lock_ic}Mode Professeur" if is_fr else f"{lock_ic}Teacher Mode"
         cr.set_font_size(max(10.5, H * 0.017))
         cr.set_source_rgb(0.92, 0.96, 1.0)
         ext_t = cr.text_extents(t_label)
@@ -794,7 +1041,7 @@ class SynapseKidsView(Gtk.DrawingArea):
         cr.show_text(t_label)
 
         # Language toggle pill [FR / EN] right next to Teacher Mode
-        lgx, lgy, lgw, lgh = W * 0.908, H * 0.026, W * 0.060, H * 0.040
+        lgx, lgy, lgw, lgh = W * 0.904, H * 0.026, W * 0.064, H * 0.040
         self.hitboxes["toggle_lang"] = (lgx, lgy, lgw, lgh)
         self._draw_pill(
             cr, lgx, lgy, lgw, lgh,
@@ -808,24 +1055,28 @@ class SynapseKidsView(Gtk.DrawingArea):
         cr.move_to(lgx + (lgw - ext_lg.width) * 0.5, lgy + lgh * 0.67)
         cr.show_text(lang_txt)
 
-        # D1. [Badges (N) 🏆] Blue Pill + D2. [★ Pack N ↻] Emerald Upgrade Pill (Below Teacher Mode)
-        bgx, bgy, bgw, bgh = W * 0.742, H * 0.073, W * 0.108, H * 0.064
+        # D1. [Trophies & Shop] Blue/Gold Pill + D2. [★ Pack N ↻] Emerald Upgrade Pill
+        bgx, bgy, bgw, bgh = W * 0.742, H * 0.073, W * 0.110, H * 0.064
         self.hitboxes["badges_btn"] = (bgx, bgy, bgw, bgh)
+        is_tr = (self.view_mode == "trophies")
         self._draw_pill(
             cr, bgx, bgy, bgw, bgh,
-            (0.14, 0.48, 0.92), (0.08, 0.30, 0.68), (0.38, 0.75, 0.98),
+            (0.88, 0.56, 0.12) if is_tr else (0.14, 0.48, 0.92),
+            (0.62, 0.36, 0.05) if is_tr else (0.08, 0.30, 0.68),
+            (1.0, 0.84, 0.35) if is_tr else (0.38, 0.75, 0.98),
             hover=(self.hovered_id == "badges_btn"),
+            glow=is_tr,
         )
         cr.set_font_size(max(10.5, H * 0.018))
         cr.set_source_rgb(1.0, 1.0, 1.0)
         earned_cnt = max(1, len(self.studio.earned_badges))
-        b_txt = f"Trophées ({earned_cnt})" if is_fr else f"Trophies ({earned_cnt})"
-        cr.move_to(bgx + 10, bgy + bgh * 0.63)
+        b_txt = f"Boutique ({earned_cnt})" if is_fr else f"Shop ({earned_cnt})"
+        cr.move_to(bgx + 12, bgy + bgh * 0.63)
         cr.show_text(b_txt)
-        self._draw_trophy_icon(cr, bgx + bgw - 17, bgy + bgh * 0.52, min(W, H) / 860.0)
+        self._draw_trophy_icon(cr, bgx + bgw - 17, bgy + bgh * 0.52, min(W, H) / 880.0)
 
         # D2. [★ Pack N ↻] Emerald-Gold Learning Package Update Pill
-        upx, upy, upw, uph = W * 0.856, H * 0.073, W * 0.112, H * 0.064
+        upx, upy, upw, uph = W * 0.858, H * 0.073, W * 0.110, H * 0.064
         self.hitboxes["upgrade_pack"] = (upx, upy, upw, uph)
         self._draw_pill(
             cr, upx, upy, upw, uph,
@@ -840,15 +1091,15 @@ class SynapseKidsView(Gtk.DrawingArea):
                 pack_num = 2
             elif "3" in pid:
                 pack_num = 3
-        up_txt = f"★ Pack {pack_num} ↻" if not is_fr else f"★ Pack {pack_num} ↻"
-        cr.set_font_size(max(12.5, H * 0.022))
+        up_txt = f"★ Pack {pack_num} ↻"
+        cr.set_font_size(max(12.0, H * 0.021))
         cr.set_source_rgb(1.0, 0.98, 0.85)
         ext_up = cr.text_extents(up_txt)
         cr.move_to(upx + (upw - ext_up.width) * 0.5, upy + uph * 0.64)
         cr.show_text(up_txt)
 
         # ======================================================================
-        # LEFT MAIN BOX: SIMULATION VIEWPORT
+        # LEFT MAIN BOX: SIMULATION / WORLD MAP / TROPHY ROOM & SHOP / PIN GATE
         # ======================================================================
         sx, sy, sw, sh = W * 0.032, H * 0.145, W * 0.562, H * 0.585
         self.hitboxes["sim_box"] = (sx, sy, sw, sh)
@@ -859,84 +1110,92 @@ class SynapseKidsView(Gtk.DrawingArea):
         cr.set_source(pat_sim)
         cr.fill_preserve()
 
-        # Clip simulation contents inside rounded rect
+        # Clip viewport contents inside rounded rect
         cr.save()
         cr.clip()
 
-        if lv["lab_id"] == "moon_lander":
-            self._draw_kid_moon_simulation(cr, sx, sy, sw, sh, phase, is_fr)
+        if self.view_mode == "map":
+            self._draw_world_map_viewport(cr, sx, sy, sw, sh, phase, is_fr)
+        elif self.view_mode == "trophies":
+            self._draw_trophy_room_viewport(cr, sx, sy, sw, sh, phase, is_fr)
+        elif self.view_mode == "pin":
+            self._draw_pin_gate_viewport(cr, sx, sy, sw, sh, phase, is_fr)
         else:
-            # Render the selected level's live simulation cleanly below the 34px SIMULATION header bar
-            sub_h = max(80.0, sh - 34.0)
-            cr.save()
-            cr.translate(sx, sy + 34.0)
-            lid = lv["lab_id"]
-            if lid == "raycast_car":
-                self.studio._render_raycast_car(cr, sw, sub_h)
-            elif lid == "rl_gridworld":
-                self.studio._render_rl_gridworld(cr, sw, sub_h)
-            elif lid == "cartpole_rl":
-                self.studio._render_cartpole(cr, sw, sub_h)
-            elif lid == "nn_playground":
-                self.studio._render_nn_playground(cr, sw, sub_h)
-            elif lid == "swarm_ecosystem":
-                self.studio._render_swarm(cr, sw, sub_h)
-            elif lid == "prime_attention":
-                self.studio._render_prime_attention(cr, sw, sub_h)
-            cr.restore()
-
-        # Top-Left "SIMULATION" title + 7 One-Click Level Buttons (L1..L7 / L8..L14 / L15..L21) + Click Hint
-        cr.select_font_face("Sans", cairo.FONT_SLANT_NORMAL, cairo.FONT_WEIGHT_BOLD)
-        cr.set_font_size(max(13.0, H * 0.023))
-        cr.set_source_rgba(0.95, 0.98, 1.0, 0.95)
-        cr.move_to(sx + 14, sy + 23)
-        cr.show_text("SIMULATION")
-
-        # 7 Quick-Jump Level Pills so kids can pick any level in the active pack in 1 click
-        pill_start_x = sx + 138
-        pill_w, pill_h = 30.0, 20.0
-        for idx_l in range(len(LEVEL_DATA)):
-            px_l = pill_start_x + idx_l * (pill_w + 4.5)
-            py_l = sy + 7.0
-            hid_l = f"level_jump_{idx_l}"
-            self.hitboxes[hid_l] = (px_l, py_l, pill_w, pill_h)
-            is_cur = (idx_l == (self.level_idx % len(LEVEL_DATA)))
-            is_hov = (self.hovered_id == hid_l)
-            self._rounded_rect(cr, px_l, py_l, pill_w, pill_h, 6)
-            if is_cur:
-                cr.set_source_rgb(0.95, 0.52, 0.14)
-            elif is_hov:
-                cr.set_source_rgb(0.24, 0.56, 0.92)
+            if lv["lab_id"] == "moon_lander":
+                self._draw_kid_moon_simulation(cr, sx, sy, sw, sh, phase, is_fr)
             else:
-                cr.set_source_rgba(0.12, 0.24, 0.42, 0.85)
-            cr.fill_preserve()
-            cr.set_source_rgba(0.55, 0.82, 1.0, 0.95 if is_cur else 0.55)
-            cr.set_line_width(1.4 if is_cur else 1.0)
-            cr.stroke()
-            cr.set_font_size(9.5)
-            cr.set_source_rgb(1.0, 1.0, 1.0)
-            lv_num = LEVEL_DATA[idx_l].get("level", idx_l + 1)
-            lbl_l = f"L{lv_num}"
-            ext_l = cr.text_extents(lbl_l)
-            cr.move_to(px_l + (pill_w - ext_l.width) * 0.5, py_l + 14.0)
-            cr.show_text(lbl_l)
+                # Render the selected level's live simulation cleanly below the 34px SIMULATION header bar
+                sub_h = max(80.0, sh - 34.0)
+                cr.save()
+                cr.translate(sx, sy + 34.0)
+                lid = lv["lab_id"]
+                if lid == "raycast_car":
+                    self.studio._render_raycast_car(cr, sw, sub_h)
+                elif lid == "rl_gridworld":
+                    self.studio._render_rl_gridworld(cr, sw, sub_h)
+                elif lid == "cartpole_rl":
+                    self.studio._render_cartpole(cr, sw, sub_h)
+                elif lid == "nn_playground":
+                    self.studio._render_nn_playground(cr, sw, sub_h)
+                elif lid == "swarm_ecosystem":
+                    self.studio._render_swarm(cr, sw, sub_h)
+                elif lid == "prime_attention":
+                    self.studio._render_prime_attention(cr, sw, sub_h)
+                cr.restore()
 
-        cr.set_font_size(max(9.5, H * 0.015))
-        cr.set_source_rgba(0.45, 0.88, 1.0, 0.90)
-        hint_t = "★ Clique dans l'écran pour interagir !" if is_fr else "★ Click inside screen to interact!"
-        ext_h = cr.text_extents(hint_t)
-        cr.move_to(sx + sw - ext_h.width - 12, sy + 21)
-        cr.show_text(hint_t)
+            # Top-Left "SIMULATION" title + 7 One-Click Level Buttons + Click Hint
+            cr.select_font_face("Sans", cairo.FONT_SLANT_NORMAL, cairo.FONT_WEIGHT_BOLD)
+            cr.set_font_size(max(13.0, H * 0.023))
+            cr.set_source_rgba(0.95, 0.98, 1.0, 0.95)
+            cr.move_to(sx + 14, sy + 23)
+            cr.show_text("SIMULATION")
+
+            # 7 Quick-Jump Level Pills so kids can pick any level in the active pack in 1 click
+            pill_start_x = sx + 138
+            pill_w, pill_h = 30.0, 20.0
+            for idx_l in range(len(LEVEL_DATA)):
+                px_l = pill_start_x + idx_l * (pill_w + 4.5)
+                py_l = sy + 7.0
+                hid_l = f"level_jump_{idx_l}"
+                self.hitboxes[hid_l] = (px_l, py_l, pill_w, pill_h)
+                is_cur = (idx_l == (self.level_idx % len(LEVEL_DATA)))
+                is_hov = (self.hovered_id == hid_l)
+                self._rounded_rect(cr, px_l, py_l, pill_w, pill_h, 6)
+                if is_cur:
+                    cr.set_source_rgb(0.95, 0.52, 0.14)
+                elif is_hov:
+                    cr.set_source_rgb(0.24, 0.56, 0.92)
+                else:
+                    cr.set_source_rgba(0.12, 0.24, 0.42, 0.85)
+                cr.fill_preserve()
+                cr.set_source_rgba(0.55, 0.82, 1.0, 0.95 if is_cur else 0.55)
+                cr.set_line_width(1.4 if is_cur else 1.0)
+                cr.stroke()
+                cr.set_font_size(9.5)
+                cr.set_source_rgb(1.0, 1.0, 1.0)
+                lv_num = LEVEL_DATA[idx_l].get("level", idx_l + 1)
+                lbl_l = f"L{lv_num}"
+                ext_l = cr.text_extents(lbl_l)
+                cr.move_to(px_l + (pill_w - ext_l.width) * 0.5, py_l + 14.0)
+                cr.show_text(lbl_l)
+
+            cr.set_font_size(max(9.5, H * 0.015))
+            cr.set_source_rgba(0.45, 0.88, 1.0, 0.90)
+            hint_t = "★ Clique dans l'écran pour interagir !" if is_fr else "★ Click inside screen to interact!"
+            ext_h = cr.text_extents(hint_t)
+            cr.move_to(sx + sw - ext_h.width - 12, sy + 21)
+            cr.show_text(hint_t)
+
         cr.restore()
 
-        # Glowing Blue Border around SIMULATION
+        # Glowing Blue Border around Left Main Viewport
         self._rounded_rect(cr, sx, sy, sw, sh, 16)
         cr.set_source_rgba(0.24, 0.72, 0.98, 0.95)
         cr.set_line_width(2.6)
         cr.stroke()
 
         # ======================================================================
-        # RIGHT TOP CARD: CUTE ROBOT MASCOT + SPEECH BUBBLE
+        # RIGHT TOP CARD: 'LUMI' SOCRATIC AI COMPANION + REACTIVE MOOD + BUBBLE
         # ======================================================================
         rx, ry, rw, rh = W * 0.612, H * 0.165, W * 0.356, H * 0.285
         self.hitboxes["ask_robot"] = (rx, ry, rw, rh)
@@ -950,16 +1209,32 @@ class SynapseKidsView(Gtk.DrawingArea):
         cr.set_line_width(2.0)
         cr.stroke()
 
-        # Draw Robot Mascot on left of card
+        # Draw Lumi Robot Mascot on left of card
         rob_cx = rx + rw * 0.18
-        rob_cy = ry + rh * 0.54
+        rob_cy = ry + rh * 0.56
         self._draw_robot_mascot(cr, rob_cx, rob_cy, scale=min(W, H) / 680.0, anim_phase=phase)
+
+        # Mini Lumi Name + Reactive Mood Pill under/above mascot
+        mood_labels = {
+            "happy": ("LUMI • CONTENT" if is_fr else "LUMI • HAPPY", (0.20, 0.82, 0.95)),
+            "cheering": ("LUMI • BRAVO !" if is_fr else "LUMI • CHEERING!", (0.98, 0.82, 0.18)),
+            "thinking": ("LUMI • RÉFLÉCHIT" if is_fr else "LUMI • THINKING", (0.65, 0.45, 0.98)),
+            "dizzy": ("LUMI • OUPS !" if is_fr else "LUMI • OOPS!", (0.98, 0.38, 0.28)),
+            "sleepy": ("LUMI • ZZZ..." if is_fr else "LUMI • SLEEPY", (0.55, 0.72, 0.95)),
+        }
+        m_txt, m_col = mood_labels.get(self.pet_mood, mood_labels["happy"])
+        cr.select_font_face("Sans", cairo.FONT_SLANT_NORMAL, cairo.FONT_WEIGHT_BOLD)
+        cr.set_font_size(max(8.5, H * 0.013))
+        cr.set_source_rgb(*m_col)
+        ext_m = cr.text_extents(m_txt)
+        cr.move_to(rob_cx - ext_m.width * 0.5, ry + rh - 8)
+        cr.show_text(m_txt)
 
         # Cream Speech Bubble on right of card
         sb_x = rx + rw * 0.35
-        sb_y = ry + rh * 0.11
-        sb_w = rw * 0.60
-        sb_h = rh * 0.78
+        sb_y = ry + rh * 0.10
+        sb_w = rw * 0.61
+        sb_h = rh * 0.80
         self._rounded_rect(cr, sb_x, sb_y, sb_w, sb_h, 14)
         cr.set_source_rgb(0.99, 0.97, 0.92)
         cr.fill_preserve()
@@ -967,7 +1242,7 @@ class SynapseKidsView(Gtk.DrawingArea):
         cr.set_line_width(1.6)
         cr.stroke()
 
-        # Speech bubble pointer triangle pointing to the robot
+        # Speech bubble pointer triangle pointing to Lumi
         cr.move_to(sb_x + 1, sb_y + sb_h * 0.42)
         cr.line_to(sb_x - 13, sb_y + sb_h * 0.52)
         cr.line_to(sb_x + 1, sb_y + sb_h * 0.62)
@@ -978,20 +1253,27 @@ class SynapseKidsView(Gtk.DrawingArea):
         # Speech bubble text
         speech_txt = self.custom_speech or (lv["speech_fr"] if is_fr else lv["speech_en"])
         cr.select_font_face("Sans", cairo.FONT_SLANT_NORMAL, cairo.FONT_WEIGHT_BOLD)
-        font_sz = max(12.0, H * 0.021)
+        font_sz = max(11.5, H * 0.0195)
         cr.set_font_size(font_sz)
         cr.set_source_rgb(0.08, 0.12, 0.20)
-        wrapped = self._wrap_text(cr, speech_txt, sb_w - 22)
-        line_h = font_sz * 1.32
-        start_ty = sb_y + (sb_h - len(wrapped[:5]) * line_h) * 0.5 + font_sz * 0.85
+        wrapped = self._wrap_text(cr, speech_txt, sb_w - 20)
+        line_h = font_sz * 1.28
+        start_ty = sb_y + (sb_h - len(wrapped[:5]) * line_h) * 0.5 + font_sz * 0.82
         for i, line in enumerate(wrapped[:5]):
-            cr.move_to(sb_x + 12, start_ty + i * line_h)
+            cr.move_to(sb_x + 11, start_ty + i * line_h)
             cr.show_text(line)
 
+        # Small "[Click Lumi for a Socratic Hint!]" footer inside speech bubble
+        cr.set_font_size(max(8.5, H * 0.013))
+        cr.set_source_rgb(0.22, 0.48, 0.82)
+        hint_lumi = "★ Clique sur Lumi pour un indice IA !" if is_fr else "★ Click Lumi for an AI Hint (+Coins)!"
+        cr.move_to(sb_x + 11, sb_y + sb_h - 6)
+        cr.show_text(hint_lumi)
+
         # ======================================================================
-        # RIGHT BOTTOM CARD: 🎯 OBJECTIF / OBJECTIVE CHECKLIST
+        # RIGHT BOTTOM CARD: 🎯 LEVEL OBJECTIVES + ⚡ DAILY MISSIONS (+COINS)
         # ======================================================================
-        ox, oy, ow, oh = W * 0.612, H * 0.472, W * 0.356, H * 0.258
+        ox, oy, ow, oh = W * 0.612, H * 0.465, W * 0.356, H * 0.268
         self._rounded_rect(cr, ox, oy, ow, oh, 16)
         pat_obj = cairo.LinearGradient(ox, oy, ox, oy + oh)
         pat_obj.add_color_stop_rgb(0.0, 0.07, 0.14, 0.27)
@@ -1002,63 +1284,97 @@ class SynapseKidsView(Gtk.DrawingArea):
         cr.set_line_width(1.8)
         cr.stroke()
 
-        # Header: 🎯 Objectif / Objective
-        self._draw_target_icon(cr, ox + 26, oy + oh * 0.22, max(9.0, H * 0.016))
+        # Header: 🎯 Objectif + ⚡ Missions du Jour
+        self._draw_target_icon(cr, ox + 22, oy + oh * 0.13, max(7.5, H * 0.013))
         cr.select_font_face("Sans", cairo.FONT_SLANT_NORMAL, cairo.FONT_WEIGHT_BOLD)
-        cr.set_font_size(max(15.0, H * 0.026))
+        cr.set_font_size(max(12.0, H * 0.020))
         cr.set_source_rgb(0.96, 0.98, 1.0)
-        cr.move_to(ox + 44, oy + oh * 0.26)
-        cr.show_text("Objectif" if is_fr else "Objective")
+        cr.move_to(ox + 36, oy + oh * 0.16)
+        cr.show_text("Objectifs & Missions du Jour" if is_fr else "Level Goals & Daily Missions")
 
-        # Checkbox 1: Ne pas exploser / Don't explode
-        cb_size = max(18.0, H * 0.032)
-        cb1_x, cb1_y = ox + 20, oy + oh * 0.42
-        self._rounded_rect(cr, cb1_x, cb1_y, cb_size, cb_size, 5)
+        # Level Checkboxes 1 & 2 (Compact rows)
+        cb_size = max(14.0, H * 0.023)
+        cb1_x, cb1_y = ox + 16, oy + oh * 0.23
+        self._rounded_rect(cr, cb1_x, cb1_y, cb_size, cb_size, 4)
         cr.set_source_rgba(0.25, 0.14, 0.12, 0.7)
         cr.fill_preserve()
         cr.set_source_rgb(0.92, 0.45, 0.20)
-        cr.set_line_width(2.2)
+        cr.set_line_width(1.8)
         cr.stroke()
         if self.obj1_done:
             cr.set_source_rgb(0.98, 0.75, 0.25)
-            cr.set_line_width(2.4)
-            cr.move_to(cb1_x + 4, cb1_y + cb_size * 0.52)
-            cr.line_to(cb1_x + cb_size * 0.42, cb1_y + cb_size - 4)
-            cr.line_to(cb1_x + cb_size - 3, cb1_y + 4)
+            cr.set_line_width(2.0)
+            cr.move_to(cb1_x + 3, cb1_y + cb_size * 0.52)
+            cr.line_to(cb1_x + cb_size * 0.42, cb1_y + cb_size - 3)
+            cr.line_to(cb1_x + cb_size - 3, cb1_y + 3)
             cr.stroke()
 
-        cr.set_font_size(max(13.5, H * 0.023))
+        cr.set_font_size(max(11.0, H * 0.018))
         cr.set_source_rgb(0.94, 0.97, 1.0)
-        cr.move_to(cb1_x + cb_size + 12, cb1_y + cb_size * 0.76)
+        cr.move_to(cb1_x + cb_size + 8, cb1_y + cb_size * 0.80)
         cr.show_text(lv["obj1_fr"] if is_fr else lv["obj1_en"])
 
-        # Checkbox 2: Se poser en douceur +100 pts / Soft landing +100 pts
-        cb2_x, cb2_y = ox + 20, oy + oh * 0.70
-        self._rounded_rect(cr, cb2_x, cb2_y, cb_size, cb_size, 5)
+        cb2_x, cb2_y = ox + 16, oy + oh * 0.39
+        self._rounded_rect(cr, cb2_x, cb2_y, cb_size, cb_size, 4)
         cr.set_source_rgba(0.08, 0.28, 0.18, 0.8)
         cr.fill_preserve()
         cr.set_source_rgb(0.18, 0.82, 0.48)
-        cr.set_line_width(2.2)
+        cr.set_line_width(1.8)
         cr.stroke()
         if self.obj2_done:
             cr.set_source_rgb(0.25, 0.95, 0.55)
-            cr.set_line_width(2.4)
-            cr.move_to(cb2_x + 4, cb2_y + cb_size * 0.52)
-            cr.line_to(cb2_x + cb_size * 0.42, cb2_y + cb_size - 4)
-            cr.line_to(cb2_x + cb_size - 3, cb2_y + 4)
+            cr.set_line_width(2.0)
+            cr.move_to(cb2_x + 3, cb2_y + cb_size * 0.52)
+            cr.line_to(cb2_x + cb_size * 0.42, cb2_y + cb_size - 3)
+            cr.line_to(cb2_x + cb_size - 3, cb2_y + 3)
             cr.stroke()
 
         obj2_txt = lv["obj2_fr"] if is_fr else lv["obj2_en"]
         cr.set_source_rgb(0.94, 0.97, 1.0)
-        cr.move_to(cb2_x + cb_size + 12, cb2_y + cb_size * 0.76)
+        cr.move_to(cb2_x + cb_size + 8, cb2_y + cb_size * 0.80)
         cr.show_text(obj2_txt)
         ext2 = cr.text_extents(obj2_txt)
         cr.set_source_rgb(0.28, 0.92, 0.52)
-        cr.move_to(cb2_x + cb_size + 18 + ext2.width, cb2_y + cb_size * 0.76)
+        cr.move_to(cb2_x + cb_size + 14 + ext2.width, cb2_y + cb_size * 0.80)
         cr.show_text("+100 pts")
 
+        # Divider line before Daily Missions
+        cr.set_source_rgba(0.32, 0.58, 0.88, 0.38)
+        cr.set_line_width(1.0)
+        cr.move_to(ox + 14, oy + oh * 0.53)
+        cr.line_to(ox + ow - 14, oy + oh * 0.53)
+        cr.stroke()
+
+        # 3 Daily Missions with live progress & +Coin rewards
+        missions = []
+        if hasattr(self.studio, "pack_mgr"):
+            missions = self.studio.pack_mgr.profile.get("daily_missions", [])
+        for m_i, m in enumerate(missions[:3]):
+            my_row = oy + oh * (0.63 + m_i * 0.13)
+            m_done = bool(m.get("completed", False) or m.get("done", False))
+            m_prog = int(m.get("progress", 0))
+            m_targ = int(m.get("target", 1))
+            m_rew = int(m.get("reward_coins", 50))
+            m_title = m.get("title_fr" if is_fr else "title_en", "")
+            cr.set_font_size(max(10.0, H * 0.016))
+            if m_done:
+                cr.set_source_rgb(0.32, 0.96, 0.58)
+                prefix = "✓ "
+            else:
+                cr.set_source_rgb(0.82, 0.90, 1.0)
+                prefix = "⚡ "
+            cr.move_to(ox + 16, my_row)
+            cr.show_text(f"{prefix}{m_title} ({m_prog}/{m_targ})")
+
+            # Coin reward pill on right of mission row
+            cr.set_source_rgb(0.99, 0.84, 0.25 if not m_done else 0.55)
+            rew_str = "✓ REÇU" if (m_done and is_fr) else ("✓ CLAIMED" if m_done else f"+{m_rew} ★")
+            ext_r = cr.text_extents(rew_str)
+            cr.move_to(ox + ow - ext_r.width - 14, my_row)
+            cr.show_text(rew_str)
+
         # ======================================================================
-        # BOTTOM BAR: 🕹️ COMMANDES SIMPLES + SCORE ⭐⭐⭐ (3/3) + 4 BIG BUTTONS
+        # BOTTOM BAR: 🕹️ COMMANDES SIMPLES + COINS + SCORE ⭐⭐⭐ + 4 BIG BUTTONS
         # ======================================================================
         dx, dy, dw, dh = W * 0.032, H * 0.752, W * 0.936, H * 0.212
         self._rounded_rect(cr, dx, dy, dw, dh, 16)
@@ -1085,39 +1401,57 @@ class SynapseKidsView(Gtk.DrawingArea):
         cr.fill()
 
         cr.select_font_face("Sans", cairo.FONT_SLANT_NORMAL, cairo.FONT_WEIGHT_BOLD)
-        cr.set_font_size(max(14.5, H * 0.025))
+        cr.set_font_size(max(14.0, H * 0.024))
         cr.set_source_rgb(0.96, 0.98, 1.0)
         cr.move_to(jx + 18, jy + 5)
         cr.show_text("Commandes simples" if is_fr else "Simple Controls")
 
-        # Persistent Lifetime Score + Level Stars: ★ 1,200 pts  |  Score: ⭐⭐⭐ (3/3)
+        # Persistent Coins + Lifetime Score + Level Stars: 250 Coins | ★ 1,200 pts | Score: ⭐⭐⭐ (3/3)
         lifetime_pts = 300
+        coins_val = 250
         if hasattr(self.studio, "pack_mgr"):
             lifetime_pts = int(self.studio.pack_mgr.profile.get("lifetime_points", 300))
-        pts_x = dx + dw * 0.48
-        sc_x = dx + dw * 0.69
+            coins_val = int(self.studio.pack_mgr.profile.get("coins", 250))
+
+        coin_x = dx + dw * 0.32
+        pts_x = dx + dw * 0.50
+        sc_x = dx + dw * 0.71
         sc_y = dy + dh * 0.24
-        cr.set_font_size(max(13.0, H * 0.022))
-        cr.set_source_rgb(0.99, 0.84, 0.28)
+
+        # Gold Coin icon + counter
+        cr.new_path()
+        cr.set_source_rgb(0.99, 0.82, 0.18)
+        cr.arc(coin_x, sc_y - 2, 8.5, 0, 2 * math.pi)
+        cr.fill_preserve()
+        cr.set_source_rgb(0.75, 0.52, 0.06)
+        cr.set_line_width(1.5)
+        cr.stroke()
+        cr.set_font_size(max(12.5, H * 0.021))
+        cr.set_source_rgb(1.0, 0.92, 0.42)
+        cr.move_to(coin_x + 13, sc_y + 4)
+        cr.show_text(f"{coins_val} {'Pièces' if is_fr else 'Coins'}")
+
+        cr.set_font_size(max(12.5, H * 0.021))
+        cr.set_source_rgb(0.55, 0.92, 1.0)
         pts_lbl = f"★ Total: {lifetime_pts} pts"
         cr.move_to(pts_x, sc_y + 4)
         cr.show_text(pts_lbl)
 
-        cr.set_font_size(max(14.5, H * 0.025))
+        cr.set_font_size(max(14.0, H * 0.024))
         cr.set_source_rgb(0.96, 0.98, 1.0)
         cr.move_to(sc_x, sc_y + 4)
         cr.show_text("Score:")
         for s_idx in range(3):
             self._draw_star(
                 cr,
-                sc_x + 76 + s_idx * 28,
+                sc_x + 72 + s_idx * 26,
                 sc_y - 2,
-                outer_r=11.0,
-                inner_r=5.0,
+                outer_r=10.5,
+                inner_r=4.8,
                 filled=(s_idx < self.stars_score),
             )
         cr.set_source_rgb(0.96, 0.98, 1.0)
-        cr.move_to(sc_x + 166, sc_y + 4)
+        cr.move_to(sc_x + 156, sc_y + 4)
         cr.show_text(f"({self.stars_score}/3)")
 
         # 4 Gamified Pill Buttons across the bottom
@@ -1194,6 +1528,383 @@ class SynapseKidsView(Gtk.DrawingArea):
 
         return False
 
+    # ==========================================================================
+    # INTERACTIVE 2D WORLD MAP VIEWPORT ("map" mode)
+    # ==========================================================================
+    def _draw_world_map_viewport(
+        self,
+        cr: cairo.Context,
+        sx: float,
+        sy: float,
+        sw: float,
+        sh: float,
+        phase: float,
+        is_fr: bool,
+    ) -> None:
+        """Draws the 2D Interactive Star-Island World Map with 7 clickable AI Lab Zones."""
+        # 1. Deep space nebula backdrop
+        pat = cairo.RadialGradient(sx + sw * 0.5, sy + sh * 0.5, 20, sx + sw * 0.5, sy + sh * 0.5, sw * 0.65)
+        pat.add_color_stop_rgba(0.0, 0.16, 0.10, 0.38, 0.95)
+        pat.add_color_stop_rgba(0.6, 0.06, 0.12, 0.28, 0.95)
+        pat.add_color_stop_rgba(1.0, 0.02, 0.05, 0.12, 1.0)
+        cr.set_source(pat)
+        cr.rectangle(sx, sy, sw, sh)
+        cr.fill()
+
+        # Header banner
+        cr.select_font_face("Sans", cairo.FONT_SLANT_NORMAL, cairo.FONT_WEIGHT_BOLD)
+        cr.set_font_size(max(14.0, sh * 0.042))
+        cr.set_source_rgb(0.98, 0.92, 0.45)
+        title = "❖ CARTE DU MONDE SYNAPSE — CLIQUE SUR UNE ÎLE IA !" if is_fr else "❖ SYNAPSE WORLD MAP — CLICK ANY AI ISLAND TO FLY THERE!"
+        cr.move_to(sx + 16, sy + 28)
+        cr.show_text(title)
+
+        # 2. Animated flight paths connecting the 7 islands
+        pts = [(sx + sw * z["x"], sy + sh * z["y"]) for z in WORLD_MAP_ZONES]
+        cr.save()
+        cr.set_source_rgba(0.38, 0.82, 0.98, 0.55)
+        cr.set_line_width(2.5)
+        cr.set_dash([8.0, 6.0], -phase * 10.0)
+        for i in range(len(pts) - 1):
+            x1, y1 = pts[i]
+            x2, y2 = pts[i + 1]
+            cr.move_to(x1, y1)
+            cr.line_to(x2, y2)
+        cr.stroke()
+        cr.restore()
+
+        # 3. Draw each of the 7 Star-Island Nodes
+        cur_idx = self.level_idx % len(WORLD_MAP_ZONES)
+        runs_map = {}
+        if hasattr(self.studio, "pack_mgr"):
+            runs_map = self.studio.pack_mgr.profile.get("lab_runs_count", {})
+
+        for idx, z in enumerate(WORLD_MAP_ZONES):
+            zx, zy = pts[idx]
+            rc, gc, bc = z["color"]
+            hid = f"map_zone_{idx}"
+            rad = min(sw, sh) * 0.088
+            self.hitboxes[hid] = (zx - rad * 1.25, zy - rad * 1.1, rad * 2.5, rad * 2.3)
+            is_cur = (idx == cur_idx)
+            is_hov = (self.hovered_id == hid)
+
+            # Pulsing outer ring for active or hovered island
+            if is_cur or is_hov:
+                pulse_r = rad * (1.28 + 0.08 * math.sin(phase * 3.0))
+                cr.new_path()
+                cr.set_source_rgba(rc, gc, bc, 0.35)
+                cr.arc(zx, zy, pulse_r, 0, 2 * math.pi)
+                cr.fill()
+
+            # Floating island base disc
+            cr.save()
+            cr.translate(zx, zy + rad * 0.32)
+            cr.scale(1.22, 0.52)
+            cr.new_path()
+            cr.set_source_rgba(rc * 0.5, gc * 0.5, bc * 0.5, 0.9)
+            cr.arc(0, 0, rad, 0, 2 * math.pi)
+            cr.fill()
+            cr.restore()
+
+            # Main glowing dome
+            cr.new_path()
+            cr.set_source_rgb(rc, gc, bc)
+            cr.arc(zx, zy, rad * 0.85, 0, 2 * math.pi)
+            cr.fill_preserve()
+            cr.set_source_rgb(1.0, 1.0, 1.0 if is_cur else 0.85)
+            cr.set_line_width(3.0 if is_cur else 1.8)
+            cr.stroke()
+
+            # Zone number & icon inside dome
+            cr.set_font_size(max(13.0, rad * 0.52))
+            cr.set_source_rgb(1.0, 1.0, 1.0)
+            num_str = f"L{idx + 1}"
+            ext_n = cr.text_extents(num_str)
+            cr.move_to(zx - ext_n.width * 0.5, zy + ext_n.height * 0.36)
+            cr.show_text(num_str)
+
+            # 3 mini stars above island
+            for s_i in range(3):
+                self._draw_star(
+                    cr,
+                    zx - 14 + s_i * 14,
+                    zy - rad * 1.02,
+                    outer_r=5.5,
+                    inner_r=2.5,
+                    filled=True,
+                )
+
+            # Island name pill below dome
+            z_name = z["name_fr"] if is_fr else z["name_en"]
+            cr.set_font_size(max(10.0, sh * 0.025))
+            ext_z = cr.text_extents(z_name)
+            pw = ext_z.width + 16
+            ph = 20.0
+            self._rounded_rect(cr, zx - pw * 0.5, zy + rad * 0.88, pw, ph, 6)
+            cr.set_source_rgba(0.05, 0.10, 0.22, 0.88)
+            cr.fill_preserve()
+            cr.set_source_rgba(rc, gc, bc, 0.85)
+            cr.set_line_width(1.2)
+            cr.stroke()
+            cr.set_source_rgb(0.95, 0.98, 1.0)
+            cr.move_to(zx - ext_z.width * 0.5, zy + rad * 0.88 + 14)
+            cr.show_text(z_name)
+
+            # Runs badge
+            runs_cnt = int(runs_map.get(z["lab_id"], 1))
+            cr.set_font_size(max(8.5, sh * 0.020))
+            cr.set_source_rgb(0.65, 0.90, 1.0)
+            r_str = f"★ {runs_cnt} {'vols' if is_fr else 'runs'}"
+            ext_r = cr.text_extents(r_str)
+            cr.move_to(zx - ext_r.width * 0.5, zy + rad * 0.88 + 31)
+            cr.show_text(r_str)
+
+            # Draw cute player rocket hovering over the active island!
+            if is_cur:
+                self._draw_cute_rocket(
+                    cr,
+                    zx + rad * 0.95,
+                    zy - rad * 0.55 + math.sin(phase * 3.0) * 4.0,
+                    scale=min(sw, sh) / 950.0,
+                    angle=0.45,
+                    thrusting=True,
+                    anim_phase=phase,
+                )
+
+    # ==========================================================================
+    # TROPHY ROOM & COIN SHOP VIEWPORT ("trophies" mode)
+    # ==========================================================================
+    def _draw_trophy_room_viewport(
+        self,
+        cr: cairo.Context,
+        sx: float,
+        sy: float,
+        sw: float,
+        sh: float,
+        phase: float,
+        is_fr: bool,
+    ) -> None:
+        """Draws the 12 Trophy Pedestals + the Interactive Coin Shop where kids unlock visual upgrades."""
+        # Header
+        cr.select_font_face("Sans", cairo.FONT_SLANT_NORMAL, cairo.FONT_WEIGHT_BOLD)
+        cr.set_font_size(max(13.5, sh * 0.038))
+        cr.set_source_rgb(1.0, 0.86, 0.28)
+        coins_val = int(self.studio.pack_mgr.profile.get("coins", 250)) if hasattr(self.studio, "pack_mgr") else 250
+        hdr = (
+            f"★ SALLE DES TROPHÉES & BOUTIQUE  —  ★ {coins_val} PIÈCES DISPONIBLES"
+            if is_fr
+            else f"★ TROPHY VAULT & COIN SHOP  —  ★ {coins_val} COINS AVAILABLE"
+        )
+        cr.move_to(sx + 16, sy + 26)
+        cr.show_text(hdr)
+
+        # Back to Simulation button in top-right of viewport
+        bk_w, bk_h = 115.0, 24.0
+        bk_x, bk_y = sx + sw - bk_w - 12, sy + 7
+        self.hitboxes["back_to_sim"] = (bk_x, bk_y, bk_w, bk_h)
+        self._rounded_rect(cr, bk_x, bk_y, bk_w, bk_h, 7)
+        cr.set_source_rgb(0.18, 0.68, 0.42)
+        cr.fill()
+        cr.set_font_size(10.5)
+        cr.set_source_rgb(1.0, 1.0, 1.0)
+        bk_lbl = "▶ Retour Labo" if is_fr else "▶ Back to Lab"
+        ext_b = cr.text_extents(bk_lbl)
+        cr.move_to(bk_x + (bk_w - ext_b.width) * 0.5, bk_y + 16)
+        cr.show_text(bk_lbl)
+
+        # SECTION 1: 12 Trophy Pedestals (2 rows x 6 columns)
+        earned_set = set(self.studio.earned_badges)
+        cols = 6
+        cell_w = (sw - 28) / cols
+        cell_h = sh * 0.162
+        for idx, ped in enumerate(ALL_TROPHY_PEDESTALS[:12]):
+            r_i = idx // cols
+            c_i = idx % cols
+            px = sx + 14 + c_i * cell_w
+            py = sy + 36 + r_i * (cell_h + 6)
+            unlocked = (ped["id"] in earned_set) or (idx < len(earned_set))
+
+            self._rounded_rect(cr, px + 3, py, cell_w - 6, cell_h, 8)
+            if unlocked:
+                cr.set_source_rgba(0.24, 0.20, 0.08, 0.88)
+            else:
+                cr.set_source_rgba(0.08, 0.12, 0.20, 0.70)
+            cr.fill_preserve()
+            cr.set_source_rgba(0.98, 0.80, 0.22, 0.90 if unlocked else 0.25)
+            cr.set_line_width(1.6 if unlocked else 1.0)
+            cr.stroke()
+
+            # Trophy icon on pedestal
+            if unlocked:
+                self._draw_trophy_icon(cr, px + cell_w * 0.5, py + cell_h * 0.36, min(sw, sh) / 960.0)
+            else:
+                cr.set_font_size(13.0)
+                cr.set_source_rgba(0.55, 0.65, 0.78, 0.55)
+                cr.move_to(px + cell_w * 0.5 - 4, py + cell_h * 0.44)
+                cr.show_text("?")
+
+            cr.set_font_size(max(8.0, sh * 0.018))
+            cr.set_source_rgb(0.98, 0.92, 0.65 if unlocked else 0.45)
+            p_name = ped["name_fr"] if is_fr else ped["name_en"]
+            ext_p = cr.text_extents(p_name[:12])
+            cr.move_to(px + (cell_w - ext_p.width) * 0.5, py + cell_h - 6)
+            cr.show_text(p_name[:12])
+
+        # SECTION 2: Interactive Coin Shop (4 Unlockable Decorations)
+        shop_y = sy + sh * 0.505
+        cr.set_font_size(max(12.0, sh * 0.030))
+        cr.set_source_rgb(0.45, 0.90, 1.0)
+        shop_hdr = (
+            "❖ BOUTIQUE DE DÉCORATIONS (CLIQUE POUR ACHETER OU ÉQUIPER !)"
+            if is_fr
+            else "❖ VISUAL UPGRADE SHOP (CLICK ANY ITEM TO BUY OR EQUIP!)"
+        )
+        cr.move_to(sx + 16, shop_y)
+        cr.show_text(shop_hdr)
+
+        unlocked_decos = set()
+        if hasattr(self.studio, "pack_mgr"):
+            unlocked_decos = set(self.studio.pack_mgr.profile.get("unlocked_decorations", []))
+
+        card_w = (sw - 36) / 2.0
+        card_h = sh * 0.205
+        for s_idx, item in enumerate(TROPHY_SHOP_ITEMS[:4]):
+            sr = s_idx // 2
+            sc = s_idx % 2
+            cx_i = sx + 14 + sc * (card_w + 8)
+            cy_i = shop_y + 10 + sr * (card_h + 8)
+            iid = item["id"]
+            hid_s = f"shop_buy_{iid}"
+            self.hitboxes[hid_s] = (cx_i, cy_i, card_w, card_h)
+            owned = iid in unlocked_decos
+            hov = (self.hovered_id == hid_s)
+
+            self._rounded_rect(cr, cx_i, cy_i, card_w, card_h, 10)
+            if owned:
+                cr.set_source_rgba(0.10, 0.34, 0.24, 0.92)
+            elif hov:
+                cr.set_source_rgba(0.18, 0.30, 0.52, 0.92)
+            else:
+                cr.set_source_rgba(0.08, 0.16, 0.30, 0.88)
+            cr.fill_preserve()
+            cr.set_source_rgba(0.35, 0.95, 0.62 if owned else 0.98, 0.90)
+            cr.set_line_width(2.0 if (owned or hov) else 1.2)
+            cr.stroke()
+
+            # Item Title & Description
+            cr.set_font_size(max(11.0, sh * 0.025))
+            cr.set_source_rgb(1.0, 0.95, 0.75)
+            inm = item["name_fr"] if is_fr else item["name_en"]
+            cr.move_to(cx_i + 12, cy_i + 22)
+            cr.show_text(inm)
+
+            cr.set_font_size(max(8.5, sh * 0.0195))
+            cr.set_source_rgb(0.75, 0.88, 1.0)
+            idsc = item["desc_fr"] if is_fr else item["desc_en"]
+            cr.move_to(cx_i + 12, cy_i + 41)
+            cr.show_text(idsc[:32])
+
+            # Price / Equipped Pill on right of card
+            bw_p, bh_p = 84.0, 24.0
+            bx_p = cx_i + card_w - bw_p - 10
+            by_p = cy_i + (card_h - bh_p) * 0.5
+            self._rounded_rect(cr, bx_p, by_p, bw_p, bh_p, 7)
+            if owned:
+                cr.set_source_rgb(0.16, 0.78, 0.44)
+                lbl_p = "✓ ÉQUIPÉ" if is_fr else "✓ EQUIPPED"
+            else:
+                cr.set_source_rgb(0.92, 0.56, 0.12)
+                lbl_p = f"★ {item['cost']}"
+            cr.fill()
+            cr.set_font_size(10.0)
+            cr.set_source_rgb(1.0, 1.0, 1.0)
+            ext_lp = cr.text_extents(lbl_p)
+            cr.move_to(bx_p + (bw_p - ext_lp.width) * 0.5, by_p + 16)
+            cr.show_text(lbl_p)
+
+    # ==========================================================================
+    # PIN-PROTECTED TEACHER GATE VIEWPORT ("pin" mode)
+    # ==========================================================================
+    def _draw_pin_gate_viewport(
+        self,
+        cr: cairo.Context,
+        sx: float,
+        sy: float,
+        sw: float,
+        sh: float,
+        phase: float,
+        is_fr: bool,
+    ) -> None:
+        """Draws the PIN-Protected Teacher / Parent Gate so kids don't accidentally enter Teacher Mode."""
+        cr.select_font_face("Sans", cairo.FONT_SLANT_NORMAL, cairo.FONT_WEIGHT_BOLD)
+        cr.set_font_size(max(15.0, sh * 0.044))
+        cr.set_source_rgb(0.98, 0.86, 0.32)
+        hdr = "◈ ACCÈS PROFESSEUR / PARENT (CODE PIN : 1234)" if is_fr else "◈ TEACHER & PARENT GATE (DEFAULT PIN: 1234)"
+        ext_h = cr.text_extents(hdr)
+        cr.move_to(sx + (sw - ext_h.width) * 0.5, sy + sh * 0.14)
+        cr.show_text(hdr)
+
+        # PIN display box
+        disp_w, disp_h = 180.0, 40.0
+        disp_x, disp_y = sx + (sw - disp_w) * 0.5, sy + sh * 0.20
+        self._rounded_rect(cr, disp_x, disp_y, disp_w, disp_h, 10)
+        cr.set_source_rgba(0.05, 0.10, 0.20, 0.95)
+        cr.fill_preserve()
+        cr.set_source_rgb(0.38, 0.78, 0.98)
+        cr.set_line_width(2.0)
+        cr.stroke()
+
+        masked = " ".join("●" for _ in self.pin_buffer) or ("_ _ _ _")
+        cr.set_font_size(18.0)
+        cr.set_source_rgb(1.0, 1.0, 1.0)
+        ext_m = cr.text_extents(masked)
+        cr.move_to(disp_x + (disp_w - ext_m.width) * 0.5, disp_y + 27)
+        cr.show_text(masked)
+
+        # 3x4 Keypad
+        keys = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "CLR", "0", "OK"]
+        kw, kh = 68.0, 38.0
+        grid_w = 3 * kw + 2 * 10.0
+        start_kx = sx + (sw - grid_w) * 0.5
+        start_ky = sy + sh * 0.34
+        for idx, k in enumerate(keys):
+            r_i = idx // 3
+            c_i = idx % 3
+            kx = start_kx + c_i * (kw + 10.0)
+            ky = start_ky + r_i * (kh + 8.0)
+            hid_k = f"pin_key_{k}"
+            self.hitboxes[hid_k] = (kx, ky, kw, kh)
+            self._rounded_rect(cr, kx, ky, kw, kh, 8)
+            if k == "OK":
+                cr.set_source_rgb(0.16, 0.76, 0.42)
+            elif k == "CLR":
+                cr.set_source_rgb(0.78, 0.28, 0.24)
+            else:
+                cr.set_source_rgb(0.14, 0.28, 0.50)
+            cr.fill_preserve()
+            cr.set_source_rgba(0.55, 0.82, 1.0, 0.85)
+            cr.set_line_width(1.5)
+            cr.stroke()
+            cr.set_font_size(14.0)
+            cr.set_source_rgb(1.0, 1.0, 1.0)
+            ext_k = cr.text_extents(k)
+            cr.move_to(kx + (kw - ext_k.width) * 0.5, ky + 24)
+            cr.show_text(k)
+
+        # Cancel / Back button
+        bk_w, bk_h = 150.0, 32.0
+        bk_x, bk_y = sx + (sw - bk_w) * 0.5, sy + sh * 0.86
+        self.hitboxes["back_to_sim"] = (bk_x, bk_y, bk_w, bk_h)
+        self._rounded_rect(cr, bk_x, bk_y, bk_w, bk_h, 8)
+        cr.set_source_rgb(0.24, 0.38, 0.62)
+        cr.fill()
+        cr.set_font_size(12.0)
+        cr.set_source_rgb(1.0, 1.0, 1.0)
+        lbl_b = "◂ Retour Mode Enfant" if is_fr else "◂ Back to Kid Mode"
+        ext_b = cr.text_extents(lbl_b)
+        cr.move_to(bk_x + (bk_w - ext_b.width) * 0.5, bk_y + 21)
+        cr.show_text(lbl_b)
+
     @staticmethod
     def _draw_two_line_btn_label(
         cr: cairo.Context,
@@ -1261,6 +1972,31 @@ class SynapseKidsView(Gtk.DrawingArea):
         cr.rectangle(-4, -4, 8, 8)
         cr.fill()
         cr.restore()
+
+        # Unlockable 3D Hologram Planet ("holo_globe") in the upper-left sky!
+        unlocked_decos = set()
+        if hasattr(self.studio, "pack_mgr"):
+            unlocked_decos = set(self.studio.pack_mgr.profile.get("unlocked_decorations", []))
+        if "holo_globe" in unlocked_decos:
+            gx, gy = sx + sw * 0.14, sy + sh * 0.28
+            gr = min(sw, sh) * 0.065
+            cr.save()
+            cr.new_path()
+            cr.set_source_rgba(0.18, 0.78, 0.98, 0.28)
+            cr.arc(gx, gy, gr, 0, 2 * math.pi)
+            cr.fill_preserve()
+            cr.set_source_rgba(0.45, 0.95, 1.0, 0.75)
+            cr.set_line_width(1.4)
+            cr.stroke()
+            # Spinning Saturn ring
+            cr.translate(gx, gy)
+            cr.rotate(0.32)
+            cr.scale(1.65, 0.42)
+            cr.new_path()
+            cr.set_source_rgba(0.98, 0.82, 0.28, 0.75)
+            cr.arc(0, 0, gr, 0, 2 * math.pi)
+            cr.stroke()
+            cr.restore()
 
         # 2. Lunar Horizon & Blue-Tinted 3D Cratered Surface (bottom 30% of simulation frame)
         moon_y = sy + sh * 0.70
@@ -1500,13 +2236,22 @@ class SynapseKidsView(Gtk.DrawingArea):
                 cr.close_path()
                 cr.fill()
 
-        # D. Main Lander Capsule Hull (White/Silver upper + Cyan/Orange lower band)
+        # D. Main Lander Capsule Hull (White/Silver or Unlockable Golden Rocket Hull!)
+        gold_hull = False
+        if hasattr(self.studio, "pack_mgr"):
+            gold_hull = "gold_hull" in self.studio.pack_mgr.profile.get("unlocked_decorations", [])
         self._rounded_rect(cr, -24, -22, 48, 40, 12)
         pat_hull = cairo.LinearGradient(0, -22, 0, 18)
-        pat_hull.add_color_stop_rgb(0.0, 0.96, 0.98, 1.0)
-        pat_hull.add_color_stop_rgb(0.68, 0.86, 0.92, 0.98)
-        pat_hull.add_color_stop_rgb(0.69, 0.18, 0.68, 0.88)
-        pat_hull.add_color_stop_rgb(1.0, 0.12, 0.50, 0.72)
+        if gold_hull:
+            pat_hull.add_color_stop_rgb(0.0, 1.0, 0.92, 0.42)
+            pat_hull.add_color_stop_rgb(0.68, 0.95, 0.74, 0.15)
+            pat_hull.add_color_stop_rgb(0.69, 0.78, 0.48, 0.06)
+            pat_hull.add_color_stop_rgb(1.0, 0.62, 0.36, 0.04)
+        else:
+            pat_hull.add_color_stop_rgb(0.0, 0.96, 0.98, 1.0)
+            pat_hull.add_color_stop_rgb(0.68, 0.86, 0.92, 0.98)
+            pat_hull.add_color_stop_rgb(0.69, 0.18, 0.68, 0.88)
+            pat_hull.add_color_stop_rgb(1.0, 0.12, 0.50, 0.72)
         cr.set_source(pat_hull)
         cr.fill_preserve()
         cr.set_source_rgb(0.18, 0.28, 0.44)
@@ -1731,10 +2476,13 @@ class SynapseKidsView(Gtk.DrawingArea):
         return False
 
     def _switch_to_level(self, new_idx: int) -> None:
+        self.view_mode = "sim"
         self.level_idx = new_idx % len(LEVEL_DATA)
         new_lid = self.cur_level["lab_id"]
         self.studio.active_lab_id = new_lid
         self.studio.lab_combo.set_active_id(new_lid)
+        if hasattr(self.studio, "pack_mgr"):
+            self.studio.pack_mgr.record_lab_activity(new_lid, add_run=True)
         # Apply pack-specific presets if present on this level
         presets = self.cur_level.get("presets") or self.cur_level.get("preset") or {}
         if presets:
@@ -1745,6 +2493,7 @@ class SynapseKidsView(Gtk.DrawingArea):
         self.studio._populate_examples_dropdown()
         self.studio._populate_sliders()
         self.custom_speech = None
+        self.set_pet_mood("happy")
         if new_lid == "moon_lander":
             self.reset_rocket_test()
         self.queue_draw()
@@ -1772,9 +2521,94 @@ class SynapseKidsView(Gtk.DrawingArea):
         is_fr = (self.lang == "fr")
         lid = self.cur_level["lab_id"]
         lab = self.studio.active_lab
+        self.last_interaction_ts = time.monotonic()
+        if self.pet_mood == "sleepy":
+            self.pet_mood = "happy"
+
+        if clicked_id == "back_to_sim":
+            self.view_mode = "sim"
+            self.queue_draw()
+            return True
+
+        if clicked_id == "avatar_btn":
+            if hasattr(self.studio, "pack_mgr"):
+                av = self.studio.pack_mgr.cycle_avatar()
+                av_nm = av["name_fr"] if is_fr else av["name_en"]
+                self.set_pet_mood("cheering", 3.5)
+                self.custom_speech = (
+                    f"Salut {av_nm} ! Ton nouvel avatar d'explorateur IA est prêt !"
+                    if is_fr
+                    else f"Hi {av_nm}! Your new AI Explorer Avatar is equipped and saved!"
+                )
+            self.queue_draw()
+            return True
+
+        if clicked_id == "map_btn":
+            self.view_mode = "sim" if self.view_mode == "map" else "map"
+            if self.view_mode == "map":
+                self.custom_speech = (
+                    "Voici la Carte du Monde Synapse ! Clique sur n'importe quelle île pour voyager !"
+                    if is_fr
+                    else "Welcome to the Synapse World Map! Click any of the 7 AI Islands to fly right there!"
+                )
+            self.queue_draw()
+            return True
+
+        if clicked_id.startswith("map_zone_"):
+            z_idx = int(clicked_id.split("_")[-1])
+            self._switch_to_level(z_idx)
+            self.set_pet_mood("cheering", 3.5)
+            return True
+
+        if clicked_id.startswith("shop_buy_"):
+            item_id = clicked_id.replace("shop_buy_", "")
+            if hasattr(self.studio, "pack_mgr"):
+                res = self.studio.pack_mgr.buy_or_toggle_shop_item(item_id, lang=self.lang)
+                self.set_pet_mood("cheering" if res.get("ok") else "thinking", 4.0)
+                self.custom_speech = res.get("msg", "")
+            self.queue_draw()
+            return True
 
         if clicked_id == "teacher_mode":
+            pin_locked = bool(self.studio.pack_mgr.profile.get("pin_lock_enabled", False)) if hasattr(self.studio, "pack_mgr") else False
+            if pin_locked and self.view_mode != "pin":
+                self.view_mode = "pin"
+                self.pin_buffer = ""
+                self.custom_speech = (
+                    "Mode Professeur protégé par code PIN (1234) !"
+                    if is_fr
+                    else "Teacher Mode is PIN-protected! Enter 1234 on the keypad to unlock."
+                )
+                self.queue_draw()
+                return True
+            self.view_mode = "sim"
             self.on_switch_to_teacher()
+            return True
+
+        if clicked_id.startswith("pin_key_"):
+            key = clicked_id.replace("pin_key_", "")
+            expected_pin = str(self.studio.pack_mgr.profile.get("teacher_pin", "1234")) if hasattr(self.studio, "pack_mgr") else "1234"
+            if key == "CLR":
+                self.pin_buffer = ""
+            elif key == "OK":
+                if self.pin_buffer == expected_pin:
+                    self.view_mode = "sim"
+                    self.pin_buffer = ""
+                    self.on_switch_to_teacher()
+                    return True
+                else:
+                    self.pin_buffer = ""
+                    self.set_pet_mood("dizzy", 3.0)
+                    self.custom_speech = "Code PIN incorrect ! Essaie 1234." if is_fr else "Incorrect PIN! Try 1234."
+            else:
+                if len(self.pin_buffer) < 4:
+                    self.pin_buffer += key
+                if self.pin_buffer == expected_pin:
+                    self.view_mode = "sim"
+                    self.pin_buffer = ""
+                    self.on_switch_to_teacher()
+                    return True
+            self.queue_draw()
             return True
 
         if clicked_id == "toggle_lang":
@@ -1802,18 +2636,20 @@ class SynapseKidsView(Gtk.DrawingArea):
             return True
 
         if clicked_id == "badges_btn":
-            earned = max(1, len(self.studio.earned_badges))
-            pts = int(self.studio.pack_mgr.profile.get("lifetime_points", 300)) if hasattr(self.studio, "pack_mgr") else 300
-            comp = len(self.studio.pack_mgr.profile.get("completed_packs", [])) if hasattr(self.studio, "pack_mgr") else 0
-            self.custom_speech = (
-                f"Bravo ! {earned} Trophées d'Or, {pts} pts et {comp} Pack(s) finis ! Clique sur [★ Pack ↻] pour charger de nouveaux niveaux !"
-                if is_fr
-                else f"Trophy Vault: {earned} Gold Trophies, {pts} pts & {comp} Pack(s) graduated! Click [★ Pack ↻] anytime to load the next Learning Pack!"
-            )
+            self.view_mode = "sim" if self.view_mode == "trophies" else "trophies"
+            if self.view_mode == "trophies":
+                coins_v = int(self.studio.pack_mgr.profile.get("coins", 250)) if hasattr(self.studio, "pack_mgr") else 250
+                self.custom_speech = (
+                    f"Bienvenue dans ta Salle des Trophées ! Tu as {coins_v} pièces ★ pour acheter des décorations !"
+                    if is_fr
+                    else f"Welcome to your Trophy Vault & Shop! Spend your {coins_v} Coins ★ on cool upgrades!"
+                )
             self.queue_draw()
             return True
 
         if clicked_id == "sim_box":
+            if self.view_mode != "sim":
+                return True
             hx, hy, hw, hh = self.hitboxes["sim_box"]
             sub_y = hy + 34.0
             sub_h = max(80.0, hh - 34.0)
@@ -1907,6 +2743,9 @@ class SynapseKidsView(Gtk.DrawingArea):
             self.stars_score = 3
             self.obj1_done = True
             self.obj2_done = True
+            self.set_pet_mood("cheering", 4.0)
+            if hasattr(self.studio, "pack_mgr"):
+                self.studio.pack_mgr.record_daily_progress("dm_boost")
             if hasattr(self.studio, "award_kid_level_trophy"):
                 self.studio.award_kid_level_trophy(self.cur_level.get("level", 1))
             if lid == "nn_playground":
@@ -1967,6 +2806,9 @@ class SynapseKidsView(Gtk.DrawingArea):
             self.stars_score = 3
             self.obj1_done = True
             self.obj2_done = True
+            self.set_pet_mood("cheering", 3.5)
+            if hasattr(self.studio, "pack_mgr"):
+                self.studio.pack_mgr.record_daily_progress("dm_boost")
             if hasattr(self.studio, "award_kid_level_trophy"):
                 self.studio.award_kid_level_trophy(self.cur_level.get("level", 1))
             if lid == "nn_playground":
@@ -2137,6 +2979,10 @@ class SynapseKidsView(Gtk.DrawingArea):
             return True
 
         if clicked_id == "btn_relaunch":
+            self.view_mode = "sim"
+            if hasattr(self.studio, "pack_mgr"):
+                self.studio.pack_mgr.record_daily_progress("dm_run_lab")
+                self.studio.pack_mgr.record_lab_activity(lid, add_run=True)
             if lid == "nn_playground":
                 lab.reset_weights()
                 lab.rebuild_dataset()
@@ -2167,28 +3013,33 @@ class SynapseKidsView(Gtk.DrawingArea):
 
         if clicked_id == "ask_robot" and not self.asking_ai:
             self.asking_ai = True
+            self.set_pet_mood("thinking", 5.0)
+            if hasattr(self.studio, "pack_mgr"):
+                self.studio.pack_mgr.record_daily_progress("dm_ask_lumi")
             self.custom_speech = (
-                "Je réfléchis avec mon cerveau Cortex-Phi3..."
+                "Lumi réfléchit à un indice Socratique avec Cortex-Phi3..."
                 if is_fr
-                else "Thinking with my Cortex-Phi3 brain..."
+                else "Lumi is thinking up a Socratic hint with Cortex-Phi3..."
             )
             self.queue_draw()
 
             def worker():
                 prompt = (
-                    f"Donne un conseil très court (1 phrase amusante pour un enfant de 9 ans) sur : {self.cur_level['title_fr']}"
+                    f"Tu es Lumi, un petit robot compagnon Socratique. Donne un indice court et pose une question amusante (1 phrase pour un enfant de 9 ans) sur : {self.cur_level['title_fr']}"
                     if is_fr
-                    else f"Give one very short, fun 1-sentence tip for a 9-year-old playing {self.cur_level['title_en']}!"
+                    else f"You are Lumi, a friendly Socratic robot companion. Give one short hint and a guiding question (1 sentence for a 9-year-old) about: {self.cur_level['title_en']}!"
                 )
                 res = self.studio.cortex.chat_with_cortex(prompt, history=[])
                 reply = res.get("reply", "").strip()
-                if len(reply) > 125:
-                    reply = reply[:122] + "..."
+                if len(reply) > 135:
+                    reply = reply[:132] + "..."
                 self.custom_speech = reply
                 self.asking_ai = False
+                self.set_pet_mood("cheering", 4.0)
                 GLib.idle_add(self.queue_draw)
 
             threading.Thread(target=worker, daemon=True).start()
             return True
 
         return False
+

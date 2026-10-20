@@ -522,7 +522,7 @@ class SynapseStudioWindow(Gtk.Window):
 
         # COLUMN 3: 3-Tab Right Panel (School Tutorials | Hands-On Coding | Brain & Phi-3)
         self.right_frame = Gtk.Frame(label=" ★ 3. Mission Steps & AI Brain Peek ")
-        self.right_frame.set_size_request(330, -1)
+        self.right_frame.set_size_request(315, -1)
         main_hbox.pack_start(self.right_frame, False, False, 0)
 
         self.right_notebook = Gtk.Notebook()
@@ -576,7 +576,7 @@ class SynapseStudioWindow(Gtk.Window):
         self.lesson_text.set_wrap_mode(Gtk.WrapMode.WORD_CHAR)
         lesson_scroll.add(self.lesson_text)
 
-        self.right_notebook.append_page(school_vbox, Gtk.Label(label="★ Tutorials"))
+        self.right_notebook.append_page(school_vbox, Gtk.Label(label="★ Missions"))
 
         # --- TAB 1: HANDS-ON PYTHON CODING SANDBOX (EDIT & RUN!) ---
         code_vbox = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=4)
@@ -634,10 +634,39 @@ class SynapseStudioWindow(Gtk.Window):
         viz_vbox.pack_start(self.btn_kid_back_mission, False, False, 2)
 
         self.net_canvas = Gtk.DrawingArea()
-        self.net_canvas.set_size_request(315, 340)
+        self.net_canvas.set_size_request(300, 340)
         self.net_canvas.connect("draw", self._draw_net_canvas)
         viz_vbox.pack_start(self.net_canvas, True, True, 0)
-        self.right_notebook.append_page(viz_vbox, Gtk.Label(label="⚙ Brain & Phi-3"))
+        self.right_notebook.append_page(viz_vbox, Gtk.Label(label="⚙ Brain"))
+
+        # --- TAB 3: PARENT & TEACHER ANALYTICS DASHBOARD + PIN LOCK ---
+        dash_vbox = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=4)
+        dash_vbox.set_margin_top(4)
+        dash_vbox.set_margin_bottom(4)
+        dash_vbox.set_margin_start(4)
+        dash_vbox.set_margin_end(4)
+
+        dash_btn_row = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=4)
+        dash_vbox.pack_start(dash_btn_row, False, False, 0)
+
+        self.btn_toggle_pin = Gtk.Button(label="◈ PIN Gate: OFF (1234)")
+        self.btn_toggle_pin.connect("clicked", self._on_toggle_pin_lock)
+        dash_btn_row.pack_start(self.btn_toggle_pin, True, True, 0)
+
+        self.btn_refresh_dash = Gtk.Button(label="↻ Refresh")
+        self.btn_refresh_dash.connect("clicked", lambda _b: self._refresh_teacher_dashboard())
+        dash_btn_row.pack_start(self.btn_refresh_dash, False, False, 0)
+
+        dash_scroll = Gtk.ScrolledWindow()
+        dash_scroll.set_policy(Gtk.PolicyType.AUTOMATIC, Gtk.PolicyType.AUTOMATIC)
+        dash_vbox.pack_start(dash_scroll, True, True, 0)
+
+        self.dashboard_text = Gtk.TextView()
+        self.dashboard_text.set_editable(False)
+        self.dashboard_text.set_wrap_mode(Gtk.WrapMode.WORD_CHAR)
+        dash_scroll.add(self.dashboard_text)
+        self.right_notebook.append_page(dash_vbox, Gtk.Label(label="❖ Report"))
+        self._refresh_teacher_dashboard()
 
         # --- BOTTOM BAR: BUILT-IN CORTEX-PHI3 GENERAL CHAT, AI TUTOR & LINUX RUNNER ---
         self.cortex_frame = Gtk.Frame(label=" ★ 4. Ask Cortex (Your Friendly AI Buddy!) ")
@@ -953,8 +982,8 @@ class SynapseStudioWindow(Gtk.Window):
             self.title_lbl.set_markup("<b><span foreground='#38bdf8'>⚡ SYNAPSE STUDIO</span></b>")
             self.left_frame.set_label(" ⚙ 1. Presets, Brain Surgery & Sliders ")
             self.center_frame.set_label(" ◈ 2. Real-Time Simulation Viewport & Performance Telemetry ")
-            self.right_frame.set_label(" ★ 3. Tutorials, Code & Live Phi-3 Brain ")
-            self.right_frame.set_size_request(360, -1)
+            self.right_frame.set_label(" ★ 3. Missions, Code, Brain & Report ")
+            self.right_frame.set_size_request(315, -1)
             self.cortex_frame.set_label(" ⚡ 4. Cortex-Phi3 General Chat, Classroom AI Tutor & Live Linux Runner ")
 
             self.ex_lbl.set_markup("<b><span size='small' foreground='#facc15'>★ 5 Examples for Current Lab:</span></b>")
@@ -984,7 +1013,8 @@ class SynapseStudioWindow(Gtk.Window):
             self.btn_kid_peek_brain.hide()
             self.btn_kid_back_mission.hide()
             self.right_notebook.set_show_tabs(True)
-            self.right_notebook.set_current_page(2)
+            self._refresh_teacher_dashboard()
+            self.right_notebook.set_current_page(3)
 
     def _populate_sliders(self) -> None:
         self._updating_sliders = True
@@ -1178,9 +1208,79 @@ class SynapseStudioWindow(Gtk.Window):
 
         def worker():
             res = run_student_code(code_str)
-            GLib.idle_add(self.sandbox_out_view.get_buffer().set_text, self._clean_bmp(res["output"]))
+            passed = bool(res.get("ok", True))
+            out_txt = res.get("output", "")
+            self.pack_mgr.record_sandbox_run(passed=passed, error_snippet="" if passed else out_txt)
+            if hasattr(self, "kids_view"):
+                self.kids_view.set_pet_mood("cheering" if passed else "dizzy", 4.5)
+            GLib.idle_add(self.sandbox_out_view.get_buffer().set_text, self._clean_bmp(out_txt))
+            GLib.idle_add(self._refresh_teacher_dashboard)
 
         threading.Thread(target=worker, daemon=True).start()
+
+    def _on_toggle_pin_lock(self, _btn: Gtk.Button) -> None:
+        cur = bool(self.pack_mgr.profile.get("pin_lock_enabled", False))
+        self.pack_mgr.profile["pin_lock_enabled"] = not cur
+        self.pack_mgr.save_profile()
+        self._refresh_teacher_dashboard()
+        state_str = "ENABLED (PIN: 1234)" if not cur else "DISABLED"
+        self._set_cortex_message(f"★ Teacher Mode PIN Gate is now {state_str}!")
+
+    def _refresh_teacher_dashboard(self) -> None:
+        if not hasattr(self, "dashboard_text"):
+            return
+        prof = self.pack_mgr.profile
+        pin_on = bool(prof.get("pin_lock_enabled", False))
+        if hasattr(self, "btn_toggle_pin"):
+            self.btn_toggle_pin.set_label(
+                f"◈ PIN Gate: {'ON' if pin_on else 'OFF'} (PIN: {prof.get('teacher_pin', '1234')})"
+            )
+
+        t_map = prof.get("lab_time_seconds", {})
+        r_map = prof.get("lab_runs_count", {})
+        sb = prof.get("sandbox_stats", {})
+        total_runs = int(sb.get("runs", 0))
+        passes = int(sb.get("passes", 0))
+        errors = int(sb.get("errors", 0))
+        pass_rate = int((passes / max(1, total_runs)) * 100) if total_runs > 0 else 100
+        struggled = ", ".join(sb.get("struggled_concepts", [])) or "None yet — clean execution!"
+
+        lab_names = [
+            ("moon_lander", "Lunar Lander (NEAT)"),
+            ("raycast_car", "Cyber Track (Lidar)"),
+            ("rl_gridworld", "Maze Explorer (Q-RL)"),
+            ("cartpole_rl", "Pole Balance (Policy)"),
+            ("nn_playground", "Color Sorter (2D MLP)"),
+            ("swarm_ecosystem", "Ocean Flock (Swarm)"),
+            ("prime_attention", "PRIME Memory Vault"),
+        ]
+        lab_lines = []
+        for lid, lname in lab_names:
+            sec = int(t_map.get(lid, 0))
+            runs = int(r_map.get(lid, 0))
+            mins, rem_s = divmod(sec, 60)
+            lab_lines.append(f"  • {lname:<22}: {mins:2d}m {rem_s:02d}s  ({runs} runs)")
+
+        missions = prof.get("daily_missions", [])
+        done_m = sum(1 for m in missions if m.get("completed"))
+
+        report = (
+            f"★ PARENT & TEACHER ANALYTICS REPORT\n"
+            f"--------------------------------------------------\n"
+            f"▸ Student Cadet:   {prof.get('player_name', 'Cadet Nova')}\n"
+            f"▸ Active Pack:     {prof.get('current_pack_id', 'pack_1_core')}\n"
+            f"▸ Graduated Packs: {len(prof.get('completed_packs', []))} completed\n"
+            f"▸ Trophies & Coins:{len(prof.get('earned_badges', []))} Trophies | {prof.get('coins', 250)} Coins | {prof.get('lifetime_points', 300)} pts\n"
+            f"▸ Daily Missions:  {done_m}/{len(missions)} completed today\n\n"
+            f"▸ TIME & RUNS PER AI LAB:\n"
+            + "\n".join(lab_lines)
+            + f"\n\n▸ PYTHON CODING SANDBOX ANALYTICS:\n"
+            f"  • Code Executions: {total_runs} ({passes} passed, {errors} errors -> {pass_rate}% pass rate)\n"
+            f"  • Flagged Concepts:{struggled}\n\n"
+            f"▸ LUMI SOCRATIC TUTOR SUMMARY:\n"
+            f"  • Lumi is configured in Socratic Hint-First Mode (guides with questions rather than giving away raw code answers)."
+        )
+        self.dashboard_text.get_buffer().set_text(report)
 
     def _on_sync_code_from_sliders(self, _btn: Gtk.Button) -> None:
         code = generate_lab_python_code(self.active_lab_id, self.active_lab.params, self.active_lab.get_telemetry())
@@ -1190,23 +1290,23 @@ class SynapseStudioWindow(Gtk.Window):
         buf = self.code_view.get_buffer()
         start, end = buf.get_bounds()
         code_str = buf.get_text(start, end, False)
-        self._set_cortex_message("Cortex-Phi3 Classroom Tutor is reading your Python code...")
+        self._set_cortex_message("Lumi (Socratic AI Coding Companion) is reading your Python code...")
 
         def worker():
             if self.cortex.is_ollama_available():
                 sys_p = (
-                    "You are Cortex, a friendly, encouraging school AI coding tutor. "
-                    "Explain what the student's Python code does in 3 short bullet points suitable for a 10-to-14-year-old, "
-                    "and suggest 1 fun experiment they can try changing!"
+                    "You are Lumi, a friendly Socratic AI robot companion for kids (ages 8-14). "
+                    "Never write the full answer code for the student. Instead, explain what their code currently does in 2 fun bullet points "
+                    "and ask 1 guiding question that helps them discover the next experiment on their own!"
                 )
                 resp = self.cortex.query_local_ollama(f"Student Python Code:\n```python\n{code_str}\n```", system_prompt=sys_p)
                 if resp:
-                    GLib.idle_add(self._set_cortex_message, f"★ Cortex Coding Tutor:\n{resp.strip()}")
+                    GLib.idle_add(self._set_cortex_message, f"★ Lumi Socratic Coding Hint:\n{resp.strip()}")
                     return
             GLib.idle_add(
                 self._set_cortex_message,
-                "★ Cortex Coding Tutor (Offline Tip): Your code imports a SynapseOS AI Lab, sets experiment variables with "
-                "`update_param(...)`, evolves generations, and prints the telemetry scores! Try changing the numbers inside `update_param` and click '▶ Run Code'!"
+                "★ Lumi Socratic Hint (Offline): Look closely at the numbers inside `update_param(...)`! "
+                "What do you think will happen to the AI's score if you double the `learning_rate` or add more `hidden_neurons`? Try changing one number and click '▶ Run Code'!"
             )
 
         threading.Thread(target=worker, daemon=True).start()

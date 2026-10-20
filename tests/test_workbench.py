@@ -145,7 +145,49 @@ class TestSynapseWorkbenchLabs(unittest.TestCase):
             self.assertIn("pack_1_core_L1", mgr_reloaded.profile["earned_badges"])
             self.assertEqual(mgr_reloaded.profile["lifetime_points"], res2["lifetime_points"])
 
+    def test_gamified_features_shop_avatars_missions_and_analytics(self):
+        import tempfile
+        from workbench.pack_manager import (
+            LearningPackManager,
+            PLAYER_AVATARS,
+            TROPHY_SHOP_ITEMS,
+            WORLD_MAP_ZONES,
+            ALL_TROPHY_PEDESTALS,
+        )
+
+        self.assertEqual(len(PLAYER_AVATARS), 6)
+        self.assertEqual(len(TROPHY_SHOP_ITEMS), 4)
+        self.assertEqual(len(WORLD_MAP_ZONES), 7)
+        self.assertEqual(len(ALL_TROPHY_PEDESTALS), 12)
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            mgr = LearningPackManager(base_dir=tmpdir)
+            initial_coins = mgr.profile["coins"]
+            self.assertGreaterEqual(initial_coins, 200)
+
+            # 1. Cycle avatar
+            av = mgr.cycle_avatar()
+            self.assertEqual(av["id"], "cyber_bot")
+            self.assertEqual(mgr.profile["avatar_idx"], 1)
+
+            # 2. Buy a decoration in the Coin Shop
+            res_buy = mgr.buy_or_toggle_shop_item("gold_hull", lang="en")
+            self.assertTrue(res_buy["ok"])
+            self.assertIn("gold_hull", mgr.profile["unlocked_decorations"])
+            self.assertEqual(mgr.profile["coins"], initial_coins - 100)
+
+            # 3. Record Daily Missions progress
+            mgr.record_daily_progress("dm_ask_lumi")
+            self.assertGreater(mgr.profile["coins"], initial_coins - 100)
+
+            # 4. Record Lab Activity & Sandbox Analytics
+            mgr.record_lab_activity("moon_lander", add_seconds=12.0, add_run=True)
+            self.assertGreaterEqual(mgr.profile["lab_time_seconds"]["moon_lander"], 12)
+            mgr.record_sandbox_run(passed=False, error_snippet="SyntaxError: invalid syntax")
+            self.assertIn("Python Syntax / Indentation", mgr.profile["sandbox_stats"]["struggled_concepts"])
+
 
 if __name__ == "__main__":
     unittest.main()
+
 
