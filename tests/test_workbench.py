@@ -109,6 +109,42 @@ class TestSynapseWorkbenchLabs(unittest.TestCase):
         self.assertLess(res["compressed_tokens_est"], res["original_tokens_est"])
         self.assertIn("262 KB L2 cache", res["compressed_text"])
 
+    def test_learning_pack_update_and_trophy_preservation(self):
+        import tempfile
+        from workbench.pack_manager import LearningPackManager
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            mgr = LearningPackManager(base_dir=tmpdir)
+            self.assertEqual(mgr.profile["active_pack_id"], "pack_1_core")
+            self.assertEqual(len(mgr.get_kid_levels()), 7)
+
+            # Award a student badge & verify points increase
+            was_new = mgr.award_badge("pack_1_core_L1", points=100, stars=3)
+            self.assertTrue(was_new)
+            pts_before = mgr.profile["lifetime_points"]
+
+            # Place a dummy old file inside active_pack/ to verify old pack files are purged
+            dummy_old = os.path.join(mgr.pack_dir, "old_pack_cache.bin")
+            with open(dummy_old, "wb") as f:
+                f.write(b"X" * 4096)
+            self.assertTrue(os.path.exists(dummy_old))
+
+            # Upgrade to Pack 2 (Cyber Commander Mastery, Levels 8-14)
+            res2 = mgr.upgrade_to_next_pack()
+            self.assertEqual(res2["new_pack_id"], "pack_2_mastery")
+            self.assertFalse(os.path.exists(dummy_old))  # Old pack file deleted to save space!
+            self.assertGreater(res2["freed_bytes"], 4096)
+            self.assertIn("pack_1_core_L1", res2["earned_badges"])
+            self.assertIn("trophy_pack_1_core_complete", res2["earned_badges"])
+            self.assertGreater(res2["lifetime_points"], pts_before)
+            self.assertEqual(mgr.get_kid_levels()[0]["level"], 8)
+
+            # Reload from disk to verify persistence across restarts
+            mgr_reloaded = LearningPackManager(base_dir=tmpdir)
+            self.assertEqual(mgr_reloaded.profile["active_pack_id"], "pack_2_mastery")
+            self.assertIn("pack_1_core_L1", mgr_reloaded.profile["earned_badges"])
+            self.assertEqual(mgr_reloaded.profile["lifetime_points"], res2["lifetime_points"])
+
 
 if __name__ == "__main__":
     unittest.main()

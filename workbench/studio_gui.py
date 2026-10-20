@@ -40,7 +40,8 @@ from workbench.curriculum import (
     verify_lesson_goal,
 )
 from workbench.sandbox_runner import run_student_code
-from workbench.kid_arcade_view import SynapseKidsView
+from workbench.kid_arcade_view import SynapseKidsView, LEVEL_DATA
+from workbench.pack_manager import LearningPackManager
 from cortex.engine import CortexEngine
 
 
@@ -287,7 +288,12 @@ class SynapseStudioWindow(Gtk.Window):
         }
         self.active_lab_id = "moon_lander"
         self.active_lesson_id = SCHOOL_CURRICULUM[0]["id"]
-        self.earned_badges: Set[str] = set()
+        self.pack_mgr = LearningPackManager()
+        self.earned_badges: Set[str] = set(self.pack_mgr.profile.get("earned_badges", []))
+        if not self.earned_badges:
+            self.earned_badges.add("m1_moon_gravity")
+            self.pack_mgr.award_badge("m1_moon_gravity", points=100, stars=3)
+        self._sync_active_pack_to_levels()
         self.running = True
         self.user_mode = "school"
         self.kid_mode: bool = True
@@ -313,12 +319,18 @@ class SynapseStudioWindow(Gtk.Window):
 
         GLib.timeout_add(18, self._on_tick)
 
+    def _sync_active_pack_to_levels(self) -> None:
+        pack_levels = self.pack_mgr.get_kid_levels()
+        if pack_levels:
+            LEVEL_DATA[:] = pack_levels
+
     @property
     def active_lab(self) -> Any:
         return self.labs[self.active_lab_id]
 
     def _build_ui(self) -> None:
         self.mode_stack = Gtk.Stack()
+        self.mode_stack.set_homogeneous(False)
         self.mode_stack.set_transition_type(Gtk.StackTransitionType.CROSSFADE)
         self.mode_stack.set_transition_duration(180)
         self.add(self.mode_stack)
@@ -339,11 +351,11 @@ class SynapseStudioWindow(Gtk.Window):
         self.mode_stack.add_named(root_vbox, "pro")
 
         # --- TOP HEADER BAR (Fits comfortably within 1260px) ---
-        header_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=6)
+        header_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=4)
         root_vbox.pack_start(header_box, False, False, 0)
 
         self.title_lbl = Gtk.Label()
-        self.title_lbl.set_markup("<b><span foreground='#38bdf8'>⚡ SYNAPSE STUDIO</span></b>")
+        self.title_lbl.set_markup("<b><span foreground='#38bdf8'>⚡ SYNAPSE</span></b>")
         header_box.pack_start(self.title_lbl, False, False, 2)
 
         self.lab_combo = SynapseDropdown()
@@ -354,32 +366,40 @@ class SynapseStudioWindow(Gtk.Window):
         header_box.pack_start(self.lab_combo, False, False, 2)
 
         # Web Browser Launch Button
-        self.btn_browser = Gtk.Button(label="◈ Web Browser")
+        self.btn_browser = Gtk.Button(label="◈ Browser")
         self.btn_browser.set_tooltip_text("Open Internet Web Browser (Firefox ESR / NetSurf)")
         self.btn_browser.connect("clicked", self._on_open_browser)
-        header_box.pack_start(self.btn_browser, False, False, 2)
+        header_box.pack_start(self.btn_browser, False, False, 1)
 
         # Secure Remote HTTPS Tunnel Button
         self.btn_tunnel = Gtk.Button(label="❖ Tunnel")
         self.btn_tunnel.set_tooltip_text("Show or start encrypted HTTPS Remote Browser Tunnel (Cloudflare + noVNC)")
         self.btn_tunnel.connect("clicked", self._on_show_tunnel)
-        header_box.pack_start(self.btn_tunnel, False, False, 2)
+        header_box.pack_start(self.btn_tunnel, False, False, 1)
+
+        # Learning Pack Update Button (Deletes old pack to save space, preserves Trophies & Scores)
+        self.btn_pack_update = Gtk.Button(label="★ Pack 1 ↻")
+        self.btn_pack_update.set_tooltip_text(
+            "Install next Learning Package, delete old pack files to save potato storage, and keep all Trophies & Scores!"
+        )
+        self.btn_pack_update.connect("clicked", lambda _b: self.upgrade_learning_pack())
+        header_box.pack_start(self.btn_pack_update, False, False, 1)
 
         # Badge Status Pill
         self.badge_lbl = Gtk.Label()
         self._update_badge_header()
-        header_box.pack_start(self.badge_lbl, False, False, 4)
+        header_box.pack_start(self.badge_lbl, False, False, 2)
 
         # KID MODE vs TEACHER / PRO MODE PROMINENT TOGGLE SWITCHER
-        mode_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=4)
-        header_box.pack_end(mode_box, False, False, 2)
+        mode_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=3)
+        header_box.pack_end(mode_box, False, False, 1)
 
         self.btn_kid_mode = Gtk.Button(label="★ Synapse Kids")
         self.btn_kid_mode.set_tooltip_text("Switch to full-screen Synapse Kids mode!")
         self.btn_kid_mode.connect("clicked", lambda _b: self._set_kid_mode(True))
         mode_box.pack_start(self.btn_kid_mode, False, False, 1)
 
-        self.btn_pro_mode = Gtk.Button(label="⚙ Mode Professeur / Teacher")
+        self.btn_pro_mode = Gtk.Button(label="⚙ Teacher Mode")
         self.btn_pro_mode.set_tooltip_text("Full Engineering & Classroom Workstation: all sliders, TTFT/RAM telemetry, Python code & Linux runner!")
         self.btn_pro_mode.connect("clicked", lambda _b: self._set_kid_mode(False))
         mode_box.pack_start(self.btn_pro_mode, False, False, 1)
@@ -818,11 +838,70 @@ class SynapseStudioWindow(Gtk.Window):
         self._set_cortex_message("↻ Cleared General Chat history and PRIME conversation buffer.")
 
     def _update_badge_header(self) -> None:
-        total = len(SCHOOL_CURRICULUM)
         earned = len(self.earned_badges)
+        pts = int(self.pack_mgr.profile.get("lifetime_points", 300)) if hasattr(self, "pack_mgr") else 300
+        pid = self.pack_mgr.profile.get("current_pack_id", "pack_1_core") if hasattr(self, "pack_mgr") else "pack_1_core"
+        pnum = 2 if "2" in pid else (3 if "3" in pid else 1)
+        if hasattr(self, "btn_pack_update"):
+            self.btn_pack_update.set_label(f"★ Pack {pnum} ↻")
         self.badge_lbl.set_markup(
-            f"<b><span foreground='#facc15'>★ Badges: {earned} / {total}</span></b>"
+            f"<b><span foreground='#facc15'>★ Trophies: {earned} | {pts} pts</span></b>"
         )
+
+    def award_kid_level_trophy(self, level_num: int) -> bool:
+        """Persist a trophy badge & +100 pts when a student completes a Kid Mode level."""
+        pid = self.pack_mgr.profile.get("current_pack_id", "pack_1_core")
+        badge_id = f"{pid}_L{level_num}"
+        was_new = self.pack_mgr.award_badge(badge_id, points=100, stars=3)
+        self.earned_badges = set(self.pack_mgr.profile.get("earned_badges", []))
+        self._update_badge_header()
+        return was_new
+
+    def upgrade_learning_pack(self, target_source: Optional[str] = None) -> Dict[str, Any]:
+        """
+        Upgrade to the next Learning Package (or a specified pack/file/URL):
+          1. Deletes old learning package files & scratch exports to save potato storage.
+          2. Keeps all student Trophies, Badges & Lifetime Scores in student_profile.json.
+          3. Hot-swaps all 7 Kid Mode levels & presets in-place.
+        """
+        if target_source:
+            res = self.pack_mgr.install_learning_pack(target_source)
+        else:
+            res = self.pack_mgr.upgrade_to_next_pack()
+
+        self.earned_badges = set(self.pack_mgr.profile.get("earned_badges", []))
+        self._sync_active_pack_to_levels()
+        self._update_badge_header()
+
+        # Switch Kid Mode to the first level of the newly installed pack so its presets & title apply immediately
+        self.kids_view._switch_to_level(0)
+        is_fr = (self.kids_view.lang == "fr")
+        p_title = res.get("new_pack_title_fr" if is_fr else "new_pack_title", "New Pack")
+        freed_kb = res.get("freed_kb", 0.0)
+        trophies = len(self.earned_badges)
+        pts = res.get("lifetime_points", 300)
+
+        if is_fr:
+            kid_msg = (
+                f"★ {p_title} chargé ! "
+                f"Ancien pack effacé ({freed_kb} Ko libérés). "
+                f"Tes {trophies} Trophées et {pts} pts sont gardés !"
+            )
+        else:
+            kid_msg = (
+                f"★ Loaded {p_title}! "
+                f"Old pack deleted ({freed_kb} KB freed). "
+                f"All {trophies} Trophies & {pts} pts kept!"
+            )
+        self.kids_view.custom_speech = kid_msg
+        self.kids_view.queue_draw()
+
+        self._set_cortex_message(
+            f"★ LEARNING PACK UPDATED -> {res.get('new_pack_title')}!\n"
+            f"   • Storage Cleanup: Purged {res.get('purged_files', 1)} old pack file(s) ({freed_kb} KB freed on disk).\n"
+            f"   • Trophies & Scores Preserved: {trophies} Gold Trophies | {pts} Lifetime Points | {res.get('lifetime_stars', 3)} Stars."
+        )
+        return res
 
     def _on_unlock_next_slider(self, _btn: Gtk.Button) -> None:
         total_specs = len(self.active_lab.VARIABLE_SPECS)
@@ -1075,8 +1154,8 @@ class SynapseStudioWindow(Gtk.Window):
         telem = self.labs[lesson["lab_id"]].get_telemetry()
         passed, msg = verify_lesson_goal(lesson, telem)
         if passed:
-            was_new = lesson["id"] not in self.earned_badges
-            self.earned_badges.add(lesson["id"])
+            was_new = self.pack_mgr.award_badge(lesson["id"], points=150, stars=3)
+            self.earned_badges = set(self.pack_mgr.profile.get("earned_badges", []))
             self._update_badge_header()
             self._refresh_lesson_view()
             if was_new and self.kid_mode:

@@ -30,6 +30,10 @@ case "$cmd" in
         shift || true
         python3 "${DIR}/cortex/cortex_cli.py" "$@"
         ;;
+    pack)
+        shift || true
+        python3 "${DIR}/workbench/pack_manager.py" "$@"
+        ;;
     test)
         echo -e "${CYAN}Running SynapseOS Automated Test Suite (Cortex + 6 AI Labs + School Suite)...${RESET}"
         python3 -m unittest discover -s "${DIR}/tests" -p "test_*.py"
@@ -65,6 +69,7 @@ case "$cmd" in
         echo "Commands:"
         echo "  studio [--benchmark]  Launch the Point-and-Click AI Workbench (6 Labs + School Suite)"
         echo "  curriculum [lesson]   List or run the 10-lesson School AI Curriculum & Coding Sandbox"
+        echo "  pack [status|next|list|install <id>] Manage Learning Packages (deletes old pack, keeps Trophies)"
         echo "  cortex [cmd|ai|forge] Run the Cortex-Phi3 AI Assistant & Linux Guide"
         echo "  test                  Run automated unit and integration tests"
         echo "  build-iso [--all]     Build bootable Live ISO image (default: --dry-run)"

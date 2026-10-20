@@ -264,8 +264,11 @@ class SynapseKidsView(Gtk.DrawingArea):
                 self.obj1_done = True
                 self.obj2_done = True
                 self.stars_score = 3
-                self.studio.earned_badges.add("m1_moon_gravity")
-                self.studio._update_badge_header()
+                if hasattr(self.studio, "award_kid_level_trophy"):
+                    self.studio.award_kid_level_trophy(self.cur_level.get("level", 1))
+                else:
+                    self.studio.earned_badges.add("m1_moon_gravity")
+                    self.studio._update_badge_header()
             else:
                 self.rocket_state = "crashed"
                 self.rocket_vy = 0.0
@@ -805,20 +808,44 @@ class SynapseKidsView(Gtk.DrawingArea):
         cr.move_to(lgx + (lgw - ext_lg.width) * 0.5, lgy + lgh * 0.67)
         cr.show_text(lang_txt)
 
-        # D. [Badges 🏆] Blue Pill (Below Teacher Mode on Right)
-        bgx, bgy, bgw, bgh = W * 0.775, H * 0.073, W * 0.192, H * 0.066
+        # D1. [Badges (N) 🏆] Blue Pill + D2. [★ Pack N ↻] Emerald Upgrade Pill (Below Teacher Mode)
+        bgx, bgy, bgw, bgh = W * 0.742, H * 0.073, W * 0.108, H * 0.064
         self.hitboxes["badges_btn"] = (bgx, bgy, bgw, bgh)
         self._draw_pill(
             cr, bgx, bgy, bgw, bgh,
             (0.14, 0.48, 0.92), (0.08, 0.30, 0.68), (0.38, 0.75, 0.98),
             hover=(self.hovered_id == "badges_btn"),
         )
-        cr.set_font_size(max(14.0, H * 0.026))
+        cr.set_font_size(max(10.5, H * 0.018))
         cr.set_source_rgb(1.0, 1.0, 1.0)
-        b_txt = f"Badges ({max(1, len(self.studio.earned_badges))})" if len(self.studio.earned_badges) > 1 else "Badges"
-        cr.move_to(bgx + bgw * 0.14, bgy + bgh * 0.64)
+        earned_cnt = max(1, len(self.studio.earned_badges))
+        b_txt = f"Trophées ({earned_cnt})" if is_fr else f"Trophies ({earned_cnt})"
+        cr.move_to(bgx + 10, bgy + bgh * 0.63)
         cr.show_text(b_txt)
-        self._draw_trophy_icon(cr, bgx + bgw * 0.80, bgy + bgh * 0.52, min(W, H) / 720.0)
+        self._draw_trophy_icon(cr, bgx + bgw - 17, bgy + bgh * 0.52, min(W, H) / 860.0)
+
+        # D2. [★ Pack N ↻] Emerald-Gold Learning Package Update Pill
+        upx, upy, upw, uph = W * 0.856, H * 0.073, W * 0.112, H * 0.064
+        self.hitboxes["upgrade_pack"] = (upx, upy, upw, uph)
+        self._draw_pill(
+            cr, upx, upy, upw, uph,
+            (0.14, 0.74, 0.42), (0.07, 0.48, 0.26), (0.45, 0.96, 0.68),
+            hover=(self.hovered_id == "upgrade_pack"),
+            glow=True,
+        )
+        pack_num = 1
+        if hasattr(self.studio, "pack_mgr"):
+            pid = self.studio.pack_mgr.profile.get("current_pack_id", "pack_1_core")
+            if "2" in pid:
+                pack_num = 2
+            elif "3" in pid:
+                pack_num = 3
+        up_txt = f"★ Pack {pack_num} ↻" if not is_fr else f"★ Pack {pack_num} ↻"
+        cr.set_font_size(max(12.5, H * 0.022))
+        cr.set_source_rgb(1.0, 0.98, 0.85)
+        ext_up = cr.text_extents(up_txt)
+        cr.move_to(upx + (upw - ext_up.width) * 0.5, upy + uph * 0.64)
+        cr.show_text(up_txt)
 
         # ======================================================================
         # LEFT MAIN BOX: SIMULATION VIEWPORT
@@ -858,18 +885,18 @@ class SynapseKidsView(Gtk.DrawingArea):
                 self.studio._render_prime_attention(cr, sw, sub_h)
             cr.restore()
 
-        # Top-Left "SIMULATION" title + 7 One-Click Level Buttons (L1..L7) + Click Hint
+        # Top-Left "SIMULATION" title + 7 One-Click Level Buttons (L1..L7 / L8..L14 / L15..L21) + Click Hint
         cr.select_font_face("Sans", cairo.FONT_SLANT_NORMAL, cairo.FONT_WEIGHT_BOLD)
         cr.set_font_size(max(13.0, H * 0.023))
         cr.set_source_rgba(0.95, 0.98, 1.0, 0.95)
         cr.move_to(sx + 14, sy + 23)
         cr.show_text("SIMULATION")
 
-        # 7 Quick-Jump Level Pills [L1]..[L7] so kids can pick any level in 1 click
-        pill_start_x = sx + 142
-        pill_w, pill_h = 28.0, 20.0
+        # 7 Quick-Jump Level Pills so kids can pick any level in the active pack in 1 click
+        pill_start_x = sx + 138
+        pill_w, pill_h = 30.0, 20.0
         for idx_l in range(len(LEVEL_DATA)):
-            px_l = pill_start_x + idx_l * (pill_w + 5.0)
+            px_l = pill_start_x + idx_l * (pill_w + 4.5)
             py_l = sy + 7.0
             hid_l = f"level_jump_{idx_l}"
             self.hitboxes[hid_l] = (px_l, py_l, pill_w, pill_h)
@@ -886,9 +913,10 @@ class SynapseKidsView(Gtk.DrawingArea):
             cr.set_source_rgba(0.55, 0.82, 1.0, 0.95 if is_cur else 0.55)
             cr.set_line_width(1.4 if is_cur else 1.0)
             cr.stroke()
-            cr.set_font_size(10.0)
+            cr.set_font_size(9.5)
             cr.set_source_rgb(1.0, 1.0, 1.0)
-            lbl_l = f"L{idx_l + 1}"
+            lv_num = LEVEL_DATA[idx_l].get("level", idx_l + 1)
+            lbl_l = f"L{lv_num}"
             ext_l = cr.text_extents(lbl_l)
             cr.move_to(px_l + (pill_w - ext_l.width) * 0.5, py_l + 14.0)
             cr.show_text(lbl_l)
@@ -1062,9 +1090,20 @@ class SynapseKidsView(Gtk.DrawingArea):
         cr.move_to(jx + 18, jy + 5)
         cr.show_text("Commandes simples" if is_fr else "Simple Controls")
 
-        # Score: ⭐⭐⭐ (3/3) on the right
-        sc_x = dx + dw * 0.68
+        # Persistent Lifetime Score + Level Stars: ★ 1,200 pts  |  Score: ⭐⭐⭐ (3/3)
+        lifetime_pts = 300
+        if hasattr(self.studio, "pack_mgr"):
+            lifetime_pts = int(self.studio.pack_mgr.profile.get("lifetime_points", 300))
+        pts_x = dx + dw * 0.48
+        sc_x = dx + dw * 0.69
         sc_y = dy + dh * 0.24
+        cr.set_font_size(max(13.0, H * 0.022))
+        cr.set_source_rgb(0.99, 0.84, 0.28)
+        pts_lbl = f"★ Total: {lifetime_pts} pts"
+        cr.move_to(pts_x, sc_y + 4)
+        cr.show_text(pts_lbl)
+
+        cr.set_font_size(max(14.5, H * 0.025))
         cr.set_source_rgb(0.96, 0.98, 1.0)
         cr.move_to(sc_x, sc_y + 4)
         cr.show_text("Score:")
@@ -1696,6 +1735,13 @@ class SynapseKidsView(Gtk.DrawingArea):
         new_lid = self.cur_level["lab_id"]
         self.studio.active_lab_id = new_lid
         self.studio.lab_combo.set_active_id(new_lid)
+        # Apply pack-specific presets if present on this level
+        presets = self.cur_level.get("presets") or self.cur_level.get("preset") or {}
+        if presets:
+            lab = self.studio.active_lab
+            for pk, pv in presets.items():
+                if pk in lab.params:
+                    lab.update_param(pk, float(pv))
         self.studio._populate_examples_dropdown()
         self.studio._populate_sliders()
         self.custom_speech = None
@@ -1750,12 +1796,19 @@ class SynapseKidsView(Gtk.DrawingArea):
             self._switch_to_level(target_idx)
             return True
 
+        if clicked_id == "upgrade_pack":
+            if hasattr(self.studio, "upgrade_learning_pack"):
+                self.studio.upgrade_learning_pack()
+            return True
+
         if clicked_id == "badges_btn":
             earned = max(1, len(self.studio.earned_badges))
+            pts = int(self.studio.pack_mgr.profile.get("lifetime_points", 300)) if hasattr(self.studio, "pack_mgr") else 300
+            comp = len(self.studio.pack_mgr.profile.get("completed_packs", [])) if hasattr(self.studio, "pack_mgr") else 0
             self.custom_speech = (
-                f"Bravo ! Tu as gagné {earned} Badge(s) d'Or et 3 Étoiles ! Clique sur L1..L7 pour jouer aux 7 niveaux !"
+                f"Bravo ! {earned} Trophées d'Or, {pts} pts et {comp} Pack(s) finis ! Clique sur [★ Pack ↻] pour charger de nouveaux niveaux !"
                 if is_fr
-                else f"Awesome! You have earned {earned} Gold Badge(s) and 3 Stars! Click L1..L7 to play all 7 levels!"
+                else f"Trophy Vault: {earned} Gold Trophies, {pts} pts & {comp} Pack(s) graduated! Click [★ Pack ↻] anytime to load the next Learning Pack!"
             )
             self.queue_draw()
             return True
@@ -1854,6 +1907,8 @@ class SynapseKidsView(Gtk.DrawingArea):
             self.stars_score = 3
             self.obj1_done = True
             self.obj2_done = True
+            if hasattr(self.studio, "award_kid_level_trophy"):
+                self.studio.award_kid_level_trophy(self.cur_level.get("level", 1))
             if lid == "nn_playground":
                 cur_n = int(round(lab.params.get("hidden_neurons", 8.0)))
                 new_n = 4 if cur_n >= 16 else min(16, cur_n + 4)
@@ -1912,6 +1967,8 @@ class SynapseKidsView(Gtk.DrawingArea):
             self.stars_score = 3
             self.obj1_done = True
             self.obj2_done = True
+            if hasattr(self.studio, "award_kid_level_trophy"):
+                self.studio.award_kid_level_trophy(self.cur_level.get("level", 1))
             if lid == "nn_playground":
                 cur_ds = int(round(lab.params.get("dataset_id", 3.0)))
                 next_ds = (cur_ds + 1) % 4
