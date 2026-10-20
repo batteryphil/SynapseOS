@@ -108,11 +108,11 @@ LEVEL_DATA: List[Dict[str, Any]] = [
         "obj2_en": "90% Accuracy",
         "obj2_fr": "Précision 90%",
         "btn1_en": ("Add Brain", "Neurons"),
-        "btn1_fr": ("Rendre plus", "intelligent"),
-        "btn2_en": ("Faster", "Learning"),
-        "btn2_fr": ("Apprendre", "Plus vite"),
-        "btn3_en": ("Clean", "Dots"),
-        "btn3_fr": ("Points", "Faciles"),
+        "btn1_fr": ("Ajouter", "Neurones"),
+        "btn2_en": ("Switch", "Pattern"),
+        "btn2_fr": ("Changer", "Forme"),
+        "btn3_en": ("Scramble", "Dots"),
+        "btn3_fr": ("Mélanger", "Points"),
     },
     {
         "level": 6,
@@ -165,8 +165,7 @@ class SynapseKidsView(Gtk.DrawingArea):
         self.studio = studio_win
         self.on_switch_to_teacher = on_switch_to_teacher
 
-        # Default to French ("fr") or English ("en") — let's start in French to match the exact photo
-        # or provide instant 1-click toggle in top right! Wait: let's check both!
+        # Default to English ("en"), with instant 1-click FR/EN toggle in top right
         self.lang: str = "en"
         self.level_idx: int = 0
         self.hovered_id: Optional[str] = None
@@ -177,13 +176,13 @@ class SynapseKidsView(Gtk.DrawingArea):
         self.fuel_boost: bool = True
         self.light_grav: bool = True
 
-        self.rocket_x: float = 0.50
-        self.rocket_y: float = 0.34
-        self.rocket_vx: float = 0.0
-        self.rocket_vy: float = 0.0018
-        self.rocket_angle: float = -0.05
+        self.rocket_x: float = 0.31
+        self.rocket_y: float = 0.15
+        self.rocket_vx: float = 0.0025
+        self.rocket_vy: float = 0.0048
+        self.rocket_angle: float = -0.14
         self.rocket_fuel: float = 100.0
-        self.rocket_thrusting: bool = True
+        self.rocket_thrusting: bool = False
         self.rocket_state: str = "flying"  # "flying", "landed", "crashed"
         self.landed_timer: int = 0
 
@@ -207,61 +206,61 @@ class SynapseKidsView(Gtk.DrawingArea):
         return LEVEL_DATA[self.level_idx % len(LEVEL_DATA)]
 
     def reset_rocket_test(self) -> None:
-        """Launch a fresh test run of the hero Moon Lander rocket."""
-        self.rocket_x = 0.50
-        self.rocket_y = 0.18
-        self.rocket_vx = 0.0
-        self.rocket_vy = 0.0028
-        self.rocket_angle = -0.06
-        self.rocket_fuel = 100.0 if self.fuel_boost else 42.0
+        """Launch a fresh test run of the hero Moon Lander rocket from high in space."""
+        self.rocket_x = 0.31
+        self.rocket_y = 0.15
+        self.rocket_vx = 0.0025
+        self.rocket_vy = 0.0048
+        self.rocket_angle = -0.14
+        self.rocket_fuel = 100.0 if self.fuel_boost else 38.0
         self.rocket_state = "flying"
-        self.rocket_thrusting = True
+        self.rocket_thrusting = False
         self.landed_timer = 0
 
     def step_kid_simulation(self) -> None:
-        """Step the playful hero rocket physics for Level 1 so it looks super smooth & engaging."""
+        """Step the playful hero rocket physics for Level 1 so it visibly descends, brakes, and lands on the Moon."""
         if self.cur_level["lab_id"] != "moon_lander":
             return
 
         if self.rocket_state != "flying":
             self.landed_timer += 1
-            # Automatically loop a gentle re-flight after 4 seconds so the screen stays alive
-            if self.landed_timer > 220:
+            # After 2.8 seconds parked on the Moon (or crashed), launch a fresh test flight
+            if self.landed_timer > 155:
                 self.reset_rocket_test()
             return
 
-        grav = 0.00009 if self.light_grav else 0.00024
-        thrust_acc = 0.00022 if self.fuel_boost else 0.00013
+        grav = 0.00018 if self.light_grav else 0.00042
+        thrust_acc = 0.00046 if self.fuel_boost else 0.00020
 
-        # AI Controller decides thruster firing
-        target_vy = 0.0018 if self.smart_boost >= 1 else 0.0055
-        need_brake = (self.rocket_y > 0.30 and self.rocket_vy > target_vy) or (
-            self.rocket_y > 0.50 and self.rocket_vy > 0.0011
-        )
+        # Free-fall in upper space (y < 0.32), then AI fires retro-thrusters in braking zone (y >= 0.32)
+        target_vy = 0.0026 if self.smart_boost >= 1 else 0.0075
+        in_braking_zone = self.rocket_y >= 0.32
+        need_brake = in_braking_zone and (self.rocket_vy > target_vy or self.rocket_y > 0.48)
 
         if need_brake and self.rocket_fuel > 0.0:
             self.rocket_thrusting = True
-            self.rocket_vy -= thrust_acc
-            self.rocket_fuel = max(0.0, self.rocket_fuel - (0.35 if self.fuel_boost else 0.85))
-            self.rocket_angle *= 0.92
+            self.rocket_vy = max(0.0018, self.rocket_vy - thrust_acc)
+            self.rocket_fuel = max(0.0, self.rocket_fuel - (0.65 if self.fuel_boost else 1.65))
+            self.rocket_angle *= 0.88
+            self.rocket_vx *= 0.92
         else:
-            self.rocket_thrusting = (self.rocket_y > 0.42 and self.rocket_fuel > 0.0)
-            if self.rocket_thrusting:
-                self.rocket_vy -= thrust_acc * 0.65
+            self.rocket_thrusting = False
+            self.rocket_vy += grav
+            self.rocket_angle = min(0.22, self.rocket_angle + 0.004)
 
-        self.rocket_vy += grav
-        self.rocket_x = 0.50 + 0.015 * math.sin(self.rocket_y * 6.0)
+        # Gentle horizontal steering toward the landing pad at x = 0.31
+        self.rocket_x += (0.31 - self.rocket_x) * 0.06 + math.sin(self.rocket_y * 12.0) * 0.0015
         self.rocket_y += self.rocket_vy
 
-        # Touchdown on the lunar surface at y = 0.68
-        if self.rocket_y >= 0.67:
-            self.rocket_y = 0.67
-            if self.rocket_vy <= 0.0036 and (self.fuel_boost or self.light_grav or self.smart_boost >= 1):
+        # Touchdown when footpads reach the lunar landing pad at rocket_y = 0.615
+        if self.rocket_y >= 0.615:
+            self.rocket_y = 0.615
+            self.rocket_thrusting = False  # Shut off engines on touchdown so it sits on the Moon!
+            if self.rocket_vy <= 0.0052 and (self.fuel_boost or self.light_grav or self.smart_boost >= 1):
                 self.rocket_state = "landed"
                 self.rocket_vy = 0.0
                 self.rocket_vx = 0.0
                 self.rocket_angle = 0.0
-                self.rocket_thrusting = True  # Keep warm glow at touchdown like the screenshot
                 self.obj1_done = True
                 self.obj2_done = True
                 self.stars_score = 3
@@ -269,7 +268,9 @@ class SynapseKidsView(Gtk.DrawingArea):
                 self.studio._update_badge_header()
             else:
                 self.rocket_state = "crashed"
-                self.rocket_thrusting = False
+                self.rocket_vy = 0.0
+                self.rocket_vx = 0.0
+                self.rocket_angle = 0.42
                 self.obj1_done = False
                 self.obj2_done = False
                 self.stars_score = 1
@@ -817,6 +818,7 @@ class SynapseKidsView(Gtk.DrawingArea):
         # LEFT MAIN BOX: SIMULATION VIEWPORT
         # ======================================================================
         sx, sy, sw, sh = W * 0.032, H * 0.145, W * 0.562, H * 0.585
+        self.hitboxes["sim_box"] = (sx, sy, sw, sh)
         self._rounded_rect(cr, sx, sy, sw, sh, 16)
         pat_sim = cairo.LinearGradient(sx, sy, sx, sy + sh)
         pat_sim.add_color_stop_rgb(0.0, 0.02, 0.04, 0.09)
@@ -831,30 +833,42 @@ class SynapseKidsView(Gtk.DrawingArea):
         if lv["lab_id"] == "moon_lander":
             self._draw_kid_moon_simulation(cr, sx, sy, sw, sh, phase, is_fr)
         else:
-            # Render the selected level's live simulation scaled to the SIMULATION box
+            # Render the selected level's live simulation cleanly below the 32px SIMULATION header bar
+            sub_h = max(80.0, sh - 32.0)
             cr.save()
-            cr.translate(sx, sy)
+            cr.translate(sx, sy + 32.0)
             lid = lv["lab_id"]
             if lid == "raycast_car":
-                self.studio._render_raycast_car(cr, sw, sh)
+                self.studio._render_raycast_car(cr, sw, sub_h)
             elif lid == "rl_gridworld":
-                self.studio._render_rl_gridworld(cr, sw, sh)
+                self.studio._render_rl_gridworld(cr, sw, sub_h)
             elif lid == "cartpole_rl":
-                self.studio._render_cartpole(cr, sw, sh)
+                self.studio._render_cartpole(cr, sw, sub_h)
             elif lid == "nn_playground":
-                self.studio._render_nn_playground(cr, sw, sh)
+                self.studio._render_nn_playground(cr, sw, sub_h)
             elif lid == "swarm_ecosystem":
-                self.studio._render_swarm(cr, sw, sh)
+                self.studio._render_swarm(cr, sw, sub_h)
             elif lid == "prime_attention":
-                self.studio._render_prime_attention(cr, sw, sh)
+                self.studio._render_prime_attention(cr, sw, sub_h)
             cr.restore()
 
-        # Top-Left "SIMULATION" title label
+        # Top-Left "SIMULATION" title label + interactive click hint
         cr.select_font_face("Sans", cairo.FONT_SLANT_NORMAL, cairo.FONT_WEIGHT_BOLD)
-        cr.set_font_size(max(14.0, H * 0.025))
+        cr.set_font_size(max(13.5, H * 0.024))
         cr.set_source_rgba(0.95, 0.98, 1.0, 0.95)
-        cr.move_to(sx + 16, sy + 28)
+        cr.move_to(sx + 16, sy + 23)
         cr.show_text("SIMULATION")
+        if lv["lab_id"] in ("nn_playground", "moon_lander"):
+            cr.set_font_size(max(10.0, H * 0.016))
+            cr.set_source_rgba(0.45, 0.88, 1.0, 0.88)
+            hint_t = (
+                "★ Clique dans l'écran pour ajouter des points !" if (is_fr and lv["lab_id"] == "nn_playground")
+                else ("★ Click inside canvas to drop Blue/Red dots!" if lv["lab_id"] == "nn_playground"
+                      else ("★ Clique dans le ciel pour lancer la fusée !" if is_fr else "★ Click anywhere in the sky to drop rocket!"))
+            )
+            ext_h = cr.text_extents(hint_t)
+            cr.move_to(sx + sw - ext_h.width - 14, sy + 22)
+            cr.show_text(hint_t)
         cr.restore()
 
         # Glowing Blue Border around SIMULATION
@@ -1209,10 +1223,52 @@ class SynapseKidsView(Gtk.DrawingArea):
         for cx_f, cy_f, rx_f, ry_f in craters:
             self._draw_lunar_crater(cr, sx + sw * cx_f, sy + sh * cy_f, sw * rx_f, sh * ry_f)
 
-        # 3. NEAT Moon Lander Position (Left-Center of sky so the Neural Network fits on the Right!)
-        rx_pos = sx + sw * 0.31
-        ry_pos = sy + sh * (0.22 + 0.36 * ((self.rocket_y - 0.16) / 0.52))
+        # 2b. Glowing Lunar Landing Pad on the Moon surface directly under target x = 0.31
+        pad_cx = sx + sw * 0.31
+        pad_cy = sy + sh * 0.705
+        pad_w = sw * 0.20
+        pad_h = sh * 0.026
+        self._rounded_rect(cr, pad_cx - pad_w * 0.5, pad_cy - pad_h * 0.5, pad_w, pad_h, 6)
+        if self.rocket_state == "landed":
+            cr.set_source_rgba(0.15, 0.95, 0.50, 0.88)
+        elif self.rocket_state == "crashed":
+            cr.set_source_rgba(0.98, 0.25, 0.22, 0.88)
+        else:
+            cr.set_source_rgba(0.18, 0.82, 0.55, 0.45 + 0.25 * math.sin(phase * 3.0))
+        cr.fill_preserve()
+        cr.set_source_rgba(0.55, 1.0, 0.78, 0.95)
+        cr.set_line_width(2.0)
+        cr.stroke()
+
+        # Landing pad beacon lights + "LANDING PAD" label
+        for side_b in (-1, 1):
+            cr.new_path()
+            cr.set_source_rgb(0.25, 1.0, 0.65)
+            cr.arc(pad_cx + side_b * (pad_w * 0.44), pad_cy, 3.5, 0, 2 * math.pi)
+            cr.fill()
+        cr.select_font_face("Sans", cairo.FONT_SLANT_NORMAL, cairo.FONT_WEIGHT_BOLD)
+        cr.set_font_size(max(8.5, sh * 0.022))
+        cr.set_source_rgba(0.88, 1.0, 0.92, 0.92)
+        pad_lbl = "ZONE D'ALUNISSAGE" if is_fr else "LUNAR LANDING PAD"
+        ext_p = cr.text_extents(pad_lbl)
+        cr.move_to(pad_cx - ext_p.width * 0.5, pad_cy + pad_h + 12)
+        cr.show_text(pad_lbl)
+
+        # 3. NEAT Moon Lander Position — maps directly to self.rocket_x / self.rocket_y so it descends all the way to the pad!
+        rx_pos = sx + sw * self.rocket_x
+        ry_pos = sy + sh * self.rocket_y
         r_scale = min(sw, sh) / 300.0
+
+        # Vertical descent guide beam from lander to landing pad while flying
+        if self.rocket_state == "flying":
+            cr.save()
+            cr.set_source_rgba(0.28, 0.92, 0.65, 0.35)
+            cr.set_line_width(1.5)
+            cr.set_dash([5.0, 5.0], -phase * 6.0)
+            cr.move_to(rx_pos, ry_pos + 36 * r_scale)
+            cr.line_to(pad_cx, pad_cy - pad_h * 0.5)
+            cr.stroke()
+            cr.restore()
 
         # Subtle concentric HUD telemetry rings around the Lander
         cr.new_path()
@@ -1250,6 +1306,49 @@ class SynapseKidsView(Gtk.DrawingArea):
             phase=phase,
             is_fr=is_fr,
         )
+
+        # 6. Live Flight Telemetry Pill & Touchdown / Crash Celebration Banner
+        alt_m = max(0, int((0.615 - self.rocket_y) * 260))
+        spd_ms = abs(self.rocket_vy) * 1200.0
+        hud_x, hud_y = sx + 14, sy + 38
+        self._rounded_rect(cr, hud_x, hud_y, sw * 0.44, 24, 7)
+        cr.set_source_rgba(0.05, 0.12, 0.24, 0.82)
+        cr.fill()
+        cr.set_font_size(max(9.5, sh * 0.025))
+        cr.set_source_rgb(0.55, 0.90, 1.0)
+        cr.move_to(hud_x + 8, hud_y + 16)
+        cr.show_text(f"ALT: {alt_m:3d}m  |  SPD: {spd_ms:3.1f} m/s  |  FUEL: {int(self.rocket_fuel)}%")
+
+        if self.rocket_state == "landed":
+            bw, bh = sw * 0.50, 34
+            bx, by = rx_pos - bw * 0.5, max(sy + 68, ry_pos - 78 * r_scale)
+            self._rounded_rect(cr, bx, by, bw, bh, 10)
+            cr.set_source_rgba(0.10, 0.78, 0.42, 0.94)
+            cr.fill_preserve()
+            cr.set_source_rgb(0.65, 1.0, 0.80)
+            cr.set_line_width(2.0)
+            cr.stroke()
+            cr.set_font_size(max(11.5, sh * 0.032))
+            cr.set_source_rgb(1.0, 1.0, 1.0)
+            msg = "★ ALUNISSAGE RÉUSSI ! +100 PTS !" if is_fr else "★ TOUCHDOWN! +100 PTS!"
+            ext_m = cr.text_extents(msg)
+            cr.move_to(bx + (bw - ext_m.width) * 0.5, by + 22)
+            cr.show_text(msg)
+        elif self.rocket_state == "crashed":
+            bw, bh = sw * 0.54, 34
+            bx, by = rx_pos - bw * 0.5, max(sy + 68, ry_pos - 78 * r_scale)
+            self._rounded_rect(cr, bx, by, bw, bh, 10)
+            cr.set_source_rgba(0.88, 0.22, 0.18, 0.94)
+            cr.fill_preserve()
+            cr.set_source_rgb(1.0, 0.75, 0.45)
+            cr.set_line_width(2.0)
+            cr.stroke()
+            cr.set_font_size(max(11.0, sh * 0.030))
+            cr.set_source_rgb(1.0, 1.0, 1.0)
+            msg = "⚠ TROP VITE ! AJOUTE DU CARBURANT !" if is_fr else "⚠ TOO FAST! CLICK MORE FUEL!"
+            ext_m = cr.text_extents(msg)
+            cr.move_to(bx + (bw - ext_m.width) * 0.5, by + 22)
+            cr.show_text(msg)
 
     def _draw_neat_moon_lander_craft(
         self,
@@ -1563,17 +1662,28 @@ class SynapseKidsView(Gtk.DrawingArea):
         return False
 
     def _on_button_press(self, _widget: Gtk.Widget, event: Gdk.EventButton) -> bool:
+        if event.type != Gdk.EventType.BUTTON_PRESS:
+            return False
         ex, ey = event.x, event.y
         clicked_id: Optional[str] = None
+        # Check interactive buttons first, then sim_box last
         for hid, (hx, hy, hw, hh) in self.hitboxes.items():
+            if hid == "sim_box":
+                continue
             if hx <= ex <= hx + hw and hy <= ey <= hy + hh:
                 clicked_id = hid
                 break
+        if not clicked_id and "sim_box" in self.hitboxes:
+            hx, hy, hw, hh = self.hitboxes["sim_box"]
+            if hx <= ex <= hx + hw and hy <= ey <= hy + hh:
+                clicked_id = "sim_box"
 
         if not clicked_id:
             return False
 
         is_fr = (self.lang == "fr")
+        lid = self.cur_level["lab_id"]
+        lab = self.studio.active_lab
 
         if clicked_id == "teacher_mode":
             self.on_switch_to_teacher()
@@ -1608,64 +1718,180 @@ class SynapseKidsView(Gtk.DrawingArea):
             self.queue_draw()
             return True
 
+        if clicked_id == "sim_box":
+            hx, hy, hw, hh = self.hitboxes["sim_box"]
+            nx = ((ex - hx) / max(1.0, hw)) * 2.0 - 1.0
+            ny = ((ey - hy) / max(1.0, hh)) * 2.0 - 1.0
+            if lid == "nn_playground" and hasattr(lab, "add_interactive_dots"):
+                # Toggle between adding Blue (1.0) and Red (0.0) dot clusters on click
+                self._next_dot_label = 0.0 if getattr(self, "_next_dot_label", 0.0) > 0.5 else 1.0
+                color_en = "BLUE" if self._next_dot_label > 0.5 else "RED"
+                color_fr = "BLEUS" if self._next_dot_label > 0.5 else "ROUGES"
+                lab.add_interactive_dots(nx, ny, label=self._next_dot_label, count=7)
+                self.custom_speech = (
+                    f"Hop ! Tu as ajouté des points {color_fr} ! Regarde la frontière dorée s'adapter en direct !"
+                    if is_fr
+                    else f"Pop! You dropped new {color_en} dots! Watch the golden AI boundary curve around them!"
+                )
+                self.queue_draw()
+                return True
+            elif lid == "moon_lander":
+                # Clicking in the Moon Lander sky launches or fires retro-thrusters toward that spot
+                self.rocket_x = max(0.18, min(0.46, (ex - hx) / max(1.0, hw)))
+                self.rocket_y = max(0.14, min(0.45, (ey - hy) / max(1.0, hh)))
+                self.rocket_vy = 0.0040
+                self.rocket_vx = (0.31 - self.rocket_x) * 0.015
+                self.rocket_state = "flying"
+                self.rocket_thrusting = True
+                self.custom_speech = (
+                    "Fusée relancée depuis le ciel ! Regarde le cerveau IA freiner vers la cible !"
+                    if is_fr
+                    else "Rocket dropped from your click! Watch the AI brain fire retro-thrusters to land!"
+                )
+                self.queue_draw()
+                return True
+
         if clicked_id == "btn_smarter":
             self.smart_boost += 1
-            self.studio.active_lab.fast_forward_generations(15)
-            if hasattr(self.studio.active_lab, "modify_brain_structure"):
-                self.studio.active_lab.modify_brain_structure(delta_neurons=1, delta_synapses=2)
             self.stars_score = 3
             self.obj1_done = True
             self.obj2_done = True
-            self.custom_speech = (
-                "Super ! Le cerveau de l'IA a gagné de nouveaux neurones et 15 générations d'entraînement !"
-                if is_fr
-                else "Awesome! Your AI brain just grew new neurons and practiced 15 generations!"
-            )
-            self.reset_rocket_test()
+            if lid == "nn_playground":
+                cur_n = int(round(lab.params.get("hidden_neurons", 8.0)))
+                new_n = 4 if cur_n >= 16 else min(16, cur_n + 4)
+                lab.update_param("hidden_neurons", float(new_n))
+                lab.fast_forward_generations(20)
+                self.studio._populate_sliders()
+                self.custom_speech = (
+                    f"Cerveau agrandi à {new_n} neurones ! La frontière dorée peut maintenant courber autour des formes complexes !"
+                    if is_fr
+                    else f"Brain upgraded to {new_n} Hidden Neurons! Watch the golden boundary curve tightly around every dot!"
+                )
+            else:
+                lab.fast_forward_generations(15)
+                if hasattr(lab, "modify_brain_structure"):
+                    lab.modify_brain_structure(delta_neurons=1, delta_synapses=2)
+                self.custom_speech = (
+                    "Super ! Le cerveau de l'IA a gagné de nouveaux neurones et 15 générations d'entraînement !"
+                    if is_fr
+                    else "Awesome! Your AI brain just grew new neurons and practiced 15 generations!"
+                )
+                if lid == "moon_lander":
+                    self.reset_rocket_test()
             self.queue_draw()
             return True
 
         if clicked_id == "btn_fuel":
             self.fuel_boost = True
-            if "thruster_power" in self.studio.active_lab.params:
-                self.studio.active_lab.update_param("thruster_power", 0.34)
             self.stars_score = 3
             self.obj1_done = True
             self.obj2_done = True
-            self.custom_speech = (
-                "Plein de carburant ajouté ! Les moteurs de la fusée sont maintenant super puissants !"
-                if is_fr
-                else "Extra fuel added! Your rocket thrusters are now super strong for a soft landing!"
-            )
-            self.reset_rocket_test()
+            if lid == "nn_playground":
+                # Cycle Dataset Pattern: 0 (XOR) -> 1 (Rings) -> 2 (Moons) -> 3 (Spiral)
+                cur_ds = int(round(lab.params.get("dataset_id", 3.0)))
+                next_ds = (cur_ds + 1) % 4
+                names_en = ["XOR Quadrants", "Concentric Rings", "Two Moons", "Twin Spiral"]
+                names_fr = ["Quadrants XOR", "Anneaux Concentriques", "Deux Lunes", "Double Spirale"]
+                lab.update_param("dataset_id", float(next_ds))
+                lab.update_param("learning_rate", 0.14)
+                lab.fast_forward_generations(12)
+                self.studio._populate_sliders()
+                self.custom_speech = (
+                    f"Nouvelle forme : {names_fr[next_ds]} ! Regarde le cerveau trier les couleurs en direct !"
+                    if is_fr
+                    else f"Switched pattern to {names_en[next_ds]}! Watch the AI brain re-carve the color boundary live!"
+                )
+            elif lid == "moon_lander":
+                if "thruster_power" in lab.params:
+                    lab.update_param("thruster_power", 0.34)
+                self.reset_rocket_test()
+                self.custom_speech = (
+                    "Plein de carburant ajouté ! Les moteurs de la fusée sont maintenant super puissants !"
+                    if is_fr
+                    else "Extra fuel added! Your rocket thrusters are now super strong for a soft landing!"
+                )
+            else:
+                # Boost primary power/range parameter for other levels
+                for k, v in [("sensor_range", 210.0), ("learning_rate", 0.45), ("motor_force", 16.0), ("food_count", 45.0), ("window_size", 48.0)]:
+                    if k in lab.params:
+                        lab.update_param(k, v)
+                self.studio._populate_sliders()
+                self.custom_speech = (
+                    "Super boost activé ! Les capteurs et moteurs de l'IA sont à pleine puissance !"
+                    if is_fr
+                    else "Super boost activated! Sensors and motors are now running at maximum power!"
+                )
             self.queue_draw()
             return True
 
         if clicked_id == "btn_gravity":
-            self.light_grav = True
-            if "gravity" in self.studio.active_lab.params:
-                self.studio.active_lab.update_param("gravity", 0.06)
+            self.light_grav = not self.light_grav if lid == "nn_playground" else True
             self.stars_score = 3
             self.obj1_done = True
             self.obj2_done = True
-            self.custom_speech = (
-                "Gravité lunaire activée ! La fusée flotte tout doucement vers les cratères !"
-                if is_fr
-                else "Light Moon Gravity activated! The rocket floats gently down toward the craters!"
-            )
-            self.reset_rocket_test()
+            if lid == "nn_playground":
+                # Toggle between scrambled noisy dots (0.22) and clean organized dots (0.03)
+                cur_noise = lab.params.get("noise", 0.08)
+                new_noise = 0.22 if cur_noise < 0.12 else 0.03
+                lab.update_param("noise", new_noise)
+                self.studio._populate_sliders()
+                if new_noise > 0.12:
+                    self.custom_speech = (
+                        "Points mélangés ! Les points rouges et bleus bougent partout — regarde l'IA s'adapter !"
+                        if is_fr
+                        else "Dots scrambled! The blue and red dots are extra wild now — watch the AI boundary chase them!"
+                    )
+                else:
+                    self.custom_speech = (
+                        "Points bien rangés ! Le trieur de couleurs atteint presque 100% de précision !"
+                        if is_fr
+                        else "Clean dots activated! Now the Color Sorter brain can reach nearly 100% accuracy!"
+                    )
+            elif lid == "moon_lander":
+                if "gravity" in lab.params:
+                    lab.update_param("gravity", 0.06)
+                self.reset_rocket_test()
+                self.custom_speech = (
+                    "Gravité lunaire activée ! La fusée flotte tout doucement vers la zone d'alunissage !"
+                    if is_fr
+                    else "Light Moon Gravity activated! Watch the lander float gently down onto the landing pad!"
+                )
+            else:
+                for k, v in [("max_speed", 5.5), ("epsilon", 0.05), ("gravity", 6.5), ("predator_speed", 1.4), ("temperature", 0.45)]:
+                    if k in lab.params:
+                        lab.update_param(k, v)
+                self.studio._populate_sliders()
+                self.custom_speech = (
+                    "Mode précision activé ! L'IA contrôle la simulation tout en douceur !"
+                    if is_fr
+                    else "Precision mode activated! The AI is now in smooth, high-accuracy control!"
+                )
             self.queue_draw()
             return True
 
         if clicked_id == "btn_relaunch":
-            self.reset_rocket_test()
-            if self.cur_level["lab_id"] != "moon_lander":
+            if lid == "nn_playground":
+                lab.reset_weights()
+                lab.rebuild_dataset()
+                self.custom_speech = (
+                    "Cerveau remis à zéro (Époque 0) ! Regarde la frontière dorée se former sous tes yeux !"
+                    if is_fr
+                    else "Brain reset to Epoch 0! Watch the golden decision boundary learn from scratch right now!"
+                )
+            elif lid == "moon_lander":
+                self.reset_rocket_test()
+                self.custom_speech = (
+                    "3... 2... 1... Mise à feu ! Regarde la fusée descendre et se poser sur la Lune !"
+                    if is_fr
+                    else "3... 2... 1... Liftoff! Watch your AI rocket descend and touch down on the Lunar Pad!"
+                )
+            else:
                 self.studio._on_reset_lab(None)
-            self.custom_speech = (
-                "3... 2... 1... Mise à feu ! Regarde la fusée se poser en douceur sur la Lune !"
-                if is_fr
-                else "3... 2... 1... Liftoff! Watch your AI rocket land gently on the Moon!"
-            )
+                self.custom_speech = (
+                    "Simulation relancée ! Regarde l'IA passer le test en direct !"
+                    if is_fr
+                    else "Simulation relaunched! Watch your trained AI run a fresh live test!"
+                )
             self.queue_draw()
             return True
 

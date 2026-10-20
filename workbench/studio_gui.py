@@ -495,7 +495,9 @@ class SynapseStudioWindow(Gtk.Window):
 
         self.sim_canvas = Gtk.DrawingArea()
         self.sim_canvas.set_size_request(420, 320)
+        self.sim_canvas.add_events(Gdk.EventMask.BUTTON_PRESS_MASK)
         self.sim_canvas.connect("draw", self._draw_sim_canvas)
+        self.sim_canvas.connect("button-press-event", self._on_sim_canvas_click)
         center_vbox.pack_start(self.sim_canvas, True, True, 0)
 
         # COLUMN 3: 3-Tab Right Panel (School Tutorials | Hands-On Coding | Brain & Phi-3)
@@ -1394,6 +1396,25 @@ class SynapseStudioWindow(Gtk.Window):
     # ==========================================================================
     # CAIRO 60 FPS SIMULATION VIEWPORT RENDERERS
     # ==========================================================================
+    def _on_sim_canvas_click(self, widget: Gtk.DrawingArea, event: Gdk.EventButton) -> bool:
+        alloc = widget.get_allocation()
+        w, h = max(1.0, float(alloc.width)), max(1.0, float(alloc.height))
+        if self.active_lab_id == "nn_playground":
+            lab: NeuralPlaygroundLab = self.labs["nn_playground"]
+            nx = (event.x / w) * 2.0 - 1.0
+            ny = (event.y / h) * 2.0 - 1.0
+            if event.button == 3:
+                lbl = 0.0
+            elif event.button == 2:
+                lbl = 1.0
+            else:
+                self._pro_dot_toggle = 0.0 if getattr(self, "_pro_dot_toggle", 0.0) > 0.5 else 1.0
+                lbl = self._pro_dot_toggle
+            lab.add_interactive_dots(nx, ny, label=lbl, count=7)
+            self.sim_canvas.queue_draw()
+            return True
+        return False
+
     def _draw_sim_canvas(self, widget: Gtk.DrawingArea, cr: cairo.Context) -> bool:
         alloc = widget.get_allocation()
         w, h = float(alloc.width), float(alloc.height)
@@ -1836,7 +1857,7 @@ class SynapseStudioWindow(Gtk.Window):
 
     def _render_nn_playground(self, cr: cairo.Context, w: float, h: float) -> None:
         lab: NeuralPlaygroundLab = self.labs["nn_playground"]
-        grid_n = 28
+        grid_n = 30
         cw = w / grid_n
         ch = h / grid_n
 
@@ -1845,25 +1866,74 @@ class SynapseStudioWindow(Gtk.Window):
             for gy in range(grid_n):
                 y_val = 1.0 - ((gy + 0.5) / grid_n) * 2.0
                 prob, _ = lab.predict_prob(x_val, y_val)
-                r_col = 0.65 * (1.0 - prob) + 0.08 * prob
-                g_col = 0.22 * (1.0 - prob) + 0.52 * prob
-                b_col = 0.25 * (1.0 - prob) + 0.75 * prob
+                dist_to_boundary = abs(prob - 0.5)
+                if dist_to_boundary < 0.065:
+                    # Glowing Gold/White Decision Boundary Contour (prob ~ 0.50)
+                    glow = 1.0 - (dist_to_boundary / 0.065)
+                    r_col = 0.25 + 0.72 * glow
+                    g_col = 0.55 + 0.42 * glow
+                    b_col = 0.65 + 0.30 * glow
+                else:
+                    r_col = 0.62 * (1.0 - prob) + 0.06 * prob
+                    g_col = 0.18 * (1.0 - prob) + 0.48 * prob
+                    b_col = 0.24 * (1.0 - prob) + 0.78 * prob
                 cr.set_source_rgb(r_col, g_col, b_col)
-                cr.rectangle(gx * cw, gy * ch, cw + 1, ch + 1)
+                cr.rectangle(gx * cw, gy * ch, cw + 1.2, ch + 1.2)
                 cr.fill()
 
+        # Subtle coordinate crosshair grid
+        cr.set_source_rgba(1.0, 1.0, 1.0, 0.12)
+        cr.set_line_width(1.0)
+        cr.move_to(w * 0.5, 0)
+        cr.line_to(w * 0.5, h)
+        cr.move_to(0, h * 0.5)
+        cr.line_to(w, h * 0.5)
+        cr.stroke()
+
+        # Draw swirling sample points with classification status halo
         for x, y, label in lab.samples:
             sx = (x + 1.0) * 0.5 * w
             sy = (1.0 - (y + 1.0) * 0.5) * h
-            cr.set_source_rgb(0.98, 0.98, 0.98)
-            cr.arc(sx, sy, 5.2, 0, 2 * math.pi)
-            cr.fill()
-            if label > 0.5:
-                cr.set_source_rgb(0.10, 0.85, 0.98)
+            prob, _ = lab.predict_prob(x, y)
+            is_correct = (prob >= 0.5) == (label >= 0.5)
+
+            cr.new_path()
+            if is_correct:
+                cr.set_source_rgba(0.98, 0.98, 1.0, 0.95)
+                cr.arc(sx, sy, 5.6, 0, 2 * math.pi)
             else:
-                cr.set_source_rgb(0.98, 0.40, 0.30)
-            cr.arc(sx, sy, 3.8, 0, 2 * math.pi)
+                # Pulsing yellow ring on misclassified points being learned
+                cr.set_source_rgba(1.0, 0.90, 0.20, 0.95)
+                cr.arc(sx, sy, 7.2, 0, 2 * math.pi)
             cr.fill()
+
+            cr.new_path()
+            if label > 0.5:
+                cr.set_source_rgb(0.12, 0.88, 1.0)
+            else:
+                cr.set_source_rgb(1.0, 0.36, 0.26)
+            cr.arc(sx, sy, 4.0, 0, 2 * math.pi)
+            cr.fill()
+
+        # Top HUD Banner showing active dataset, neuron count, and live sorting accuracy
+        dtype = int(round(lab.params.get("dataset_id", 2)))
+        dname = lab.DATASET_NAMES.get(dtype, "Custom")
+        cr.set_source_rgba(0.04, 0.08, 0.16, 0.84)
+        cr.rectangle(10, h - 34, w - 20, 26)
+        cr.fill_preserve()
+        cr.set_source_rgba(0.25, 0.78, 0.98, 0.75)
+        cr.set_line_width(1.2)
+        cr.stroke()
+
+        cr.select_font_face("Sans", cairo.FONT_SLANT_NORMAL, cairo.FONT_WEIGHT_BOLD)
+        cr.set_font_size(11.5)
+        cr.set_source_rgb(0.95, 0.98, 1.0)
+        hud_txt = (
+            f"Pattern: {dname}   |   Hidden Neurons: {len(lab.w1)}   |   "
+            f"Sorted Accuracy: {lab.accuracy:.1f}%   |   Epoch: #{lab.epoch}"
+        )
+        cr.move_to(18, h - 16)
+        cr.show_text(hud_txt)
 
     def _render_swarm(self, cr: cairo.Context, w: float, h: float) -> None:
         lab: SwarmEcosystemLab = self.labs["swarm_ecosystem"]
