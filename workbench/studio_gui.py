@@ -1455,6 +1455,19 @@ class SynapseStudioWindow(Gtk.Window):
         cr.stroke()
 
         leader = lab.get_leader()
+        # Draw floating connected Neural Network in upper-right sky connected to leader rocket
+        if hasattr(self, "kids_view"):
+            self.kids_view._draw_sky_neural_network(
+                cr,
+                lander_x=leader.x + 10,
+                lander_y=leader.y,
+                nn_cx=lab.width * 0.80,
+                nn_cy=lab.height * 0.25,
+                scale=0.82,
+                phase=self._anim_phase,
+                is_fr=False,
+            )
+
         for r in lab.rockets:
             if not r.alive and not r.landed:
                 continue
@@ -1464,23 +1477,30 @@ class SynapseStudioWindow(Gtk.Window):
             cr.rotate(r.angle)
 
             if r.main_thruster and r.alive:
-                cr.set_source_rgba(1.0, 0.55, 0.1, 0.9 if is_lead else 0.35)
-                cr.move_to(-4, 8)
-                cr.line_to(0, 19)
-                cr.line_to(4, 8)
+                cr.set_source_rgba(1.0, 0.55, 0.1, 0.92 if is_lead else 0.35)
+                cr.move_to(-5, 8)
+                cr.line_to(0, 21)
+                cr.line_to(5, 8)
                 cr.close_path()
+                cr.fill()
+
+            if is_lead:
+                # Draw solar panels on lead lander
+                cr.set_source_rgba(0.16, 0.58, 0.96, 0.92)
+                cr.rectangle(-19, -4, 10, 7)
+                cr.rectangle(9, -4, 10, 7)
                 cr.fill()
 
             if r.landed:
                 cr.set_source_rgba(0.2, 0.95, 0.5, 0.95)
             elif is_lead:
-                cr.set_source_rgba(0.22, 0.75, 0.98, 1.0)
+                cr.set_source_rgba(0.22, 0.82, 0.98, 1.0)
             else:
                 cr.set_source_rgba(0.6, 0.65, 0.75, 0.30)
 
-            cr.move_to(0, -11)
-            cr.line_to(-7, 8)
-            cr.line_to(7, 8)
+            cr.move_to(0, -12)
+            cr.line_to(-8, 8)
+            cr.line_to(8, 8)
             cr.close_path()
             cr.fill()
             cr.restore()
@@ -1490,14 +1510,28 @@ class SynapseStudioWindow(Gtk.Window):
     def _render_raycast_car(self, cr: cairo.Context, w: float, h: float) -> None:
         lab: NEATRaycastCarLab = self.labs["raycast_car"]
         sx, sy = w / lab.width, h / lab.height
+        phase = self._anim_phase
         cr.save()
         cr.scale(sx, sy)
+
+        # 1. Subtle Cyber-Circuit Grid Background
+        cr.set_source_rgba(0.05, 0.25, 0.32, 0.22)
+        cr.set_line_width(0.8)
+        for gx in range(0, int(lab.width), 36):
+            cr.move_to(gx, 0)
+            cr.line_to(gx, lab.height)
+        for gy in range(0, int(lab.height), 36):
+            cr.move_to(0, gy)
+            cr.line_to(lab.width, gy)
+        cr.stroke()
 
         cr.set_line_cap(cairo.LINE_CAP_ROUND)
         cr.set_line_join(cairo.LINE_JOIN_ROUND)
 
-        cr.set_source_rgb(0.32, 0.38, 0.50)
-        cr.set_line_width(lab.params["track_width"] * 2.0 + 6.0)
+        # 2. Glowing Neon Emerald/Cyan Track Borders + Dark Asphalt Road
+        # Outer neon halo
+        cr.set_source_rgba(0.06, 0.92, 0.68, 0.28)
+        cr.set_line_width(lab.params["track_width"] * 2.0 + 14.0)
         for i, (wx, wy) in enumerate(lab.waypoints):
             if i == 0:
                 cr.move_to(wx, wy)
@@ -1506,7 +1540,19 @@ class SynapseStudioWindow(Gtk.Window):
         cr.close_path()
         cr.stroke()
 
-        cr.set_source_rgb(0.11, 0.13, 0.18)
+        # Crisp neon cyan/emerald border
+        cr.set_source_rgba(0.15, 0.96, 0.78, 0.95)
+        cr.set_line_width(lab.params["track_width"] * 2.0 + 4.5)
+        for i, (wx, wy) in enumerate(lab.waypoints):
+            if i == 0:
+                cr.move_to(wx, wy)
+            else:
+                cr.line_to(wx, wy)
+        cr.close_path()
+        cr.stroke()
+
+        # Dark asphalt interior
+        cr.set_source_rgb(0.05, 0.09, 0.14)
         cr.set_line_width(lab.params["track_width"] * 2.0)
         for i, (wx, wy) in enumerate(lab.waypoints):
             if i == 0:
@@ -1516,9 +1562,10 @@ class SynapseStudioWindow(Gtk.Window):
         cr.close_path()
         cr.stroke()
 
-        cr.set_source_rgba(0.95, 0.80, 0.20, 0.35)
-        cr.set_line_width(1.5)
-        cr.set_dash([8.0, 8.0])
+        # Glowing center dashed lane + chevron arrows
+        cr.set_source_rgba(0.18, 0.88, 0.75, 0.35)
+        cr.set_line_width(1.4)
+        cr.set_dash([7.0, 9.0])
         for i, (wx, wy) in enumerate(lab.waypoints):
             if i == 0:
                 cr.move_to(wx, wy)
@@ -1528,15 +1575,51 @@ class SynapseStudioWindow(Gtk.Window):
         cr.stroke()
         cr.set_dash([])
 
+        # Neon Holo-Checkpoint Diamond Gate & Traffic Cones along track
+        if len(lab.waypoints) >= 6:
+            cpx, cpy = lab.waypoints[len(lab.waypoints) // 2]
+            cr.save()
+            cr.translate(cpx, cpy)
+            cr.rotate(0.45)
+            cr.set_source_rgba(0.15, 0.98, 0.55, 0.25)
+            cr.rectangle(-12, -12, 24, 24)
+            cr.fill_preserve()
+            cr.set_source_rgba(0.25, 1.0, 0.65, 0.85)
+            cr.set_line_width(1.6)
+            cr.stroke()
+            cr.restore()
+
+        # 3. Translucent Fan-Shaped Green/Cyan LIDAR Radar Cones from Leader Car
         leader = lab.get_leader()
-        if leader.alive:
-            cr.set_line_width(1.4)
+        if leader.alive and len(leader.rays) >= 2:
+            # Fill translucent radar wedges between adjacent rays
+            for i in range(len(leader.rays) - 1):
+                rx1, ry1, nd1 = leader.rays[i]
+                rx2, ry2, nd2 = leader.rays[i + 1]
+                cr.new_path()
+                cr.move_to(leader.x, leader.y)
+                cr.line_to(rx1, ry1)
+                cr.line_to(rx2, ry2)
+                cr.close_path()
+                if i % 2 == 0:
+                    cr.set_source_rgba(0.10, 0.96, 0.65, 0.24)
+                else:
+                    cr.set_source_rgba(0.12, 0.82, 0.98, 0.22)
+                cr.fill()
+
+            # Crisp LIDAR beam lines & glowing wall-hit dots
+            cr.set_line_width(1.5)
             for rx, ry, nd in leader.rays:
-                cr.set_source_rgba(1.0 - nd, nd, 0.2, 0.85)
+                cr.set_source_rgba(0.20, 0.98, 0.78, 0.78)
                 cr.move_to(leader.x, leader.y)
                 cr.line_to(rx, ry)
                 cr.stroke()
+                cr.new_path()
+                cr.set_source_rgba(0.55, 1.0, 0.85, 0.95)
+                cr.arc(rx, ry, 2.6, 0, 2 * math.pi)
+                cr.fill()
 
+        # 4. Render Cars (Cute Cyber Robot Car for Leader)
         for car in lab.cars:
             if not car.alive and car is not leader:
                 continue
@@ -1545,20 +1628,102 @@ class SynapseStudioWindow(Gtk.Window):
             cr.translate(car.x, car.y)
             cr.rotate(car.heading)
             if is_lead:
-                cr.set_source_rgba(0.2, 0.9, 0.55, 1.0)
+                # Outer cyan glow
+                cr.set_source_rgba(0.15, 0.95, 0.80, 0.35)
+                cr.rectangle(-12, -7, 24, 14)
+                cr.fill()
+                # Main cyber car chassis
+                cr.set_source_rgb(0.18, 0.68, 0.96)
+                cr.rectangle(-10, -5.5, 20, 11)
+                cr.fill_preserve()
+                cr.set_source_rgb(0.55, 0.98, 0.90)
+                cr.set_line_width(1.4)
+                cr.stroke()
+                # Glowing cyan eyes / headlights on front
+                cr.set_source_rgb(0.65, 1.0, 0.95)
+                cr.arc(7, -2.8, 1.8, 0, 2 * math.pi)
+                cr.arc(7, 2.8, 1.8, 0, 2 * math.pi)
+                cr.fill()
             else:
-                cr.set_source_rgba(0.35, 0.65, 0.95, 0.45)
-            cr.rectangle(-8, -4.5, 16, 9)
-            cr.fill()
+                cr.set_source_rgba(0.30, 0.62, 0.90, 0.35)
+                cr.rectangle(-8, -4.5, 16, 9)
+                cr.fill()
             cr.restore()
+
+        # 5. Corner HUD Overlays: [((•)) LIDAR ACTIVE], [SPEED Gauge], [Mini Radar Scope]
+        # Top-Right: ((•)) LIDAR ACTIVE badge
+        cr.set_source_rgba(0.04, 0.22, 0.24, 0.88)
+        cr.rectangle(lab.width - 118, 10, 106, 22)
+        cr.fill_preserve()
+        cr.set_source_rgba(0.18, 0.96, 0.75, 0.90)
+        cr.set_line_width(1.3)
+        cr.stroke()
+        cr.select_font_face("Sans", cairo.FONT_SLANT_NORMAL, cairo.FONT_WEIGHT_BOLD)
+        cr.set_font_size(8.5)
+        cr.set_source_rgb(0.35, 1.0, 0.82)
+        cr.move_to(lab.width - 110, 24)
+        cr.show_text("((•)) LIDAR ACTIVE")
+
+        # Bottom-Left: Circular Neon SPEED Gauge
+        sp_cx, sp_cy, sp_r = 34.0, lab.height - 32.0, 22.0
+        cr.new_path()
+        cr.set_source_rgba(0.04, 0.14, 0.22, 0.88)
+        cr.arc(sp_cx, sp_cy, sp_r, 0, 2 * math.pi)
+        cr.fill_preserve()
+        cr.set_source_rgba(0.18, 0.92, 0.78, 0.85)
+        cr.set_line_width(1.8)
+        cr.stroke()
+        # Speed arc & needle
+        spd_norm = min(1.0, getattr(leader, "speed", 3.5) / 6.0)
+        needle_ang = math.pi * 0.8 + spd_norm * math.pi * 1.4
+        cr.set_source_rgb(0.25, 1.0, 0.75)
+        cr.set_line_width(2.0)
+        cr.move_to(sp_cx, sp_cy)
+        cr.line_to(sp_cx + math.cos(needle_ang) * (sp_r - 5), sp_cy + math.sin(needle_ang) * (sp_r - 5))
+        cr.stroke()
+        cr.set_font_size(6.5)
+        cr.move_to(sp_cx - 11, sp_cy + sp_r - 4)
+        cr.show_text("SPEED")
+
+        # Bottom-Right: Mini Rotating Radar Scope
+        rd_cx, rd_cy, rd_r = lab.width - 34.0, lab.height - 32.0, 22.0
+        cr.new_path()
+        cr.set_source_rgba(0.04, 0.18, 0.16, 0.88)
+        cr.arc(rd_cx, rd_cy, rd_r, 0, 2 * math.pi)
+        cr.fill_preserve()
+        cr.set_source_rgba(0.18, 0.95, 0.65, 0.85)
+        cr.set_line_width(1.6)
+        cr.stroke()
+        cr.new_path()
+        cr.set_source_rgba(0.18, 0.95, 0.65, 0.30)
+        cr.arc(rd_cx, rd_cy, rd_r * 0.55, 0, 2 * math.pi)
+        cr.stroke()
+        sweep_a = phase * 2.2
+        cr.set_source_rgba(0.25, 1.0, 0.70, 0.90)
+        cr.move_to(rd_cx, rd_cy)
+        cr.line_to(rd_cx + math.cos(sweep_a) * rd_r, rd_cy + math.sin(sweep_a) * rd_r)
+        cr.stroke()
 
         cr.restore()
 
     def _render_rl_gridworld(self, cr: cairo.Context, w: float, h: float) -> None:
         lab: RLGridWorldLab = self.labs["rl_gridworld"]
-        pad = 24.0
+        pad = 26.0
         cw = (w - 2 * pad) / lab.cols
         ch = (h - 2 * pad) / lab.rows
+
+        # Subtle background cyber-circuit traces
+        cr.set_source_rgba(0.12, 0.55, 0.88, 0.16)
+        cr.set_line_width(1.0)
+        for c in range(lab.cols + 1):
+            gx = pad + c * cw
+            cr.move_to(gx, 6)
+            cr.line_to(gx, h - 6)
+        for r in range(lab.rows + 1):
+            gy = pad + r * ch
+            cr.move_to(6, gy)
+            cr.line_to(w - 6, gy)
+        cr.stroke()
 
         for c in range(lab.cols):
             for r in range(lab.rows):
@@ -1568,49 +1733,65 @@ class SynapseStudioWindow(Gtk.Window):
                 max_q = max(lab.q_table[pos])
 
                 if pos == lab.goal_pos:
-                    cr.set_source_rgb(0.12, 0.65, 0.35)
+                    # Glowing Gold/Amber Treasure Tile (matching middle artwork!)
+                    cr.set_source_rgba(0.98, 0.75, 0.18, 0.92)
                 elif pos in lab.lava_cells:
-                    cr.set_source_rgb(0.65, 0.14, 0.18)
+                    # Glowing Purple/Crimson Hazard Tile
+                    cr.set_source_rgba(0.58, 0.16, 0.68, 0.88)
                 elif pos in lab.wall_cells:
-                    cr.set_source_rgb(0.22, 0.25, 0.32)
+                    cr.set_source_rgba(0.16, 0.22, 0.34, 0.92)
                 else:
                     norm = max(-1.0, min(1.0, max_q / 100.0))
                     if norm >= 0:
-                        cr.set_source_rgb(0.10, 0.14 + 0.45 * norm, 0.22 + 0.25 * norm)
+                        cr.set_source_rgba(0.07, 0.16 + 0.52 * norm, 0.28 + 0.48 * norm, 0.92)
                     else:
-                        cr.set_source_rgb(0.14 - 0.35 * norm, 0.12, 0.16)
+                        cr.set_source_rgba(0.22 - 0.30 * norm, 0.10, 0.28, 0.90)
 
-                cr.rectangle(x + 1, y + 1, cw - 2, ch - 2)
-                cr.fill()
+                cr.rectangle(x + 2, y + 2, cw - 4, ch - 4)
+                cr.fill_preserve()
+                # Neon tile border
+                if pos == lab.goal_pos:
+                    cr.set_source_rgba(1.0, 0.92, 0.45, 0.95)
+                elif pos in lab.lava_cells:
+                    cr.set_source_rgba(0.85, 0.38, 0.96, 0.85)
+                else:
+                    cr.set_source_rgba(0.22, 0.62, 0.92, 0.40)
+                cr.set_line_width(1.3)
+                cr.stroke()
 
                 if pos not in lab.lava_cells and pos not in lab.wall_cells and pos != lab.goal_pos:
                     q_vals = lab.q_table[pos]
                     best_a = max(range(4), key=q_vals.__getitem__)
-                    cr.set_source_rgba(0.85, 0.92, 1.0, 0.85)
+                    cr.set_source_rgba(0.45, 0.92, 1.0, 0.92)
                     cr.select_font_face("Sans", cairo.FONT_SLANT_NORMAL, cairo.FONT_WEIGHT_BOLD)
                     cr.set_font_size(14)
                     cr.move_to(x + cw * 0.38, y + ch * 0.48)
                     cr.show_text(lab.ARROWS[best_a])
 
                     cr.set_font_size(9.5)
-                    cr.set_source_rgba(0.65, 0.75, 0.88, 0.85)
+                    cr.set_source_rgba(0.70, 0.84, 0.96, 0.88)
                     cr.move_to(x + 5, y + ch - 6)
                     cr.show_text(f"{max_q:+.1f}")
                 elif pos == lab.goal_pos:
-                    cr.set_source_rgb(1.0, 0.95, 0.5)
-                    cr.set_font_size(12)
-                    cr.move_to(x + 8, y + ch * 0.55)
+                    cr.set_source_rgb(0.10, 0.12, 0.18)
+                    cr.set_font_size(11.5)
+                    cr.move_to(x + 6, y + ch * 0.56)
                     cr.show_text("★ GOAL")
                 elif pos in lab.lava_cells:
-                    cr.set_source_rgb(1.0, 0.65, 0.65)
+                    cr.set_source_rgb(0.98, 0.82, 1.0)
                     cr.set_font_size(10)
-                    cr.move_to(x + 10, y + ch * 0.55)
-                    cr.show_text("LAVA")
+                    cr.move_to(x + 8, y + ch * 0.56)
+                    cr.show_text("HAZARD")
 
         ax = pad + (lab.agent_pos[0] + 0.5) * cw
         ay = pad + (lab.agent_pos[1] + 0.5) * ch
-        cr.set_source_rgb(0.22, 0.82, 0.98)
-        cr.arc(ax, ay, min(cw, ch) * 0.28, 0, 2 * math.pi)
+        cr.new_path()
+        cr.set_source_rgba(0.18, 0.90, 1.0, 0.32)
+        cr.arc(ax, ay, min(cw, ch) * 0.38, 0, 2 * math.pi)
+        cr.fill()
+        cr.new_path()
+        cr.set_source_rgb(0.28, 0.92, 1.0)
+        cr.arc(ax, ay, min(cw, ch) * 0.26, 0, 2 * math.pi)
         cr.fill()
 
     def _render_cartpole(self, cr: cairo.Context, w: float, h: float) -> None:

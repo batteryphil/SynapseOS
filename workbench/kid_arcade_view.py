@@ -1139,91 +1139,412 @@ class SynapseKidsView(Gtk.DrawingArea):
         phase: float,
         is_fr: bool,
     ) -> None:
-        """Draws the starry night sky, 3D shaded moon craters, and cartoon rocket."""
-        # 1. Twinkling Stars in Space
-        for i in range(42):
+        """Draws the NEAT Moon Lander with Solar Panels, Callouts, Constellations & Connected Live AI Brain."""
+        # 1. Twinkling Stars & Constellation Lines in Space
+        stars_pts: List[Tuple[float, float]] = []
+        for i in range(44):
             st_x = sx + ((i * 137 + 29) % int(max(10, sw - 20))) + 10
-            st_y = sy + ((i * 73 + 17) % int(max(10, sh * 0.62))) + 10
-            twinkle = 0.45 + 0.50 * math.sin(phase * 1.5 + i * 0.9)
-            rad = 1.8 if i % 5 == 0 else 1.1
-            cr.set_source_rgba(0.95, 0.97, 1.0, twinkle)
+            st_y = sy + ((i * 73 + 17) % int(max(10, sh * 0.64))) + 10
+            stars_pts.append((st_x, st_y))
+            twinkle = 0.40 + 0.50 * math.sin(phase * 1.5 + i * 0.9)
+            rad = 1.7 if i % 5 == 0 else 1.0
+            cr.new_path()
+            cr.set_source_rgba(0.90, 0.96, 1.0, twinkle)
             cr.arc(st_x, st_y, rad, 0, 2 * math.pi)
             cr.fill()
-            # 4-point sparkle on bright stars
-            if i % 9 == 0:
-                cr.set_line_width(1.0)
-                cr.move_to(st_x - 4.5, st_y)
-                cr.line_to(st_x + 4.5, st_y)
-                cr.move_to(st_x, st_y - 4.5)
-                cr.line_to(st_x, st_y + 4.5)
+
+        # Subtle constellation lines in top-right and top-left sky
+        cr.set_source_rgba(0.25, 0.65, 0.95, 0.22)
+        cr.set_line_width(1.0)
+        constellation_pairs = [(2, 7), (7, 12), (12, 19), (5, 11), (11, 18), (24, 31), (31, 37)]
+        for a, b in constellation_pairs:
+            ax, ay = stars_pts[a]
+            bx, by = stars_pts[b]
+            if math.hypot(ax - bx, ay - by) < sw * 0.26:
+                cr.move_to(ax, ay)
+                cr.line_to(bx, by)
                 cr.stroke()
 
-        # 2. Lunar Horizon & Surface Hills (bottom 33% of simulation frame)
-        moon_y = sy + sh * 0.67
+        # Little orbiting satellite icon in upper-left space
+        sat_x, sat_y = sx + sw * 0.12, sy + sh * 0.18
+        cr.save()
+        cr.translate(sat_x, sat_y)
+        cr.rotate(-0.45)
+        cr.set_source_rgba(0.38, 0.72, 0.96, 0.55)
+        cr.rectangle(-12, -3, 7, 6)
+        cr.rectangle(5, -3, 7, 6)
+        cr.fill()
+        cr.set_source_rgba(0.75, 0.85, 0.96, 0.70)
+        cr.rectangle(-4, -4, 8, 8)
+        cr.fill()
+        cr.restore()
+
+        # 2. Lunar Horizon & Blue-Tinted 3D Cratered Surface (bottom 30% of simulation frame)
+        moon_y = sy + sh * 0.70
+        cr.new_path()
         cr.move_to(sx, sy + sh)
-        cr.line_to(sx, moon_y + 12)
-        cr.curve_to(sx + sw * 0.25, moon_y - 16, sx + sw * 0.55, moon_y + 8, sx + sw * 0.78, moon_y - 10)
-        cr.curve_to(sx + sw * 0.90, moon_y - 15, sx + sw * 0.96, moon_y - 4, sx + sw, moon_y)
+        cr.line_to(sx, moon_y + 14)
+        cr.curve_to(sx + sw * 0.25, moon_y - 18, sx + sw * 0.55, moon_y - 18, sx + sw, moon_y + 12)
         cr.line_to(sx + sw, sy + sh)
         cr.close_path()
 
-        pat_moon = cairo.LinearGradient(sx, moon_y - 15, sx, sy + sh)
-        pat_moon.add_color_stop_rgb(0.0, 0.62, 0.69, 0.78)
-        pat_moon.add_color_stop_rgb(0.45, 0.48, 0.55, 0.65)
-        pat_moon.add_color_stop_rgb(1.0, 0.35, 0.42, 0.52)
+        pat_moon = cairo.LinearGradient(sx, moon_y - 18, sx, sy + sh)
+        pat_moon.add_color_stop_rgb(0.0, 0.34, 0.56, 0.74)
+        pat_moon.add_color_stop_rgb(0.45, 0.24, 0.42, 0.60)
+        pat_moon.add_color_stop_rgb(1.0, 0.15, 0.28, 0.44)
         cr.set_source(pat_moon)
         cr.fill_preserve()
-        cr.set_source_rgba(0.78, 0.85, 0.94, 0.85)
-        cr.set_line_width(2.2)
+        cr.set_source_rgba(0.52, 0.80, 0.98, 0.75)
+        cr.set_line_width(2.0)
         cr.stroke()
 
-        # 3. 3D Shaded Elliptical Moon Craters (matching the screenshot!)
+        # 3D Lunar Craters
         craters = [
-            (0.14, 0.83, 0.085, 0.032),
-            (0.30, 0.76, 0.055, 0.022),
-            (0.39, 0.88, 0.070, 0.026),
-            (0.60, 0.87, 0.050, 0.020),
-            (0.75, 0.73, 0.095, 0.034),
-            (0.88, 0.85, 0.080, 0.030),
+            (0.15, 0.85, 0.080, 0.030),
+            (0.32, 0.77, 0.065, 0.025),
+            (0.46, 0.89, 0.070, 0.026),
+            (0.66, 0.76, 0.060, 0.024),
+            (0.82, 0.86, 0.085, 0.032),
         ]
         for cx_f, cy_f, rx_f, ry_f in craters:
             self._draw_lunar_crater(cr, sx + sw * cx_f, sy + sh * cy_f, sw * rx_f, sh * ry_f)
 
-        # 4. Cute Hero Rocket descending / landing on the moon
-        rx_pos = sx + sw * self.rocket_x
-        ry_pos = sy + sh * self.rocket_y
-        r_scale = min(sw, sh) / 290.0
-        self._draw_cute_rocket(
+        # 3. NEAT Moon Lander Position (Left-Center of sky so the Neural Network fits on the Right!)
+        rx_pos = sx + sw * 0.31
+        ry_pos = sy + sh * (0.22 + 0.36 * ((self.rocket_y - 0.16) / 0.52))
+        r_scale = min(sw, sh) / 300.0
+
+        # Subtle concentric HUD telemetry rings around the Lander
+        cr.new_path()
+        cr.set_source_rgba(0.22, 0.65, 0.95, 0.14)
+        cr.set_line_width(1.0)
+        cr.arc(rx_pos, ry_pos, 58 * r_scale, 0, 2 * math.pi)
+        cr.stroke()
+        cr.set_dash([4.0, 4.0])
+        cr.arc(rx_pos, ry_pos, 76 * r_scale, 0, 2 * math.pi)
+        cr.stroke()
+        cr.set_dash([])
+
+        # 4. Connected Live Neural Network ("NEURAL NETWORK" / "AI BRAIN") on the Right Side of Sky
+        nn_cx = sx + sw * 0.76
+        nn_cy = sy + sh * 0.39
+        self._draw_sky_neural_network(
             cr,
-            rx_pos,
-            ry_pos,
+            lander_x=rx_pos + 22 * r_scale,
+            lander_y=ry_pos + 4 * r_scale,
+            nn_cx=nn_cx,
+            nn_cy=nn_cy,
             scale=r_scale,
-            angle=self.rocket_angle,
-            thrusting=self.rocket_thrusting,
-            anim_phase=phase,
+            phase=phase,
+            is_fr=is_fr,
         )
+
+        # 5. Draw Detailed NEAT Moon Lander with Solar Panels, Legs, Thrusters & Callouts
+        self._draw_neat_moon_lander_craft(
+            cr,
+            cx=rx_pos,
+            cy=ry_pos,
+            scale=r_scale,
+            angle=self.rocket_angle * 0.5,
+            thrusting=self.rocket_thrusting,
+            phase=phase,
+            is_fr=is_fr,
+        )
+
+    def _draw_neat_moon_lander_craft(
+        self,
+        cr: cairo.Context,
+        cx: float,
+        cy: float,
+        scale: float,
+        angle: float,
+        thrusting: bool,
+        phase: float,
+        is_fr: bool,
+    ) -> None:
+        """Draws the detailed NEAT Moon Lander with Solar Panels, Sensors, Legs, Thrusters & Callouts."""
+        cr.save()
+        cr.translate(cx, cy)
+        cr.rotate(angle)
+        cr.scale(scale, scale)
+
+        # A. Left & Right Solar Panel Wings (tilted blue photovoltaic grids)
+        for side in (-1, 1):
+            cr.save()
+            cr.translate(side * 26, -6)
+            cr.rotate(side * -0.18)
+            # Strut bar
+            cr.set_source_rgb(0.65, 0.75, 0.88)
+            cr.set_line_width(2.5)
+            cr.move_to(-side * 6, 0)
+            cr.line_to(side * 4, 0)
+            cr.stroke()
+            # Panel frame
+            px = 2 if side > 0 else -30
+            self._rounded_rect(cr, px, -11, 28, 22, 3)
+            cr.set_source_rgb(0.10, 0.38, 0.72)
+            cr.fill_preserve()
+            cr.set_source_rgb(0.55, 0.82, 0.98)
+            cr.set_line_width(1.5)
+            cr.stroke()
+            # Solar grid lines
+            cr.set_source_rgba(0.65, 0.88, 1.0, 0.65)
+            cr.set_line_width(0.9)
+            for gx in range(1, 3):
+                cr.move_to(px + gx * 9.3, -11)
+                cr.line_to(px + gx * 9.3, 11)
+            cr.move_to(px, 0)
+            cr.line_to(px + 28, 0)
+            cr.stroke()
+            cr.restore()
+
+        # B. 3 Articulated Landing Legs with Footpads
+        cr.set_line_width(3.0)
+        cr.set_source_rgb(0.78, 0.84, 0.92)
+        for lx_top, lx_bot, ly_bot in [(-18, -30, 36), (0, 0, 38), (18, 30, 36)]:
+            cr.move_to(lx_top, 18)
+            cr.line_to(lx_bot, ly_bot)
+            cr.stroke()
+            # Footpad disc
+            self._rounded_rect(cr, lx_bot - 6, ly_bot - 2, 12, 4, 2)
+            cr.set_source_rgb(0.58, 0.68, 0.82)
+            cr.fill()
+            cr.set_source_rgb(0.78, 0.84, 0.92)
+
+        # C. Triple Thruster Exhaust Plumes underneath
+        if thrusting:
+            flick = 1.0 + 0.20 * math.sin(phase * 3.4)
+            for tx_off, t_scale in [(-13, 0.78), (0, 1.05), (13, 0.78)]:
+                # Outer orange/gold plume
+                cr.new_path()
+                cr.set_source_rgba(0.98, 0.48, 0.12, 0.92)
+                cr.move_to(tx_off - 6 * t_scale, 22)
+                cr.curve_to(tx_off - 8 * t_scale, 34 * flick, tx_off - 2, 46 * flick * t_scale, tx_off, 50 * flick * t_scale)
+                cr.curve_to(tx_off + 2, 46 * flick * t_scale, tx_off + 8 * t_scale, 34 * flick, tx_off + 6 * t_scale, 22)
+                cr.close_path()
+                cr.fill()
+                # Inner cyan/yellow hot core
+                cr.new_path()
+                cr.set_source_rgba(0.99, 0.92, 0.35, 0.96)
+                cr.move_to(tx_off - 3.5 * t_scale, 22)
+                cr.line_to(tx_off, 38 * flick * t_scale)
+                cr.line_to(tx_off + 3.5 * t_scale, 22)
+                cr.close_path()
+                cr.fill()
+
+        # D. Main Lander Capsule Hull (White/Silver upper + Cyan/Orange lower band)
+        self._rounded_rect(cr, -24, -22, 48, 40, 12)
+        pat_hull = cairo.LinearGradient(0, -22, 0, 18)
+        pat_hull.add_color_stop_rgb(0.0, 0.96, 0.98, 1.0)
+        pat_hull.add_color_stop_rgb(0.68, 0.86, 0.92, 0.98)
+        pat_hull.add_color_stop_rgb(0.69, 0.18, 0.68, 0.88)
+        pat_hull.add_color_stop_rgb(1.0, 0.12, 0.50, 0.72)
+        cr.set_source(pat_hull)
+        cr.fill_preserve()
+        cr.set_source_rgb(0.18, 0.28, 0.44)
+        cr.set_line_width(2.0)
+        cr.stroke()
+
+        # Orange trim stripe on lower hull
+        self._rounded_rect(cr, -23, 11, 46, 6, 2)
+        cr.set_source_rgb(0.96, 0.54, 0.14)
+        cr.fill()
+
+        # E. "NEAT / MOON LANDER" Text Badge on Hull
+        cr.select_font_face("Sans", cairo.FONT_SLANT_NORMAL, cairo.FONT_WEIGHT_BOLD)
+        cr.set_font_size(9.5)
+        cr.set_source_rgb(0.10, 0.16, 0.26)
+        ext_n = cr.text_extents("NEAT")
+        cr.move_to(-ext_n.width * 0.5, -5)
+        cr.show_text("NEAT")
+
+        cr.set_font_size(4.8)
+        cr.set_source_rgb(0.22, 0.32, 0.48)
+        ext_m = cr.text_extents("MOON LANDER")
+        cr.move_to(-ext_m.width * 0.5, 2)
+        cr.show_text("MOON LANDER")
+
+        # F. Top Sensor Dome, Radar Dish & Antenna
+        cr.new_path()
+        cr.set_source_rgb(0.96, 0.62, 0.14)
+        cr.arc(0, -22, 13, math.pi, 2 * math.pi)
+        cr.fill_preserve()
+        cr.set_source_rgb(0.20, 0.30, 0.45)
+        cr.set_line_width(1.6)
+        cr.stroke()
+
+        # Glowing sensor dots on dome
+        for sx_d in (-7, 0, 7):
+            cr.new_path()
+            cr.set_source_rgb(0.25, 0.92, 1.0)
+            cr.arc(sx_d, -26, 2.0, 0, 2 * math.pi)
+            cr.fill()
+
+        # Center antenna mast
+        cr.set_source_rgb(0.78, 0.86, 0.96)
+        cr.set_line_width(2.0)
+        cr.move_to(0, -35)
+        cr.line_to(0, -45)
+        cr.stroke()
+        cr.new_path()
+        cr.set_source_rgb(0.28, 0.90, 1.0)
+        cr.arc(0, -46, 3.0, 0, 2 * math.pi)
+        cr.fill()
+
+        # G. Callout Leader Labels (SENSORS, SOLAR PANELS, AI ENGINE, THRUSTERS)
+        cr.set_font_size(6.5)
+        callouts = [
+            (8, -38, 34, -44, "CAPTEURS" if is_fr else "SENSORS"),
+            (46, -14, 62, -22, "PANNEAUX SOLAIRES" if is_fr else "SOLAR PANELS"),
+            (24, 2, 48, 2, "MOTEUR IA" if is_fr else "AI ENGINE"),
+            (18, 34, 44, 42, "PROPULSEURS" if is_fr else "THRUSTERS"),
+        ]
+        for x0, y0, x1, y1, lbl in callouts:
+            cr.set_source_rgba(0.38, 0.78, 0.98, 0.75)
+            cr.set_line_width(1.0)
+            cr.move_to(x0, y0)
+            cr.line_to(x1, y1)
+            cr.stroke()
+            cr.new_path()
+            cr.arc(x0, y0, 1.8, 0, 2 * math.pi)
+            cr.fill()
+            cr.set_source_rgba(0.85, 0.94, 1.0, 0.90)
+            cr.move_to(x1 + 3, y1 + 2)
+            cr.show_text(lbl)
+
+        cr.restore()
+
+    def _draw_sky_neural_network(
+        self,
+        cr: cairo.Context,
+        lander_x: float,
+        lander_y: float,
+        nn_cx: float,
+        nn_cy: float,
+        scale: float,
+        phase: float,
+        is_fr: bool,
+    ) -> None:
+        """Draws the glowing Neural Network in the right sky connected to the lander's AI Engine."""
+        cr.save()
+        # 1. Glowing dashed data cable from Lander AI Engine to Neural Network
+        in_x = nn_cx - 52 * scale
+        cr.set_source_rgba(0.25, 0.85, 0.98, 0.75)
+        cr.set_line_width(1.6)
+        cr.set_dash([5.0, 4.0], -phase * 8.0)
+        cr.move_to(lander_x, lander_y)
+        cr.curve_to(
+            (lander_x + in_x) * 0.5,
+            lander_y + 18 * scale,
+            (lander_x + in_x) * 0.5,
+            nn_cy,
+            in_x,
+            nn_cy,
+        )
+        cr.stroke()
+        cr.set_dash([])
+
+        # 2. Define 3-Layer Node Positions (Inputs: Orange, Hidden: Cyan, Outputs: White/Green)
+        layer_x = [
+            nn_cx - 48 * scale,
+            nn_cx,
+            nn_cx + 48 * scale,
+        ]
+        layer_counts = [4, 5, 3]
+        nodes: List[List[Tuple[float, float]]] = []
+        for l_idx, cnt in enumerate(layer_counts):
+            col_nodes: List[Tuple[float, float]] = []
+            span = (cnt - 1) * 24.0 * scale
+            for i in range(cnt):
+                ny = nn_cy - span * 0.5 + i * 24.0 * scale
+                col_nodes.append((layer_x[l_idx], ny))
+            nodes.append(col_nodes)
+
+        # 3. Draw Glowing Synapses & Travelling Signal Pulses
+        for l_idx in range(2):
+            for i, (x1, y1) in enumerate(nodes[l_idx]):
+                for j, (x2, y2) in enumerate(nodes[l_idx + 1]):
+                    wave = 0.5 + 0.5 * math.sin(phase * 2.4 + i * 1.1 + j * 0.7 + l_idx)
+                    if (i + j) % 2 == 0:
+                        cr.set_source_rgba(0.98, 0.55, 0.18, 0.25 + 0.45 * wave)
+                    else:
+                        cr.set_source_rgba(0.20, 0.85, 0.98, 0.25 + 0.45 * wave)
+                    cr.set_line_width(1.2 + 0.8 * wave)
+                    cr.move_to(x1, y1)
+                    cr.line_to(x2, y2)
+                    cr.stroke()
+
+                    # Animated pulse dot on active synapses
+                    if (i + j + l_idx) % 3 == 0:
+                        t_p = (phase * 0.65 + i * 0.23 + j * 0.17) % 1.0
+                        px = x1 + (x2 - x1) * t_p
+                        py = y1 + (y2 - y1) * t_p
+                        cr.new_path()
+                        cr.set_source_rgba(1.0, 0.95, 0.55, 0.90)
+                        cr.arc(px, py, 2.2 * scale, 0, 2 * math.pi)
+                        cr.fill()
+
+        # 4. Draw Glowing Neuron Nodes
+        layer_colors = [
+            (0.98, 0.56, 0.16),  # Input layer: glowing orange
+            (0.18, 0.86, 0.98),  # Hidden layer: glowing cyan
+            (0.92, 0.98, 1.00),  # Output layer: glowing white-cyan
+        ]
+        for l_idx, col_nodes in enumerate(nodes):
+            r_col, g_col, b_col = layer_colors[l_idx]
+            for i, (nx, ny) in enumerate(col_nodes):
+                pulse = 1.0 + 0.15 * math.sin(phase * 2.5 + i + l_idx)
+                # Outer halo glow
+                cr.new_path()
+                cr.set_source_rgba(r_col, g_col, b_col, 0.28)
+                cr.arc(nx, ny, 9.5 * scale * pulse, 0, 2 * math.pi)
+                cr.fill()
+                # Core node
+                cr.new_path()
+                cr.set_source_rgb(r_col, g_col, b_col)
+                cr.arc(nx, ny, 5.2 * scale, 0, 2 * math.pi)
+                cr.fill_preserve()
+                cr.set_source_rgb(1.0, 1.0, 1.0)
+                cr.set_line_width(1.2)
+                cr.stroke()
+
+        # 5. Callout labels for NEURAL NETWORK & AI BRAIN
+        cr.select_font_face("Sans", cairo.FONT_SLANT_NORMAL, cairo.FONT_WEIGHT_BOLD)
+        cr.set_font_size(max(8.5, 7.2 * scale))
+        cr.set_source_rgba(0.85, 0.95, 1.0, 0.92)
+        top_nx, top_ny = nodes[1][0]
+        cr.move_to(top_nx + 10 * scale, top_ny - 10 * scale)
+        cr.show_text("RÉSEAU NEURONAL" if is_fr else "NEURAL NETWORK")
+
+        bot_nx, bot_ny = nodes[1][-1]
+        cr.set_source_rgba(0.38, 0.88, 0.98, 0.92)
+        cr.move_to(bot_nx + 10 * scale, bot_ny + 14 * scale)
+        cr.show_text("CERVEAU IA" if is_fr else "AI BRAIN")
+        cr.restore()
 
     @staticmethod
     def _draw_lunar_crater(cr: cairo.Context, cx: float, cy: float, rx: float, ry: float) -> None:
         # Outer raised rim
         cr.save()
+        cr.new_path()
         cr.translate(cx, cy)
         cr.scale(rx, ry)
         cr.arc(0, 0, 1.0, 0, 2 * math.pi)
         cr.restore()
-        cr.set_source_rgb(0.68, 0.75, 0.84)
+        cr.set_source_rgb(0.45, 0.68, 0.86)
         cr.fill_preserve()
-        cr.set_source_rgb(0.42, 0.49, 0.58)
+        cr.set_source_rgb(0.22, 0.40, 0.58)
         cr.set_line_width(1.6)
         cr.stroke()
 
         # Recessed dark inner crater floor
         cr.save()
+        cr.new_path()
         cr.translate(cx, cy + ry * 0.10)
         cr.scale(rx * 0.78, ry * 0.68)
         cr.arc(0, 0, 1.0, 0, 2 * math.pi)
         cr.restore()
-        cr.set_source_rgb(0.34, 0.40, 0.49)
+        cr.set_source_rgb(0.16, 0.30, 0.46)
         cr.fill()
 
     # ==========================================================================
