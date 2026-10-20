@@ -1,0 +1,36 @@
+#!/bin/bash
+set -e
+PASS="${1:-synapse-ai}"
+
+pkill -9 -f "[x]11vnc.*5901" 2>/dev/null || true
+pkill -9 -f "[w]ebsockify.*6080" 2>/dev/null || true
+pkill -9 -f "[c]loudflared.*6080" 2>/dev/null || true
+sleep 0.4
+
+# 1. Start password-protected x11vnc on port 5901 (leaving local port 5900 untouched)
+setsid x11vnc -display :0 -forever -shared -passwd "$PASS" -xkb -noxdamage -repeat -rfbport 5901 >/tmp/x11vnc_5901.log 2>&1 </dev/null &
+sleep 0.5
+
+# 2. Start noVNC websockify on port 6080 -> 127.0.0.1:5901
+setsid websockify --web=/usr/share/novnc/ 0.0.0.0:6080 127.0.0.1:5901 >/tmp/websockify.log 2>&1 </dev/null &
+sleep 0.5
+
+# 3. Start Cloudflare encrypted HTTPS tunnel -> http://127.0.0.1:6080
+rm -f /tmp/cloudflared.log
+setsid /usr/local/bin/cloudflared tunnel --no-autoupdate --url http://127.0.0.1:6080 >/tmp/cloudflared.log 2>&1 </dev/null &
+
+for i in $(seq 1 15); do
+    if grep -q "https://.*\.trycloudflare\.com" /tmp/cloudflared.log 2>/dev/null; then
+        break
+    fi
+    sleep 1
+done
+
+URL=$(grep -o "https://[a-zA-Z0-9.-]*\.trycloudflare\.com" /tmp/cloudflared.log | head -n 1)
+echo "=========================================================="
+echo "⚡ SynapseOS Secure Remote Browser Tunnel ACTIVE"
+echo "----------------------------------------------------------"
+echo "  Public HTTPS URL : ${URL}/vnc.html?autoconnect=1&resize=scale"
+echo "  Short HTTPS URL  : ${URL}"
+echo "  VNC Password     : ${PASS}"
+echo "=========================================================="
