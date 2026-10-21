@@ -34,6 +34,10 @@ case "$cmd" in
         shift || true
         python3 "${DIR}/workbench/pack_manager.py" "$@"
         ;;
+    validate|benchmark)
+        shift || true
+        python3 "${DIR}/benchmarks/reproducible_validation.py" "$@"
+        ;;
     test)
         echo -e "${CYAN}Running SynapseOS Automated Test Suite (Cortex + 6 AI Labs + School Suite)...${RESET}"
         python3 -m unittest discover -s "${DIR}/tests" -p "test_*.py"
@@ -67,8 +71,9 @@ case "$cmd" in
         echo "Usage: ./synapse <command>"
         echo ""
         echo "Commands:"
-        echo "  studio [--benchmark]  Launch the Point-and-Click AI Workbench (6 Labs + School Suite)"
-        echo "  curriculum [lesson]   List or run the 10-lesson School AI Curriculum & Coding Sandbox"
+        echo "  studio [--benchmark]  Launch the Point-and-Click AI Workbench (7 Labs + School Suite)"
+        echo "  validate [--json f]   Run reproducible validation (RAM/Storage, Startup, 12 Lessons, Latency, Failure Matrix)"
+        echo "  curriculum [lesson]   List or run the 12-lesson School AI Curriculum & Coding Sandbox"
         echo "  pack [status|next|list|install <id>] Manage Learning Packages (deletes old pack, keeps Trophies)"
         echo "  cortex [cmd|ai|forge] Run the Cortex-Phi3 AI Assistant & Linux Guide"
         echo "  test                  Run automated unit and integration tests"

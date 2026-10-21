@@ -221,10 +221,10 @@ SCHOOL_CURRICULUM: List[Dict[str, Any]] = [
             "3. Click '⚡ Turbo +25 Gens' and beat a score of 650!"
         ],
         "preset_params": {
-            "sensor_range": 160.0,
-            "max_speed": 6.0,
-            "turn_rate": 0.11,
-            "track_width": 34.0,
+            "sensor_range": 165.0,
+            "max_speed": 4.8,
+            "turn_rate": 0.10,
+            "track_width": 42.0,
             "pop_size": 45.0,
             "conn_add_prob": 0.18,
             "node_add_prob": 0.06,
@@ -458,11 +458,11 @@ SCHOOL_CURRICULUM: List[Dict[str, Any]] = [
         ],
         "preset_params": {
             "dataset_id": 3.0,
-            "hidden_neurons": 14.0,
-            "learning_rate": 0.25,
+            "hidden_neurons": 16.0,
+            "learning_rate": 0.45,
             "l2_reg": 0.0005,
             "noise": 0.03,
-            "steps_per_frame": 8.0
+            "steps_per_frame": 15.0
         },
         "goal_metric": "best_ever",
         "goal_op": ">=",
