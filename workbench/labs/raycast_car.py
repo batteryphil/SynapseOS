@@ -96,6 +96,9 @@ class NEATRaycastCarLab:
 
     def _dist_to_track_centerline(self, px: float, py: float) -> float:
         """O(1) analytical distance from point (px, py) to the parametric circuit centerline."""
+        from workbench.labs.c_sim_bridge import SYNAPSE_C_CORE
+        if SYNAPSE_C_CORE is not None:
+            return float(SYNAPSE_C_CORE.synapse_track_dist(px, py, self.cx, self.cy))
         dx = px - self.cx
         dy = py - self.cy
         theta = math.atan2(dy, dx)
@@ -106,8 +109,22 @@ class NEATRaycastCarLab:
         return math.hypot(px - tx, py - ty)
 
     def _cast_rays(self, car: CarAgent) -> List[float]:
+        from workbench.labs.c_sim_bridge import SYNAPSE_C_CORE
+        import ctypes
         max_r = self.params["sensor_range"]
         half_w = self.params["track_width"]
+        if SYNAPSE_C_CORE is not None:
+            rx_arr = (ctypes.c_float * 5)()
+            ry_arr = (ctypes.c_float * 5)()
+            nd_arr = (ctypes.c_float * 5)()
+            obs_arr = (ctypes.c_float * 5)()
+            SYNAPSE_C_CORE.synapse_car_cast_rays(
+                car.x, car.y, car.heading, self.cx, self.cy, max_r, half_w,
+                rx_arr, ry_arr, nd_arr, obs_arr
+            )
+            car.rays = [(float(rx_arr[i]), float(ry_arr[i]), float(nd_arr[i])) for i in range(5)]
+            return [float(obs_arr[i]) for i in range(5)]
+
         car.rays = []
         norm_dists: List[float] = []
 

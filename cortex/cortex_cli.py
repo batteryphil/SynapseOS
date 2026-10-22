@@ -68,6 +68,7 @@ def handle_sys(engine: CortexEngine):
 
 def handle_cmd(engine: CortexEngine, query: str, auto_exec: bool = False, force_llm: bool = False):
     res = engine.synthesize_command_and_instructions(query, force_llm=force_llm)
+    safety_eval = res.get("safety_eval") or engine.evaluate_command_safety(res.get("command", ""), res.get("safety", "safe"))
 
     safety_val = res.get("safety", "safe").lower()
     safety_color = GREEN if safety_val == "safe" else (YELLOW if safety_val == "caution" else RED)
@@ -83,6 +84,12 @@ def handle_cmd(engine: CortexEngine, query: str, auto_exec: bool = False, force_
     if res.get("alternative"):
         print(f"   {DIM}Alternative: {res['alternative']}{RESET}")
 
+    breakdown = res.get("flag_breakdown") or engine.explain_command_breakdown(res.get("command", ""))
+    if breakdown:
+        print(f"\n{BOLD}🔎 Glass-Box Command & Flag Breakdown:{RESET}")
+        for item in breakdown:
+            print(f"   • {item}")
+
     if res.get("explanation"):
         print(f"\n{BOLD}🔍 How It Works:{RESET}")
         print(f"   {res['explanation']}")
@@ -91,11 +98,17 @@ def handle_cmd(engine: CortexEngine, query: str, auto_exec: bool = False, force_
     for i, step in enumerate(res.get("instructions", []), 1):
         print(f"   {CYAN}{i}.{RESET} {step}")
 
-    print(f"\n{BOLD}🛡️  Safety Rating:{RESET} {safety_color}[{safety_label}]{RESET}")
+    print(f"\n{BOLD}🛡️  Safety Rating:{RESET} {safety_color}[{safety_label}]{RESET} ({safety_eval.get('category', 'verified_safe')})")
     if res.get("safety_note"):
         print(f"   {YELLOW}⚠️  {res['safety_note']}{RESET}")
 
     print()
+
+    if not safety_eval.get("allowed", True):
+        print(f"{RED}{BOLD}✗ Blocked by SynapseOS Safety Shield:{RESET} {safety_eval.get('reason')}")
+        if safety_eval.get("safe_alternative"):
+            print(f"{GREEN}💡 Safe Read-Only / Dry-Run Alternative:{RESET} {BOLD}{safety_eval['safe_alternative']}{RESET}")
+        return
 
     if auto_exec:
         print(f"{DIM}Auto-executing command...{RESET}")

@@ -126,12 +126,66 @@ class SwarmEcosystemLab:
         self.params["food_count"] = float(len(self.foods))
 
     def step_physics(self) -> bool:
+        from workbench.labs.c_sim_bridge import SYNAPSE_C_CORE
+        import ctypes
+
         vis = self.params["vision_radius"]
         prey_spd = self.params["prey_speed"]
         pred_spd = self.params["predator_speed"]
         self.step_counter += 1
 
-        # Update Prey
+        n_prey = len(self.prey)
+        n_pred = len(self.predators)
+        n_food = len(self.foods)
+
+        if SYNAPSE_C_CORE is not None and n_prey > 0 and n_pred > 0:
+            px = (ctypes.c_float * n_prey)(*(p.x for p in self.prey))
+            py = (ctypes.c_float * n_prey)(*(p.y for p in self.prey))
+            pvx = (ctypes.c_float * n_prey)(*(p.vx for p in self.prey))
+            pvy = (ctypes.c_float * n_prey)(*(p.vy for p in self.prey))
+            peng = (ctypes.c_float * n_prey)(*(p.energy for p in self.prey))
+            pscr = (ctypes.c_float * n_prey)(*(p.score for p in self.prey))
+            pgenes = (ctypes.c_float * (n_prey * 4))(*(g for p in self.prey for g in p.genes))
+
+            prx = (ctypes.c_float * n_pred)(*(p.x for p in self.predators))
+            pry = (ctypes.c_float * n_pred)(*(p.y for p in self.predators))
+            prvx = (ctypes.c_float * n_pred)(*(p.vx for p in self.predators))
+            prvy = (ctypes.c_float * n_pred)(*(p.vy for p in self.predators))
+            prscr = (ctypes.c_float * n_pred)(*(p.score for p in self.predators))
+            prgenes = (ctypes.c_float * (n_pred * 4))(*(g for p in self.predators for g in p.genes))
+
+            fx = (ctypes.c_float * max(1, n_food))(*(f[0] for f in self.foods))
+            fy = (ctypes.c_float * max(1, n_food))(*(f[1] for f in self.foods))
+
+            SYNAPSE_C_CORE.synapse_swarm_step(
+                n_prey, px, py, pvx, pvy, peng, pscr, pgenes,
+                n_pred, prx, pry, prvx, prvy, prscr, prgenes,
+                n_food, fx, fy,
+                self.width, self.height, vis, prey_spd, pred_spd,
+                (self.generation * 1000 + self.step_counter) & 0xFFFFFFFF
+            )
+
+            for i, p in enumerate(self.prey):
+                p.x = float(px[i])
+                p.y = float(py[i])
+                p.vx = float(pvx[i])
+                p.vy = float(pvy[i])
+                p.energy = float(peng[i])
+                p.score = float(pscr[i])
+            for i, pred in enumerate(self.predators):
+                pred.x = float(prx[i])
+                pred.y = float(pry[i])
+                pred.vx = float(prvx[i])
+                pred.vy = float(prvy[i])
+                pred.score = float(prscr[i])
+            self.foods = [(float(fx[i]), float(fy[i])) for i in range(n_food)]
+
+            if self.step_counter >= self.epoch_length:
+                self._evolve_swarm()
+                return True
+            return False
+
+        # Update Prey (Pure-Python Fallback)
         for p in self.prey:
             fx, fy = 0.0, 0.0
             # 1. Nearest food attraction

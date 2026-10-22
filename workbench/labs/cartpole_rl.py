@@ -88,12 +88,14 @@ class CartPoleLab:
         force_mag = self.params["force_mag"]
         wind = self.params["wind_gust"]
 
+        from workbench.labs.c_sim_bridge import SYNAPSE_C_CORE
+        import ctypes
+
         active_any = False
         for ag in self.agents:
             if not ag.alive:
                 continue
             active_any = True
-            ag.steps += 1
 
             obs = [
                 ag.x / self.x_threshold,
@@ -107,6 +109,29 @@ class CartPoleLab:
                 force += random.gauss(0.0, wind)
             ag.last_force = force
 
+            if SYNAPSE_C_CORE is not None:
+                cx = ctypes.c_float(ag.x)
+                cvx = ctypes.c_float(ag.vx)
+                cth = ctypes.c_float(ag.theta)
+                cvth = ctypes.c_float(ag.v_theta)
+                cfit = ctypes.c_float(ag.fitness)
+                csteps = ctypes.c_int(ag.steps)
+                alive_flag = SYNAPSE_C_CORE.synapse_cartpole_step(
+                    ctypes.byref(cx), ctypes.byref(cvx), ctypes.byref(cth),
+                    ctypes.byref(cvth), ctypes.byref(cfit), ctypes.byref(csteps),
+                    self.max_steps, force, g, length, self.x_threshold, self.theta_threshold
+                )
+                ag.x = float(cx.value)
+                ag.vx = float(cvx.value)
+                ag.theta = float(cth.value)
+                ag.v_theta = float(cvth.value)
+                ag.fitness = float(cfit.value)
+                ag.steps = int(csteps.value)
+                ag.alive = bool(alive_flag)
+                ag.genome.fitness = ag.fitness
+                continue
+
+            ag.steps += 1
             cos_t = math.cos(ag.theta)
             sin_t = math.sin(ag.theta)
             temp = (force + polemass_length * ag.v_theta * ag.v_theta * sin_t) / total_mass

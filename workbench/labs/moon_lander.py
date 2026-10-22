@@ -131,11 +131,13 @@ class NEATMoonLanderLab:
         wind_acc = self.params["wind"] * 0.25
         active_any = False
 
+        from workbench.labs.c_sim_bridge import SYNAPSE_C_CORE
+        import ctypes
+
         for r in self.rockets:
             if not r.alive:
                 continue
             active_any = True
-            r.steps += 1
 
             # 8 Normalized Sensor Inputs
             obs = [
@@ -154,6 +156,52 @@ class NEATMoonLanderLab:
             r.left_thruster = (out[1] > out[3] + 0.15) and (r.fuel > 0)
             r.right_thruster = (out[3] > out[1] + 0.15) and (r.fuel > 0)
 
+            if SYNAPSE_C_CORE is not None:
+                rx = ctypes.c_float(r.x)
+                ry = ctypes.c_float(r.y)
+                rvx = ctypes.c_float(r.vx)
+                rvy = ctypes.c_float(r.vy)
+                rang = ctypes.c_float(r.angle)
+                rvang = ctypes.c_float(r.v_angle)
+                rfuel = ctypes.c_float(r.fuel)
+                rprev = ctypes.c_float(r.prev_shaping)
+                rtot = ctypes.c_float(r.total_reward)
+                rsteps = ctypes.c_int(r.steps)
+                out_landed = ctypes.c_int(0)
+                out_crashed = ctypes.c_int(0)
+
+                alive_flag = SYNAPSE_C_CORE.synapse_lander_step(
+                    ctypes.byref(rx), ctypes.byref(ry), ctypes.byref(rvx), ctypes.byref(rvy),
+                    ctypes.byref(rang), ctypes.byref(rvang), ctypes.byref(rfuel),
+                    ctypes.byref(rprev), ctypes.byref(rtot), ctypes.byref(rsteps),
+                    self.max_steps,
+                    1 if r.main_thruster else 0,
+                    1 if r.left_thruster else 0,
+                    1 if r.right_thruster else 0,
+                    float(self.params["gravity"]),
+                    float(self.params["wind"]),
+                    float(self.params.get("thruster_power", 1.65)),
+                    float(self.params["landing_bonus"]),
+                    self.width, self.height, self.pad_x, self.pad_y, self.pad_half_w,
+                    ctypes.byref(out_landed), ctypes.byref(out_crashed)
+                )
+                r.x = float(rx.value)
+                r.y = float(ry.value)
+                r.vx = float(rvx.value)
+                r.vy = float(rvy.value)
+                r.angle = float(rang.value)
+                r.v_angle = float(rvang.value)
+                r.fuel = float(rfuel.value)
+                r.prev_shaping = float(rprev.value)
+                r.total_reward = float(rtot.value)
+                r.steps = int(rsteps.value)
+                r.alive = bool(alive_flag)
+                r.landed = bool(out_landed.value)
+                r.crashed = bool(out_crashed.value)
+                r.genome.fitness = r.total_reward
+                continue
+
+            r.steps += 1
             ax = wind_acc
             ay = g_acc
 

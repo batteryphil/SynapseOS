@@ -230,6 +230,210 @@ class CortexEngine:
             "last_response_snippet": "Cortex-Phi3 + C99 PRIME Moment Engine Online",
             "call_count": 0,
         }
+        self.command_audit_log: List[Dict[str, Any]] = []
+
+    @staticmethod
+    def explain_command_breakdown(cmd: str) -> List[str]:
+        """
+        Glass-Box Terminal Explainer: breaks a Linux command into plain-English
+        educational notes for its binary, flags, and shell operators.
+        """
+        cmd_clean = (cmd or "").strip()
+        if not cmd_clean:
+            return []
+
+        binary_meanings = {
+            "df": "`df` (disk free): reports mounted filesystem storage usage",
+            "du": "`du` (disk usage): measures directory/file space consumption",
+            "free": "`free`: displays total, used, and available RAM and swap",
+            "lscpu": "`lscpu`: inspects CPU architecture, cores, and SIMD flags",
+            "lspci": "`lspci`: lists PCIe devices (GPUs, network controllers)",
+            "sensors": "`sensors`: reads hardware thermal probes and fan speeds",
+            "ps": "`ps`: snapshots active running processes",
+            "pkill": "`pkill`: sends a signal to processes matching a name pattern",
+            "fuser": "`fuser`: identifies PIDs using a file, socket, or device node",
+            "watch": "`watch`: repeatedly runs a command at fixed intervals",
+            "grep": "`grep`: filters text lines matching a pattern or regex",
+            "sort": "`sort`: orders lines of text alphabetically or numerically",
+            "head": "`head`: outputs the first N lines of standard input",
+            "ss": "`ss` (socket statistics): inspects active network ports & sockets",
+            "ip": "`ip`: queries or manages network interfaces and routing tables",
+            "systemctl": "`systemctl`: inspects or controls systemd background services",
+            "journalctl": "`journalctl`: queries structured systemd kernel and service logs",
+            "apt": "`apt` / `apt-get`: Debian/Ubuntu package manager",
+            "apt-get": "`apt-get`: scriptable Debian/Ubuntu package manager",
+            "uv": "`uv`: high-speed Rust-powered Python virtual-env and package manager",
+            "rocm-smi": "`rocm-smi`: AMD ROCm GPU temperature, clock, and VRAM monitor",
+            "nvidia-smi": "`nvidia-smi`: NVIDIA GPU utilization and VRAM monitor",
+            "apropos": "`apropos`: searches local manual page descriptions by keyword",
+        }
+        flag_meanings = {
+            "-h": "`-h`: human-readable units (KB, MB, GB)",
+            "-s": "`-s`: summary total only (or simulated dry-run in apt-get)",
+            "--dry-run": "`--dry-run`: simulates the operation without modifying the system",
+            "-n": "`-n`: numeric output / line count / interval in seconds",
+            "-f": "`-f`: match against full command line or follow live output",
+            "-v": "`-v`: verbose details",
+            "-i": "`-i`: case-insensitive matching",
+            "-E": "`-E`: extended regular expressions",
+            "-r": "`-r`: reverse sort order (or recursive directory traversal)",
+            "-t": "`-t`: TCP sockets",
+            "-u": "`-u`: UDP sockets",
+            "-l": "`-l`: listening sockets only",
+            "-p": "`-p`: show process name and PID owning the resource",
+            "-tulnp": "`-tulnp`: TCP (`t`), UDP (`u`), Listening (`l`), Numeric ports (`n`), Process PID (`p`)",
+            "-nnk": "`-nnk`: show vendor/device numeric IDs (`nn`) and bound kernel driver (`k`)",
+        }
+
+        notes: List[str] = []
+        tokens = cmd_clean.split()
+        if tokens:
+            first_bin = os.path.basename(tokens[0])
+            if first_bin in binary_meanings:
+                notes.append(binary_meanings[first_bin])
+            else:
+                notes.append(f"`{first_bin}`: primary executable command")
+
+        seen_flags = set()
+        for tok in tokens[1:]:
+            if tok in ("|", "&&", "2>/dev/null"):
+                if tok == "|" and "pipe" not in seen_flags:
+                    notes.append("`|` (pipe): streams stdout of the left command into the right command")
+                    seen_flags.add("pipe")
+                elif tok == "&&" and "and" not in seen_flags:
+                    notes.append("`&&`: runs the next command only if the first exits with code 0")
+                    seen_flags.add("and")
+                elif tok == "2>/dev/null" and "null" not in seen_flags:
+                    notes.append("`2>/dev/null`: silences non-critical permission warnings on stderr")
+                    seen_flags.add("null")
+            elif tok.startswith("-") and tok not in seen_flags:
+                seen_flags.add(tok)
+                if tok in flag_meanings:
+                    notes.append(flag_meanings[tok])
+                elif tok.startswith("-iA"):
+                    notes.append(f"`{tok}`: case-insensitive match + print trailing context lines")
+                elif tok.startswith("-h"):
+                    notes.append(f"`{tok}`: human-readable formatting")
+        return notes[:5]
+
+    @staticmethod
+    def evaluate_command_safety(cmd: str, declared_safety: str = "safe") -> Dict[str, Any]:
+        """
+        Deterministic Safety Shield for SynapseOS:
+        Protects local storage, system services, and headless SSH/VNC connectivity
+        (e.g., on the AMD BC-250 node) while suggesting safe read-only / dry-run alternatives.
+        """
+        raw = (cmd or "").strip()
+        lower = raw.lower()
+        level = (declared_safety or "safe").lower()
+
+        # 1. Destructive filesystem / disk patterns
+        fs_rules = [
+            (r"\brm\s+-[a-zA-Z]*r[a-zA-Z]*f[a-zA-Z]*\s+(/|\*|~)", "Recursive forced deletion of root/home filesystem", "ls -la"),
+            (r"\bmkfs\b", "Formatting a block device destroys all partition data", "lsblk -f"),
+            (r"\bdd\s+if=", "Raw block-device write can overwrite partition tables", "lsblk -o NAME,SIZE,FSTYPE,MOUNTPOINT"),
+            (r">\s*/dev/(sd|nvme|mmcblk|vd)", "Direct redirection onto a raw block device", "df -h"),
+            (r":\(\)\s*\{", "Fork bomb exhausts kernel process table (PID starvation)", "ps aux --sort=-%cpu | head -n 10"),
+            (r"\bchmod\s+-R\s+777\s+/", "World-writable recursive permissions break OS security & SSH", "stat /"),
+        ]
+        for pat, reason, safe_alt in fs_rules:
+            if re.search(pat, raw):
+                return {
+                    "allowed": False,
+                    "safety": "danger",
+                    "category": "filesystem_protection",
+                    "reason": reason,
+                    "safe_alternative": safe_alt,
+                }
+
+        # 2. Remote / Headless SSH & Network Lockout Protection
+        net_rules = [
+            (r"\bufw\s+(deny|reject|delete)\s+(22|ssh|5900|5901|6080)\b", "Blocking SSH/VNC port would lock out headless remote access", "ufw status verbose"),
+            (r"\biptables\s+(-F|--flush|-P\s+INPUT\s+DROP)\b", "Flushing or dropping INPUT chain can sever active SSH/VNC sessions", "ss -tulnp"),
+            (r"\bsystemctl\s+(stop|disable|mask)\s+(ssh|sshd|networking|NetworkManager)\b", "Stopping SSH or NetworkManager severs remote board access", "systemctl status ssh --no-pager"),
+            (r"\bip\s+link\s+set\s+\S+\s+down\b", "Bringing down a network interface disconnects headless nodes", "ip -br addr show"),
+            (r"\bifconfig\s+\S+\s+down\b", "Bringing down a network interface disconnects headless nodes", "ip -br addr show"),
+        ]
+        for pat, reason, safe_alt in net_rules:
+            if re.search(pat, lower):
+                return {
+                    "allowed": False,
+                    "safety": "danger",
+                    "category": "headless_lockout_protection",
+                    "reason": reason,
+                    "safe_alternative": safe_alt,
+                }
+
+        # 3. Power / session disruption
+        power_rules = [
+            (r"\b(shutdown|reboot|poweroff|halt)\b", "Power state command would terminate the live OS session", "uptime -p"),
+            (r"\binit\s+[06]\b", "Runlevel change would halt or reboot the machine", "uptime -p"),
+        ]
+        for pat, reason, safe_alt in power_rules:
+            if re.search(pat, lower):
+                return {
+                    "allowed": False,
+                    "safety": "danger",
+                    "category": "power_protection",
+                    "reason": reason,
+                    "safe_alternative": safe_alt,
+                }
+
+        # 4. Package removal / system mutation -> suggest dry-run (`-s`)
+        if re.search(r"\bapt(-get)?\s+(remove|purge|autoremove)\b", lower) and "-s" not in lower and "--dry-run" not in lower:
+            dry_alt = re.sub(r"\b(apt-get|apt)\b", "apt-get -s", raw, count=1)
+            return {
+                "allowed": False,
+                "safety": "danger",
+                "category": "package_mutation_guard",
+                "reason": "Unattended package removal is blocked in the learning runner; use dry-run simulation (`-s`) instead",
+                "safe_alternative": dry_alt,
+            }
+
+        if level == "danger":
+            return {
+                "allowed": False,
+                "safety": "danger",
+                "category": "policy_block",
+                "reason": "Command is marked high-risk in the Cortex safety policy",
+                "safe_alternative": "apropos linux",
+            }
+
+        return {
+            "allowed": True,
+            "safety": level if level in ("safe", "caution") else "safe",
+            "category": "verified_safe",
+            "reason": "Read-only or non-destructive command verified by Cortex Safety Shield",
+            "safe_alternative": "",
+        }
+
+    def record_command_audit(
+        self,
+        command: str,
+        status: str,
+        exit_code: int,
+        elapsed_ms: float,
+        source: str = "Cortex",
+        note: str = "",
+    ) -> Dict[str, Any]:
+        """Record an entry in the lightweight in-memory Session Command Audit Trail."""
+        entry = {
+            "timestamp": time.strftime("%H:%M:%S"),
+            "command": command,
+            "status": status,  # "OK", "ERROR", or "BLOCKED"
+            "exit_code": exit_code,
+            "elapsed_ms": round(elapsed_ms, 1),
+            "source": source,
+            "note": note,
+        }
+        self.command_audit_log.append(entry)
+        if len(self.command_audit_log) > 25:
+            self.command_audit_log.pop(0)
+        return entry
+
+    def get_command_audit_log(self, limit: int = 8) -> List[Dict[str, Any]]:
+        """Return the most recent session command audit entries."""
+        return list(self.command_audit_log[-limit:])
 
     def is_ollama_available(self) -> bool:
         try:
@@ -414,6 +618,19 @@ class CortexEngine:
             "metrics": dict(self.last_llm_metrics),
         }
 
+    def _enrich_cmd_result(self, res: Dict[str, Any]) -> Dict[str, Any]:
+        cmd = res.get("command", "")
+        res["flag_breakdown"] = self.explain_command_breakdown(cmd)
+        safety_eval = self.evaluate_command_safety(cmd, res.get("safety", "safe"))
+        res["safety_eval"] = safety_eval
+        res["safety"] = safety_eval["safety"]
+        if not safety_eval["allowed"] and safety_eval.get("reason"):
+            res["safety_note"] = (
+                f"{safety_eval['reason']}. "
+                f"Safe Read-Only Alternative: `{safety_eval['safe_alternative']}`"
+            )
+        return res
+
     def synthesize_command_and_instructions(self, query: str, force_llm: bool = False) -> Dict[str, Any]:
         """
         1. Searches SQLite FTS5 KB in <1ms.
@@ -426,7 +643,7 @@ class CortexEngine:
         if fts_hits and not force_llm and (fts_hits[0]["bm25_score"] <= -1.8 or self.potato_mode or not self.is_ollama_available()):
             best = fts_hits[0]
             best["source"] = f"SQLite FTS5 Grounded ({best['retrieval_ms']} ms)"
-            return best
+            return self._enrich_cmd_result(best)
 
         # Grounded LLM synthesis via cortex-phi3
         if self.is_ollama_available():
@@ -464,7 +681,7 @@ class CortexEngine:
                         parsed.setdefault("alternative", "")
                         parsed.setdefault("summary", query)
                         parsed["source"] = f"{self.get_preferred_model()} + FTS5 RAG ({elapsed_ms} ms)"
-                        return parsed
+                        return self._enrich_cmd_result(parsed)
                 except Exception:
                     pass
 
@@ -472,9 +689,9 @@ class CortexEngine:
         if fts_hits:
             best = fts_hits[0]
             best["source"] = f"SQLite FTS5 Offline Fallback ({best['retrieval_ms']} ms)"
-            return best
+            return self._enrich_cmd_result(best)
 
-        return {
+        return self._enrich_cmd_result({
             "command": f"apropos {re.sub(r'[^a-zA-Z0-9_-]', '', query.split()[0]) if query.split() else 'linux'}",
             "alternative": "tldr --list",
             "safety": "safe",
@@ -485,7 +702,7 @@ class CortexEngine:
                 "Use `?? <specific task>` for targeted command synthesis."
             ],
             "source": "Offline Core"
-        }
+        })
 
     def explain_ai_concept(self, topic_query: str, force_llm: bool = False) -> Dict[str, Any]:
         """

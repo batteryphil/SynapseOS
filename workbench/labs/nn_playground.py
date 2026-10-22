@@ -252,21 +252,61 @@ class NeuralPlaygroundLab:
         self.loss = total_loss / n
         self.accuracy = (100.0 * correct) / n
 
+    def _train_epochs(self, num_epochs: int = 1) -> None:
+        from workbench.labs.c_sim_bridge import SYNAPSE_C_CORE
+        import ctypes
+
+        h = len(self.w1)
+        n = len(self.samples)
+        if SYNAPSE_C_CORE is not None and n > 0 and 0 < h <= 64:
+            sx = (ctypes.c_float * n)(*(s[0] for s in self.samples))
+            sy = (ctypes.c_float * n)(*(s[1] for s in self.samples))
+            sl = (ctypes.c_float * n)(*(s[2] for s in self.samples))
+            w1_flat = (ctypes.c_float * (h * 4))(*(val for row in self.w1 for val in row))
+            b1_arr = (ctypes.c_float * h)(*self.b1)
+            w2_arr = (ctypes.c_float * h)(*self.w2)
+            b2_val = ctypes.c_float(self.b2)
+            out_loss = ctypes.c_float(self.loss)
+            out_acc = ctypes.c_float(self.accuracy)
+
+            f_cnt = int(round(self.params.get("synapse_density", 4.0)))
+            gain = float(self.params.get("activation_gain", 1.0))
+            lr = float(self.params["learning_rate"])
+            l2 = float(self.params["l2_reg"])
+
+            SYNAPSE_C_CORE.synapse_mlp_train_epochs(
+                num_epochs, n, sx, sy, sl,
+                h, f_cnt, gain, lr, l2,
+                w1_flat, b1_arr, w2_arr, ctypes.byref(b2_val),
+                ctypes.byref(out_loss), ctypes.byref(out_acc)
+            )
+            for j in range(h):
+                base = j * 4
+                self.w1[j] = [w1_flat[base], w1_flat[base + 1], w1_flat[base + 2], w1_flat[base + 3]]
+                self.b1[j] = float(b1_arr[j])
+                self.w2[j] = float(w2_arr[j])
+            self.b2 = float(b2_val.value)
+            self.epoch += num_epochs
+            self.loss = float(out_loss.value)
+            self.accuracy = float(out_acc.value)
+            return
+
+        for _ in range(num_epochs):
+            self._train_one_epoch()
+
     def step_physics(self) -> bool:
         self.swirl_phase += 0.032
         self._apply_live_swirl()
         steps = max(1, int(round(self.params["steps_per_frame"])))
-        for _ in range(steps):
-            self._train_one_epoch()
-        if self.epoch % 10 == 0:
+        self._train_epochs(steps)
+        if self.epoch % 10 == 0 or (self.epoch % steps == 0 and len(self.history_best) == 0):
             self.history_best.append(round(self.accuracy, 1))
             self.history_avg.append(round(max(0.0, (1.0 - self.loss) * 100.0), 1))
             return True
         return False
 
     def fast_forward_generations(self, num_gens: int = 50) -> Dict[str, Any]:
-        for _ in range(num_gens * 5):
-            self._train_one_epoch()
+        self._train_epochs(num_gens * 5)
         self.history_best.append(round(self.accuracy, 1))
         self.history_avg.append(round(max(0.0, (1.0 - self.loss) * 100.0), 1))
         return self.get_telemetry()

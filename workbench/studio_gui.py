@@ -1264,6 +1264,15 @@ class SynapseStudioWindow(Gtk.Window):
         missions = prof.get("daily_missions", [])
         done_m = sum(1 for m in missions if m.get("completed"))
 
+        audit_entries = self.cortex.get_command_audit_log(limit=6) if hasattr(self, "cortex") else []
+        if audit_entries:
+            audit_lines = [
+                f"  • [{e['timestamp']}] [{e['status']}] $ {e['command']} ({e['elapsed_ms']}ms)"
+                for e in audit_entries
+            ]
+        else:
+            audit_lines = ["  • No Linux commands executed in this session yet."]
+
         report = (
             f"★ PARENT & TEACHER ANALYTICS REPORT\n"
             f"--------------------------------------------------\n"
@@ -1277,7 +1286,9 @@ class SynapseStudioWindow(Gtk.Window):
             + f"\n\n▸ PYTHON CODING SANDBOX ANALYTICS:\n"
             f"  • Code Executions: {total_runs} ({passes} passed, {errors} errors -> {pass_rate}% pass rate)\n"
             f"  • Flagged Concepts:{struggled}\n\n"
-            f"▸ LUMI SOCRATIC TUTOR SUMMARY:\n"
+            f"▸ LINUX GLASS-BOX & SAFETY SHIELD AUDIT LOG:\n"
+            + "\n".join(audit_lines)
+            + f"\n\n▸ LUMI SOCRATIC TUTOR SUMMARY:\n"
             f"  • Lumi is configured in Socratic Hint-First Mode (guides with questions rather than giving away raw code answers)."
         )
         self.dashboard_text.get_buffer().set_text(report)
@@ -1455,10 +1466,16 @@ class SynapseStudioWindow(Gtk.Window):
         self.last_synthesized_cmd = res.get("command", "")
         self.last_cmd_query = q
         steps = " | ".join(f"{i}. {s}" for i, s in enumerate(res.get("instructions", []), 1))
+        breakdown = res.get("flag_breakdown") or self.cortex.explain_command_breakdown(self.last_synthesized_cmd)
+        bd_str = " ; ".join(breakdown) if breakdown else "Standard Linux CLI utility"
+        safety_eval = res.get("safety_eval") or self.cortex.evaluate_command_safety(
+            self.last_synthesized_cmd, res.get("safety", "safe")
+        )
         text = (
-            f"⌘ Linux Command [{res.get('safety', 'safe').upper()}] ({res.get('source', 'FTS5')}): {res.get('summary')}\n"
-            f"▸ Command:  {self.last_synthesized_cmd}   (Click '▶ Run Cmd' to execute live!)\n"
-            f"▸ Steps:    {steps}"
+            f"⌘ Glass-Box Linux Preview [{res.get('safety', 'safe').upper()} | {safety_eval.get('category', 'verified_safe')}] ({res.get('source', 'FTS5')}): {res.get('summary')}\n"
+            f"▸ Command:   $ {self.last_synthesized_cmd}   (Click '▶ Run Cmd' to execute live!)\n"
+            f"▸ Breakdown: {bd_str}\n"
+            f"▸ Steps:     {steps}"
         )
         self._set_cortex_message(text)
 
@@ -1488,15 +1505,39 @@ class SynapseStudioWindow(Gtk.Window):
             self.last_synthesized_cmd = cmd
             self.last_cmd_query = q
 
-        # Block destructive patterns
-        danger_tokens = ["rm -rf /", "mkfs", "dd if=", ":(){", "shutdown", "reboot", "poweroff", "> /dev/sd"]
-        if safety == "danger" or any(tok in cmd for tok in danger_tokens):
-            self._set_cortex_message(f"✗ Blocked potentially destructive command: {cmd}")
+        safety_eval = self.cortex.evaluate_command_safety(cmd, safety)
+        if not safety_eval.get("allowed", True):
+            safe_alt = safety_eval.get("safe_alternative", "")
+            self.cortex.record_command_audit(
+                command=cmd,
+                status="BLOCKED",
+                exit_code=-1,
+                elapsed_ms=0.1,
+                source=source,
+                note=safety_eval.get("reason", "Safety Shield"),
+            )
+            self._refresh_teacher_dashboard()
+            if safe_alt:
+                self.last_synthesized_cmd = safe_alt
+                self.last_cmd_query = q
+            alt_line = (
+                f"\n▸ Safe Read-Only / Dry-Run Alternative Loaded: $ {safe_alt}  (Click '▶ Run Cmd' again to run safe preview!)"
+                if safe_alt
+                else ""
+            )
+            self._set_cortex_message(
+                f"✗ SAFETY SHIELD BLOCKED [{safety_eval.get('category', 'danger').upper()}]: $ {cmd}\n"
+                f"▸ Why Blocked: {safety_eval.get('reason')}"
+                f"{alt_line}"
+            )
             return
 
-        self._set_cortex_message(f"▶ Executing Linux command ({source}): $ {cmd} ...")
+        breakdown = self.cortex.explain_command_breakdown(cmd)
+        bd_line = f"▸ Glass-Box Breakdown: {' ; '.join(breakdown)}\n" if breakdown else ""
+        self._set_cortex_message(f"▶ Executing Linux command ({source}): $ {cmd} ...\n{bd_line}")
 
         def worker():
+            t0 = time.perf_counter()
             try:
                 proc = subprocess.run(
                     cmd,
@@ -1505,15 +1546,37 @@ class SynapseStudioWindow(Gtk.Window):
                     text=True,
                     timeout=8,
                 )
+                dt_ms = round((time.perf_counter() - t0) * 1000.0, 1)
                 out = (proc.stdout or "") + (proc.stderr or "")
                 out = out.strip() or "(Command completed with exit code 0 and no stdout)"
                 lines = out.splitlines()
                 if len(lines) > 12:
                     out = "\n".join(lines[:12]) + f"\n... ({len(lines) - 12} more lines)"
-                msg = f"⌘ Executed: $ {cmd}  [Exit: {proc.returncode}]\n{out}"
+                status_tag = "OK" if proc.returncode == 0 else f"EXIT:{proc.returncode}"
+                self.cortex.record_command_audit(
+                    command=cmd,
+                    status=status_tag,
+                    exit_code=proc.returncode,
+                    elapsed_ms=dt_ms,
+                    source=source,
+                )
+                msg = (
+                    f"⌘ Executed: $ {cmd}  [Exit: {proc.returncode} | {dt_ms} ms | Logged to Audit Trail]\n"
+                    f"{bd_line}{out}"
+                )
             except Exception as e:
+                dt_ms = round((time.perf_counter() - t0) * 1000.0, 1)
+                self.cortex.record_command_audit(
+                    command=cmd,
+                    status="ERROR",
+                    exit_code=1,
+                    elapsed_ms=dt_ms,
+                    source=source,
+                    note=str(e),
+                )
                 msg = f"✗ Execution Error ($ {cmd}): {e}"
             GLib.idle_add(self._set_cortex_message, msg)
+            GLib.idle_add(self._refresh_teacher_dashboard)
 
         threading.Thread(target=worker, daemon=True).start()
 
