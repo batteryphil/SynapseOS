@@ -71,18 +71,40 @@ qemu-system-x86_64 -enable-kvm -m 2048 -smp 2 -cdrom iso/SynapseOS-Lite-x86_64.i
 ./distro/build-iso.sh --lite
 ./distro/build-iso.sh --all
 
+# Browse & manage the 12-Year K-12 Rolling Curriculum (Math, Science, Reading/ELA, History + AI)
+./synapse pack list-years
+./synapse pack set-year 1        # Installs Year 1 (Grade 1), wipes old year files, keeps Transcript
+./synapse curriculum y01_math    # Run Grade 1 Mathematics + AI Lab
+./synapse pack advance-year      # Graduate to next School Year (wipes old year, saves Report Card)
+
 # Run all automated unit & integration tests
 python3 -m unittest discover -s tests
 ```
 
 ---
 
-## 4. Repository Structure
+## 4. K–12 Rolling Year-by-Year School Curriculum (`curricula/year_01.json` – `year_12.json`)
+
+Every school year (`Year 1` / Grade 1 through `Year 12` / Grade 12 Senior Capstone) includes **5 Core School Subjects** (**60 total K–12 subject lessons** + **84 bilingual `EN`/`FR` visual levels**):
+1. **📐 Mathematics** (*Arithmetic $\rightarrow$ Fractions/Ratios $\rightarrow$ Linear Algebra $\rightarrow$ Trigonometry $\rightarrow$ Calculus & Probability*)
+2. **🔬 Science** (*Forces & Weather $\rightarrow$ Food Webs & Matter $\rightarrow$ Genetics & Optics $\rightarrow$ Physics, Chemistry & Neuroscience*)
+3. **📖 Reading & Language Arts (ELA)** (*Phonics & Story Elements $\rightarrow$ Grammar & Main Idea $\rightarrow$ Claim-Evidence-Reasoning $\rightarrow$ Rhetoric & Technical Peer Review*)
+4. **🌍 Social Studies & History** (*Compass Maps & Continents $\rightarrow$ Ancient Civilizations & Civics $\rightarrow$ Industrial/Digital Revolutions $\rightarrow$ AI Ethics & Economics*)
+5. **🤖 Connected AI & Coding Assignment** (*Hands-on simulation + runnable Python code check tied directly to that grade's Math, Science, ELA, and History lessons*)
+
+- **1-Year-at-a-Time Potato Storage Wiper**: Only **one** school year's curriculum package (`~17 KB`) resides in active classroom storage (`~/.config/synapse-os/active_pack/current_pack.json`). Advancing a student (`./synapse pack advance-year` or clicking **`★ Yr X ↻`** in the Teacher Report tab) **wipes the old year's pack and scratch files** while **permanently preserving the student's Cumulative Multi-Subject Report Card Transcript, Gold Trophies, Coins, and High Scores** in `student_profile.json`.
+
+---
+
+## 5. Repository Structure
 
 ```text
 synapse-os/
 ├── synapse                                # Unified CLI entrypoint
 ├── SYNAPSE_OS_SPECS.txt                   # Full technical architecture & benchmark specification
+├── curricula/
+│   ├── index.json                         # Master manifest of all 12 K-12 School Year Curricula
+│   └── year_01.json .. year_12.json       # Hosted Year 1-12 packages (Math, Science, ELA, History, AI)
 ├── bin/
 │   ├── synapse-studio                     # Studio desktop launcher
 │   └── synapse-tunnel                     # Encrypted HTTPS noVNC + Cloudflare remote classroom tunnel
@@ -91,9 +113,9 @@ synapse-os/
 │   ├── SynapseOS-Lite-x86_64.iso.sha256   # SHA256 checksum for verification
 │   └── decompress_iso.sh                  # 1-command ISO reassembly + zstd decompression + SHA256 check
 ├── cortex/
-│   ├── engine.py                          # Three-tier AI engine (FTS5 + C99 PRIME Moment + Ollama + General Chat)
+│   ├── engine.py                          # Three-tier AI engine (FTS5 + C99 PRIME Moment + Ollama + Safety Shield)
 │   ├── prime_window.py                    # ctypes binding to libprime.so + O(W+K) context compressor
-│   ├── c_prime/                           # Native C99 PRIME-Moment engine (prime + libprime.so)
+│   ├── c_prime/                           # Native C99 PRIME-Moment & Sim kernels (GCC + Cosmopolitan + Fil-C)
 │   ├── knowledge/cortex_kb.sqlite         # 92 KB SQLite FTS5 BM25 database
 │   └── forge/
 │       ├── Modelfile.phi3                 # Fast-TTFT (num_ctx=1024) Ollama Modelfile
@@ -101,12 +123,14 @@ synapse-os/
 │       ├── hybrid_prime_attention.py      # PyTorch causal-mask Transformer surgery for Phi-3 & Qwen2
 │       └── train_phi3_qlora.py            # 4-bit NF4 QLoRA trainer with GPU hardware guardrail
 ├── workbench/
-│   ├── studio_gui.py                      # GTK3 + Cairo 60 FPS 7-Lab GUI + Teacher/Pro Workstation
+│   ├── studio_gui.py                      # GTK3 + Cairo 60 FPS 7-Lab GUI + K-12 Teacher Report Card
 │   ├── kid_arcade_view.py                 # Full-screen Synapse Kids gamified view (EN/FR toggle)
+│   ├── k12_curricula.py                   # 12-Year K-12 Traditional Subjects + AI Curriculum generator
+│   ├── pack_manager.py                    # 1-Year-at-a-Time Wiper & Persistent Student Transcript Vault
 │   ├── labs/prime_attention_lab.py        # Lab 7: Interactive O(N^2) vs O(W+K) PRIME Moment simulator
-│   ├── curriculum.py                      # 35 Lab Examples (5 per lab) & 14 interactive classroom missions
+│   ├── curriculum.py                      # 35 Lab Examples (5 per lab) & classroom missions
 │   └── sandbox_runner.py                  # Subprocess Python sandbox (8s timeout)
 ├── distro/
 │   └── build-iso.sh                       # Debian 12 Live ISO builder (--lite for 385 MB, --all for 2.5 GB)
-└── tests/                                 # Automated unit & integration test suite
+└── tests/                                 # Automated unit & integration test suite (32 tests)
 ```

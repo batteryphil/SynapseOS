@@ -1,0 +1,472 @@
+{
+  "pack_id": "year_06",
+  "pack_number": 6,
+  "school_year": 6,
+  "year_number": 6,
+  "grade_label": "Grade 6 (Ages 11-12)",
+  "band": "Band B: Early Middle School",
+  "grade_band": "Band B: Early Middle School",
+  "title_en": "Year 6 (Grade 6): Ratios & Negative Numbers, Cell Biology, Argumentation & Ancient World",
+  "title_fr": "Année 6 (6e) : Ratios & Nombres Négatifs, Biologie Cellulaire & Antiquité",
+  "short_en": "Year 6 (Grade 6)",
+  "short_fr": "Année 6 (6e)",
+  "subjects": [
+    "math",
+    "science",
+    "ela",
+    "history",
+    "ai_cs"
+  ],
+  "subject_lessons": [
+    {
+      "id": "y06_math",
+      "year": 6,
+      "year_number": 6,
+      "subject": "math",
+      "subject_key": "math",
+      "subject_icon": "📐",
+      "subject_name": "Mathematics",
+      "track": "Year 6 (Grade 6 (Ages 11-12)) — 📐 Mathematics",
+      "title": "Y6 Math: Ratios, Percentages, Negative Numbers & [-1, 1] Normalization",
+      "grade_level": "Grade 6 (Ages 11-12)",
+      "lab_id": "moon_lander",
+      "badge": "🏅 Y6 Math Scholar",
+      "story": "TRADITIONAL MATH LESSON (GRADE 6):\n• Ratios & Proportions compare two quantities: if a rocket has 120 fuel out of a 160 capacity, the ratio is `120 / 160 = 0.75` (or `75%`).\n• Negative Numbers (`< 0`) represent opposite directions: `-3.5 m/s` means moving left, `+3.5 m/s` means moving right.\n• Neural networks work best when inputs are normalized into the ratio `[-1.0, +1.0]`!",
+      "steps": [
+        "1. Read the Year 6 (Grade 6 (Ages 11-12)) 📐 Mathematics lesson above.",
+        "2. Click '▸ 1. Load Preset' to configure the interactive simulation for this subject.",
+        "3. Click '⚡ Turbo +25 Gens' (or open '✎ 3. Python Challenge' and click '▶ Run Code') to complete the assignment.",
+        "4. Click '✓ 2. Check Goal' to record your grade on your Year-by-Year Report Card!"
+      ],
+      "preset_params": {
+        "gravity": 1.62,
+        "wind": 0.3,
+        "fuel_capacity": 170.0,
+        "thruster_power": 2.15,
+        "landing_bonus": 340.0
+      },
+      "goal_metric": "best_ever",
+      "goal_op": ">=",
+      "goal_target": 120.0,
+      "goal_desc": "Complete the Y6 Math: Ratios, Percentages, Negative Numbers & [-1, 1] Normalization lab & code check (best_ever >= 120.0)",
+      "coding_challenge": "# 📐 YEAR 6 MATH ASSIGNMENT: Ratios & Sensor Normalization\nraw_x = 170.0\npad_x = 320.0\nhalf_width = 300.0\nnormalized_x = (raw_x - pad_x) / half_width\nprint(f'Raw x={raw_x} relative to pad={pad_x} -> Normalized Ratio: {normalized_x:.2f}')\nassert -1.0 <= normalized_x <= 1.0\n"
+    },
+    {
+      "id": "y06_science",
+      "year": 6,
+      "year_number": 6,
+      "subject": "science",
+      "subject_key": "science",
+      "subject_icon": "🔬",
+      "subject_name": "Science",
+      "track": "Year 6 (Grade 6 (Ages 11-12)) — 🔬 Science",
+      "title": "Y6 Science: Cell Biology, Biological Neurons & Thermal Energy",
+      "grade_level": "Grade 6 (Ages 11-12)",
+      "lab_id": "nn_playground",
+      "badge": "🏅 Y6 Science Explorer",
+      "story": "TRADITIONAL SCIENCE LESSON (GRADE 6):\nYour brain contains 86 billion biological nerve cells called Neurons!\n  1. Dendrites receive incoming signals (Inputs).\n  2. The Soma (cell body) sums the signals together.\n  3. The Axon fires an electrical pulse across Synapses to the next neuron (Output)!\nArtificial Neural Networks in SynapseOS are directly modeled on biological dendrites, somas, and synapses.",
+      "steps": [
+        "1. Read the Year 6 (Grade 6 (Ages 11-12)) 🔬 Science lesson above.",
+        "2. Click '▸ 1. Load Preset' to configure the interactive simulation for this subject.",
+        "3. Click '⚡ Turbo +25 Gens' (or open '✎ 3. Python Challenge' and click '▶ Run Code') to complete the assignment.",
+        "4. Click '✓ 2. Check Goal' to record your grade on your Year-by-Year Report Card!"
+      ],
+      "preset_params": {
+        "dataset_id": 2.0,
+        "hidden_neurons": 10.0,
+        "steps_per_frame": 15.0,
+        "learning_rate": 0.28
+      },
+      "goal_metric": "best_ever",
+      "goal_op": ">=",
+      "goal_target": 82.0,
+      "goal_desc": "Complete the Y6 Science: Cell Biology, Biological Neurons & Thermal Energy lab & code check (best_ever >= 82.0)",
+      "coding_challenge": "# 🔬 YEAR 6 BIOLOGY LAB: Dendrites, Soma & Axon Firing\nimport math\ndendrite_inputs = [0.8, -0.4, 0.5]\nsynapse_weights = [1.2, 0.5, 0.9]\nsoma_sum = sum(x * w for x, w in zip(dendrite_inputs, synapse_weights))\naxon_output = math.tanh(soma_sum)\nprint(f'Soma Sum: {soma_sum:.2f} -> Axon Firing Output: {axon_output:.3f}')\n"
+    },
+    {
+      "id": "y06_ela",
+      "year": 6,
+      "year_number": 6,
+      "subject": "ela",
+      "subject_key": "ela",
+      "subject_icon": "📖",
+      "subject_name": "Reading & Language Arts",
+      "track": "Year 6 (Grade 6 (Ages 11-12)) — 📖 Reading & Language Arts",
+      "title": "Y6 ELA: Claims vs. Opinions, Technical Precision & Informative Essays",
+      "grade_level": "Grade 6 (Ages 11-12)",
+      "lab_id": "nn_playground",
+      "badge": "🏅 Y6 Literary Thinker",
+      "story": "TRADITIONAL LANGUAGE ARTS LESSON (GRADE 6):\n• An Unsupported Opinion is a feeling without data (\"I think my AI is really smart\").\n• A Verifiable Claim cites specific measurements (\"Increasing hidden neurons from 2 to 10 raised classification accuracy from 68% to 94%\").",
+      "steps": [
+        "1. Read the Year 6 (Grade 6 (Ages 11-12)) 📖 Reading & Language Arts lesson above.",
+        "2. Click '▸ 1. Load Preset' to configure the interactive simulation for this subject.",
+        "3. Click '⚡ Turbo +25 Gens' (or open '✎ 3. Python Challenge' and click '▶ Run Code') to complete the assignment.",
+        "4. Click '✓ 2. Check Goal' to record your grade on your Year-by-Year Report Card!"
+      ],
+      "preset_params": {
+        "dataset_id": 2.0,
+        "hidden_neurons": 10.0,
+        "steps_per_frame": 15.0,
+        "learning_rate": 0.28
+      },
+      "goal_metric": "best_ever",
+      "goal_op": ">=",
+      "goal_target": 82.0,
+      "goal_desc": "Complete the Y6 ELA: Claims vs. Opinions, Technical Precision & Informative Essays lab & code check (best_ever >= 82.0)",
+      "coding_challenge": "# 📖 YEAR 6 ELA LAB: Writing a Data-Backed Scientific Claim\nacc_before, acc_after = 68.0, 94.0\nimprovement = acc_after - acc_before\nclaim = f'Adding 8 hidden neurons improved accuracy by +{improvement:.1f} percentage points.'\nprint(claim)\nassert improvement == 26.0\n"
+    },
+    {
+      "id": "y06_history",
+      "year": 6,
+      "year_number": 6,
+      "subject": "history",
+      "subject_key": "history",
+      "subject_icon": "🌍",
+      "subject_name": "Social Studies & History",
+      "track": "Year 6 (Grade 6 (Ages 11-12)) — 🌍 Social Studies & History",
+      "title": "Y6 World History: Ancient Mesopotamia, Egypt, Greece & Logic",
+      "grade_level": "Grade 6 (Ages 11-12)",
+      "lab_id": "raycast_car",
+      "badge": "🏅 Y6 Historian & Citizen",
+      "story": "TRADITIONAL ANCIENT HISTORY LESSON (GRADE 6):\n• Mesopotamia invented cuneiform writing and base-60 math (60 seconds in a minute, 360° in a circle!).\n• Ancient Egypt used geometry to survey the Nile River.\n• Ancient Greece (Socrates, Plato, Aristotle, Euclid) developed formal logic and the Socratic Method—teaching by asking guiding questions, just like Lumi!",
+      "steps": [
+        "1. Read the Year 6 (Grade 6 (Ages 11-12)) 🌍 Social Studies & History lesson above.",
+        "2. Click '▸ 1. Load Preset' to configure the interactive simulation for this subject.",
+        "3. Click '⚡ Turbo +25 Gens' (or open '✎ 3. Python Challenge' and click '▶ Run Code') to complete the assignment.",
+        "4. Click '✓ 2. Check Goal' to record your grade on your Year-by-Year Report Card!"
+      ],
+      "preset_params": {
+        "sensor_range": 155.0,
+        "max_speed": 5.2
+      },
+      "goal_metric": "best_ever",
+      "goal_op": ">=",
+      "goal_target": 140.0,
+      "goal_desc": "Complete the Y6 World History: Ancient Mesopotamia, Egypt, Greece & Logic lab & code check (best_ever >= 140.0)",
+      "coding_challenge": "# 🏺 YEAR 6 ANCIENT HISTORY & BASE-60 GEOMETRY CHECK\nbabylonian_base = 60\ndegrees_in_circle = babylonian_base * 6\nprint(f'Mesopotamian Base-{babylonian_base} -> {degrees_in_circle} degrees in a full circle!')\nassert degrees_in_circle == 360\n"
+    },
+    {
+      "id": "y06_ai_cs",
+      "year": 6,
+      "year_number": 6,
+      "subject": "ai_cs",
+      "subject_key": "ai_cs",
+      "subject_icon": "🤖",
+      "subject_name": "AI & Coding Assignment",
+      "track": "Year 6 (Grade 6 (Ages 11-12)) — 🤖 AI & Coding Assignment",
+      "title": "Y6 AI Assignment: Sensor Normalization & Forward Propagation in Python",
+      "grade_level": "Grade 6 (Ages 11-12)",
+      "lab_id": "moon_lander",
+      "badge": "🏆 Y6 AI Graduate",
+      "story": "YEAR 6 BUILT-IN AI ASSIGNMENT:\nNormalize raw rocket sensor readings into `[-1.0, 1.0]` using Grade 6 ratios and feed them into a NEAT neural network!",
+      "steps": [
+        "1. Read the Year 6 (Grade 6 (Ages 11-12)) 🤖 AI & Coding Assignment lesson above.",
+        "2. Click '▸ 1. Load Preset' to configure the interactive simulation for this subject.",
+        "3. Click '⚡ Turbo +25 Gens' (or open '✎ 3. Python Challenge' and click '▶ Run Code') to complete the assignment.",
+        "4. Click '✓ 2. Check Goal' to record your grade on your Year-by-Year Report Card!"
+      ],
+      "preset_params": {
+        "gravity": 1.62,
+        "wind": 0.35,
+        "fuel_capacity": 175.0,
+        "thruster_power": 2.15,
+        "landing_bonus": 340.0
+      },
+      "goal_metric": "best_ever",
+      "goal_op": ">=",
+      "goal_target": 120.0,
+      "goal_desc": "Complete the Y6 AI Assignment: Sensor Normalization & Forward Propagation in Python lab & code check (best_ever >= 120.0)",
+      "coding_challenge": "# 🤖 YEAR 6 AI CAPSTONE: Normalizing Sensor Ratios for a Neural Brain\nfrom workbench.labs.neat_core import NEATPopulation\n\npop = NEATPopulation(num_inputs=4, num_outputs=2, pop_size=20)\nobs = [(280.0 - 320.0) / 300.0, (365.0 - 120.0) / 350.0, -1.2 / 6.0, 0.8 / 6.0]\nout = pop.best_genome.forward(obs)\nprint('Normalized Inputs:', [round(x, 3) for x in obs], '-> Outputs:', [round(y, 3) for y in out])\n"
+    }
+  ],
+  "kid_levels": [
+    {
+      "level": 1,
+      "lab_id": "moon_lander",
+      "title_en": "Y6 L1: Year 6 (Grade 6) Space Lander (Physics & Math)",
+      "title_fr": "A6 N1 : Fusée Spatiale (Année 6 (6e))",
+      "speech_en": "Welcome to Year 6 (Grade 6)! Apply your Math & Science forces (Gravity=2.5) to land softly!",
+      "speech_fr": "Bienvenue en Année 6 (6e) ! Utilise les forces physiques (Gravité=2.5) pour atterrir !",
+      "obj1_en": "Apply Force Balance",
+      "obj1_fr": "Équilibrer les forces",
+      "obj2_en": "Soft Touchdown",
+      "obj2_fr": "Atterrissage doux",
+      "btn1_en": [
+        "Train AI",
+        "Pilot"
+      ],
+      "btn1_fr": [
+        "Entraîner",
+        "Pilote"
+      ],
+      "btn2_en": [
+        "Boost",
+        "Fuel"
+      ],
+      "btn2_fr": [
+        "Plus de",
+        "Carburant"
+      ],
+      "btn3_en": [
+        "Tune",
+        "Gravity"
+      ],
+      "btn3_fr": [
+        "Ajuster",
+        "Gravité"
+      ],
+      "preset": {
+        "gravity": 2.5,
+        "wind": 0.25,
+        "fuel_capacity": 170.0
+      }
+    },
+    {
+      "level": 2,
+      "lab_id": "raycast_car",
+      "title_en": "Y6 L2: Year 6 (Grade 6) Lidar Geometry & Waves",
+      "title_fr": "A6 N2 : Géométrie Laser Lidar (Année 6 (6e))",
+      "speech_en": "Year 6 (Grade 6) Geometry Lab: Use 5 laser angle beams (155px) to steer cleanly!",
+      "speech_fr": "Labo Géométrie Année 6 (6e) : Utilise les 5 rayons laser (155px) !",
+      "obj1_en": "Zero Wall Hits",
+      "obj1_fr": "Zéro collision",
+      "obj2_en": "Complete Circuit",
+      "obj2_fr": "Circuit complet",
+      "btn1_en": [
+        "Evolve",
+        "Brain"
+      ],
+      "btn1_fr": [
+        "Évoluer",
+        "Cerveau"
+      ],
+      "btn2_en": [
+        "Extend",
+        "Lasers"
+      ],
+      "btn2_fr": [
+        "Allonger",
+        "Lasers"
+      ],
+      "btn3_en": [
+        "Adjust",
+        "Speed"
+      ],
+      "btn3_fr": [
+        "Régler",
+        "Vitesse"
+      ],
+      "preset": {
+        "sensor_range": 155.0,
+        "max_speed": 5.3,
+        "track_width": 38.0
+      }
+    },
+    {
+      "level": 3,
+      "lab_id": "rl_gridworld",
+      "title_en": "Y6 L3: Year 6 (Grade 6) Compass Map & Probability Maze",
+      "title_fr": "A6 N3 : Carte & Labyrinthe (Année 6 (6e))",
+      "speech_en": "Year 6 (Grade 6) Geography & Math: Navigate N/S/E/W around hazards to reach the goal!",
+      "speech_fr": "Géographie Année 6 (6e) : Navigue N/S/E/O autour de la lave vers le trésor !",
+      "obj1_en": "Dodge Lava Cliffs",
+      "obj1_fr": "Éviter la lave",
+      "obj2_en": "Optimal Map Path",
+      "obj2_fr": "Chemin optimal",
+      "btn1_en": [
+        "Learn",
+        "Map"
+      ],
+      "btn1_fr": [
+        "Apprendre",
+        "Carte"
+      ],
+      "btn2_en": [
+        "High",
+        "Foresight"
+      ],
+      "btn2_fr": [
+        "Grande",
+        "Vision"
+      ],
+      "btn3_en": [
+        "Low",
+        "Risk"
+      ],
+      "btn3_fr": [
+        "Moins de",
+        "Risque"
+      ],
+      "preset": {
+        "alpha": 0.35,
+        "gamma": 0.96,
+        "epsilon": 0.1,
+        "use_sarsa": 0.0
+      }
+    },
+    {
+      "level": 4,
+      "lab_id": "cartpole_rl",
+      "title_en": "Y6 L4: Year 6 (Grade 6) Pendulum Forces & Balance",
+      "title_fr": "A6 N4 : Pendule & Équilibre (Année 6 (6e))",
+      "speech_en": "Year 6 (Grade 6) Physics: Balance torque, inertia, and gravity on the moving cart!",
+      "speech_fr": "Physique Année 6 (6e) : Équilibre l'inertie et la gravité sur le chariot !",
+      "obj1_en": "Keep Upright",
+      "obj1_fr": "Rester droit",
+      "obj2_en": "300+ Steps",
+      "obj2_fr": "300+ Pas",
+      "btn1_en": [
+        "Train",
+        "Policy"
+      ],
+      "btn1_fr": [
+        "Entraîner",
+        "IA"
+      ],
+      "btn2_en": [
+        "Motor",
+        "Force"
+      ],
+      "btn2_fr": [
+        "Force",
+        "Moteur"
+      ],
+      "btn3_en": [
+        "Calm",
+        "Wind"
+      ],
+      "btn3_fr": [
+        "Calmer",
+        "Vent"
+      ],
+      "preset": {
+        "gravity": 9.8,
+        "force_mag": 13.0,
+        "wind_gust": 0.22
+      }
+    },
+    {
+      "level": 5,
+      "lab_id": "nn_playground",
+      "title_en": "Y6 L5: Year 6 (Grade 6) (x,y) Coordinates & Neural Graph",
+      "title_fr": "A6 N5 : Coordonnées (x,y) & Neurones (Année 6 (6e))",
+      "speech_en": "Year 6 (Grade 6) Algebra & Biology: Use 12 hidden neurons to separate 2D points!",
+      "speech_fr": "Algèbre Année 6 (6e) : Utilise 12 neurones cachés pour séparer les points !",
+      "obj1_en": "Curve Boundary",
+      "obj1_fr": "Courber frontière",
+      "obj2_en": "90% Accuracy",
+      "obj2_fr": "Précision 90%",
+      "btn1_en": [
+        "Add",
+        "Neurons"
+      ],
+      "btn1_fr": [
+        "Ajouter",
+        "Neurones"
+      ],
+      "btn2_en": [
+        "Switch",
+        "Dataset"
+      ],
+      "btn2_fr": [
+        "Changer",
+        "Forme"
+      ],
+      "btn3_en": [
+        "Scramble",
+        "Points"
+      ],
+      "btn3_fr": [
+        "Mélanger",
+        "Points"
+      ],
+      "preset": {
+        "dataset_id": 1.0,
+        "hidden_neurons": 12.0,
+        "learning_rate": 0.24
+      }
+    },
+    {
+      "level": 6,
+      "lab_id": "swarm_ecosystem",
+      "title_en": "Y6 L6: Year 6 (Grade 6) Ecosystem Food Web & Genetics",
+      "title_fr": "A6 N6 : Écosystème & Génétique (Année 6 (6e))",
+      "speech_en": "Year 6 (Grade 6) Life Science: Balance producers (food orbs), prey fish, and predators!",
+      "speech_fr": "Biologie Année 6 (6e) : Équilibre la chaîne alimentaire et l'essaim !",
+      "obj1_en": "Flock Cohesion",
+      "obj1_fr": "Cohésion groupe",
+      "obj2_en": "Ecosystem Balance",
+      "obj2_fr": "Équilibre vivant",
+      "btn1_en": [
+        "Evolve",
+        "Genes"
+      ],
+      "btn1_fr": [
+        "Évoluer",
+        "Gènes"
+      ],
+      "btn2_en": [
+        "More",
+        "Producers"
+      ],
+      "btn2_fr": [
+        "Plus de",
+        "Plantes"
+      ],
+      "btn3_en": [
+        "Speed",
+        "Adaptation"
+      ],
+      "btn3_fr": [
+        "Vitesse",
+        "Agile"
+      ],
+      "preset": {
+        "num_prey": 40.0,
+        "num_predators": 4.0,
+        "food_count": 32.0
+      }
+    },
+    {
+      "level": 7,
+      "lab_id": "prime_attention",
+      "title_en": "Y6 L7: Year 6 (Grade 6) Reading Context & Memory Vault",
+      "title_fr": "A6 N7 : Lecture & Coffre Mémoire (Année 6 (6e))",
+      "speech_en": "Year 6 (Grade 6) Reading & CS: Preserve key story clues in the 67 KB PRIME Memory Vault!",
+      "speech_fr": "Lecture & IA Année 6 (6e) : Garde les indices clés dans le Coffre Mémoire !",
+      "obj1_en": "O(1) RAM Budget",
+      "obj1_fr": "Mémoire O(1)",
+      "obj2_en": "High Recall",
+      "obj2_fr": "Rappel élevé",
+      "btn1_en": [
+        "Add",
+        "Clues"
+      ],
+      "btn1_fr": [
+        "Ajouter",
+        "Indices"
+      ],
+      "btn2_en": [
+        "Expand",
+        "Window"
+      ],
+      "btn2_fr": [
+        "Grande",
+        "Fenêtre"
+      ],
+      "btn3_en": [
+        "Stabilize",
+        "Norm"
+      ],
+      "btn3_fr": [
+        "Stabiliser",
+        "Norme"
+      ],
+      "preset": {
+        "window_size": 64.0,
+        "distractor_gap": 256.0,
+        "use_qk_norm": 1.0
+      }
+    }
+  ]
+}

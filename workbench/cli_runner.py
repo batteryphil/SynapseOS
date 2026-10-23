@@ -21,7 +21,13 @@ from workbench.labs.nn_playground import NeuralPlaygroundLab
 from workbench.labs.swarm_ecosystem import SwarmEcosystemLab
 from workbench.labs.prime_attention_lab import PrimeAttentionLab
 from workbench.code_generator import generate_lab_python_code
-from workbench.curriculum import SCHOOL_CURRICULUM, get_lesson_by_id, verify_lesson_goal
+from workbench.curriculum import (
+    SCHOOL_CURRICULUM,
+    ALL_CURRICULUM_LESSONS,
+    get_lesson_by_id,
+    verify_lesson_goal,
+)
+from workbench.pack_manager import LearningPackManager
 from workbench.sandbox_runner import run_student_code
 
 LAB_CLASSES = {
@@ -58,22 +64,39 @@ def run_benchmark_all(gens: int = 10) -> Dict[str, Any]:
 
 
 def list_curriculum_lessons() -> None:
-    """Print all interactive school curriculum lessons and badges."""
-    print(f"\n\033[1;96m🎓 SynapseOS School AI Curriculum & Hands-On Coding Suite ({len(SCHOOL_CURRICULUM)} Lessons)\033[0m")
-    print("=" * 90)
+    """Print active K-12 school year subject lessons + interactive AI lab curriculum."""
+    mgr = LearningPackManager()
+    cur_yr = mgr.get_current_school_year()
+    yr_pack = mgr.get_active_year_pack()
+    subj_lessons = mgr.get_active_subject_lessons()
+
+    print(
+        f"\n\033[1;96m🏫 Active K-12 School Year {cur_yr} Curriculum: {yr_pack['title_en']} ({len(subj_lessons)} Core Subjects)\033[0m"
+    )
+    print("=" * 96)
+    for les in subj_lessons:
+        print(
+            f"  \033[1;93m{les['id']:<14}\033[0m | {les['badge']:<22} | "
+            f"\033[1;97m{les['title']}\033[0m ({les['grade_level']})"
+        )
+        print(f"                 └─ Subject: \033[92m{les['track']}\033[0m [Connected AI Lab: {les['lab_id']}]")
+
+    print(f"\n\033[1;96m🎓 SynapseOS Core AI Lab Tracks ({len(SCHOOL_CURRICULUM)} Missions)\033[0m")
+    print("=" * 96)
     for lesson in SCHOOL_CURRICULUM:
         print(
             f"  \033[1;93m{lesson['id']:<14}\033[0m | {lesson['badge']:<22} | "
             f"\033[1;97m{lesson['title']}\033[0m ({lesson['grade_level']})"
         )
         print(f"                 └─ Track: \033[92m{lesson['track']}\033[0m [Lab: {lesson['lab_id']}]")
-    print("=" * 90)
-    print("Run a lesson with: \033[96m./synapse curriculum <lesson_id>\033[0m\n")
+    print("=" * 96)
+    print("Run any subject or AI lesson: \033[96m./synapse curriculum <lesson_id>\033[0m (e.g. y01_math, y08_science, lesson_1_1)")
+    print("Switch K-12 School Year (1..12): \033[96m./synapse pack set-year <1..12>\033[0m or \033[96m./synapse pack advance-year\033[0m\n")
 
 
 def run_curriculum_lesson(lesson_id: str) -> int:
     """Load a school lesson, test its preset simulation, and run its hands-on coding challenge."""
-    valid_ids = {l["id"] for l in SCHOOL_CURRICULUM}
+    valid_ids = {l["id"] for l in ALL_CURRICULUM_LESSONS}
     if lesson_id not in valid_ids:
         print(f"\033[91m[!] Unknown lesson ID: {lesson_id}\033[0m")
         list_curriculum_lessons()
@@ -93,20 +116,32 @@ def run_curriculum_lesson(lesson_id: str) -> int:
     # 1. Run Lab with Lesson Preset Params
     lab = LAB_CLASSES[lesson["lab_id"]]()
     for k, v in lesson["preset_params"].items():
-        if k in lab.params:
-            lab.params[k] = v
+        lab.update_param(k, v)
     if hasattr(lab, "reset_generation"):
         lab.reset_generation()
-    lab.fast_forward_generations(15)
+    elif hasattr(lab, "reset_q_table"):
+        lab.reset_q_table()
+    elif hasattr(lab, "reset_ecosystem"):
+        lab.reset_ecosystem()
+    elif hasattr(lab, "rebuild_simulation"):
+        lab.rebuild_simulation()
+    elif hasattr(lab, "reset_weights"):
+        lab.reset_weights()
+        lab.rebuild_dataset()
+    lab.fast_forward_generations(25)
     passed, msg = verify_lesson_goal(lesson, lab.get_telemetry())
     status_str = "\033[1;92mUNLOCKED\033[0m" if passed else "\033[1;93mIN PROGRESS\033[0m"
     print(f"\033[1;96m[1/2] Lab Simulation Verification:\033[0m [{status_str}]\n{msg}")
 
     # 2. Run Hands-On Python Coding Challenge in Sandbox
-    print(f"\n\033[1;96m[2/2] Running Hands-On Python Coding Sandbox...\033[0m")
+    print(f"\n\033[1;96m[2/2] Running Hands-On Subject & AI Coding Sandbox...\033[0m")
     res = run_student_code(lesson["coding_challenge"])
     if res["ok"]:
         print(f"\033[1;92m{res['output']}\033[0m")
+        if lesson_id.startswith("y"):
+            mgr = LearningPackManager()
+            mgr.record_subject_grade(lesson_id, score=100)
+            mgr.award_badge(lesson_id, points=150, stars=3, coins=50)
         return 0
     else:
         print(f"\033[1;91m{res['output']}\033[0m")

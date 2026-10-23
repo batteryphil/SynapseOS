@@ -881,12 +881,30 @@ LAB_EXAMPLES: Dict[str, List[Dict[str, Any]]] = {
 }
 
 
+from workbench.k12_curricula import (
+    K12_YEAR_PACKS,
+    get_all_k12_subject_lessons,
+    get_subject_lessons_for_year,
+)
+
+ALL_CURRICULUM_LESSONS: List[Dict[str, Any]] = list(SCHOOL_CURRICULUM) + get_all_k12_subject_lessons()
+
+
 def get_examples_for_lab(lab_id: str) -> List[Dict[str, Any]]:
     return LAB_EXAMPLES.get(lab_id, LAB_EXAMPLES["moon_lander"])
 
 
+def get_curriculum_for_year(year_num: int = 1) -> List[Dict[str, Any]]:
+    """
+    Return the active school year's 5 Core Subject Lessons (Math, Science, Reading/ELA,
+    Social Studies/History, AI & Coding) followed by the Core AI Lab Track missions.
+    """
+    year_subjects = get_subject_lessons_for_year(year_num)
+    return list(year_subjects) + list(SCHOOL_CURRICULUM)
+
+
 def get_lesson_by_id(lesson_id: str) -> Dict[str, Any]:
-    for lesson in SCHOOL_CURRICULUM:
+    for lesson in ALL_CURRICULUM_LESSONS:
         if lesson["id"] == lesson_id:
             return lesson
     return SCHOOL_CURRICULUM[0]
@@ -894,7 +912,7 @@ def get_lesson_by_id(lesson_id: str) -> Dict[str, Any]:
 
 def get_lessons_for_lab(lab_id: str):
     """Return all curriculum lessons targeting a specific AI lab."""
-    return [lesson for lesson in SCHOOL_CURRICULUM if lesson["lab_id"] == lab_id]
+    return [lesson for lesson in ALL_CURRICULUM_LESSONS if lesson["lab_id"] == lab_id]
 
 
 def verify_lesson_goal(lesson: Dict[str, Any], telemetry: Dict[str, Any]) -> Tuple[bool, str]:

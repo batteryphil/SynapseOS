@@ -1,0 +1,471 @@
+{
+  "pack_id": "year_05",
+  "pack_number": 5,
+  "school_year": 5,
+  "year_number": 5,
+  "grade_label": "Grade 5 (Ages 10-11)",
+  "band": "Band B: Upper Elementary & Intro Python",
+  "grade_band": "Band B: Upper Elementary & Intro Python",
+  "title_en": "Year 5 (Grade 5): Coordinate Planes (x,y), Food Webs, Persuasive Writing & Civics",
+  "title_fr": "Année 5 (CM2) : Plan Cartésien (x,y), Écosystèmes, Argumentation & Citoyenneté",
+  "short_en": "Year 5 (Grade 5)",
+  "short_fr": "Année 5 (CM2)",
+  "subjects": [
+    "math",
+    "science",
+    "ela",
+    "history",
+    "ai_cs"
+  ],
+  "subject_lessons": [
+    {
+      "id": "y05_math",
+      "year": 5,
+      "year_number": 5,
+      "subject": "math",
+      "subject_key": "math",
+      "subject_icon": "📐",
+      "subject_name": "Mathematics",
+      "track": "Year 5 (Grade 5 (Ages 10-11)) — 📐 Mathematics",
+      "title": "Y5 Math: The (x, y) Coordinate Plane, Order of Operations & Averages",
+      "grade_level": "Grade 5 (Ages 10-11)",
+      "lab_id": "nn_playground",
+      "badge": "🏅 Y5 Math Scholar",
+      "story": "TRADITIONAL MATH LESSON (GRADE 5):\n• Coordinate Plane: Every point on a 2D graph has an address `(x, y)` where `x` is horizontal and `y` is vertical.\n• Order of Operations (PEMDAS): Parentheses -> Exponents -> Multiply/Divide -> Add/Subtract.\n• Mean (Average): Add all scores together and divide by how many numbers there are!",
+      "steps": [
+        "1. Read the Year 5 (Grade 5 (Ages 10-11)) 📐 Mathematics lesson above.",
+        "2. Click '▸ 1. Load Preset' to configure the interactive simulation for this subject.",
+        "3. Click '⚡ Turbo +25 Gens' (or open '✎ 3. Python Challenge' and click '▶ Run Code') to complete the assignment.",
+        "4. Click '✓ 2. Check Goal' to record your grade on your Year-by-Year Report Card!"
+      ],
+      "preset_params": {
+        "dataset_id": 1.0,
+        "hidden_neurons": 8.0,
+        "learning_rate": 0.24,
+        "steps_per_frame": 15.0
+      },
+      "goal_metric": "best_ever",
+      "goal_op": ">=",
+      "goal_target": 82.0,
+      "goal_desc": "Complete the Y5 Math: The (x, y) Coordinate Plane, Order of Operations & Averages lab & code check (best_ever >= 82.0)",
+      "coding_challenge": "# 📐 YEAR 5 MATH ASSIGNMENT: Averages & Coordinate Points\nscores = [84.0, 90.0, 92.0, 96.0]\nmean_score = sum(scores) / len(scores)\nprint(f'Scores: {scores} -> Mean (Average): {mean_score:.1f}%')\nassert mean_score == 90.5\n"
+    },
+    {
+      "id": "y05_science",
+      "year": 5,
+      "year_number": 5,
+      "subject": "science",
+      "subject_key": "science",
+      "subject_icon": "🔬",
+      "subject_name": "Science",
+      "track": "Year 5 (Grade 5 (Ages 10-11)) — 🔬 Science",
+      "title": "Y5 Science: Ecosystem Energy Pyramids (10% Rule) & Conservation of Matter",
+      "grade_level": "Grade 5 (Ages 10-11)",
+      "lab_id": "swarm_ecosystem",
+      "badge": "🏅 Y5 Science Explorer",
+      "story": "TRADITIONAL SCIENCE LESSON (GRADE 5):\nIn an ecosystem energy pyramid, only about 10% of energy moves up to the next trophic level (Plants -> Herbivores -> Predators), while 90% is used for motion and heat. That is why ecosystems have many plants, fewer herbivores, and even fewer apex predators!",
+      "steps": [
+        "1. Read the Year 5 (Grade 5 (Ages 10-11)) 🔬 Science lesson above.",
+        "2. Click '▸ 1. Load Preset' to configure the interactive simulation for this subject.",
+        "3. Click '⚡ Turbo +25 Gens' (or open '✎ 3. Python Challenge' and click '▶ Run Code') to complete the assignment.",
+        "4. Click '✓ 2. Check Goal' to record your grade on your Year-by-Year Report Card!"
+      ],
+      "preset_params": {
+        "num_prey": 45.0,
+        "num_predators": 4.0,
+        "food_count": 40.0
+      },
+      "goal_metric": "best_ever",
+      "goal_op": ">=",
+      "goal_target": 130.0,
+      "goal_desc": "Complete the Y5 Science: Ecosystem Energy Pyramids (10% Rule) & Conservation of Matter lab & code check (best_ever >= 130.0)",
+      "coding_challenge": "# 🔬 YEAR 5 SCIENCE LAB: The 10% Trophic Energy Pyramid\nproducer_energy = 1000.0\nherbivore_energy = producer_energy * 0.10\npredator_energy = herbivore_energy * 0.10\nprint(f'Producers: {producer_energy} -> Herbivores: {herbivore_energy} -> Predators: {predator_energy}')\nassert predator_energy == 10.0\n"
+    },
+    {
+      "id": "y05_ela",
+      "year": 5,
+      "year_number": 5,
+      "subject": "ela",
+      "subject_key": "ela",
+      "subject_icon": "📖",
+      "subject_name": "Reading & Language Arts",
+      "track": "Year 5 (Grade 5 (Ages 10-11)) — 📖 Reading & Language Arts",
+      "title": "Y5 Reading & Writing: Citing Evidence, Greek/Latin Roots & Persuasive Essays",
+      "grade_level": "Grade 5 (Ages 10-11)",
+      "lab_id": "nn_playground",
+      "badge": "🏅 Y5 Literary Thinker",
+      "story": "TRADITIONAL LANGUAGE ARTS LESSON (GRADE 5):\n• Greek & Latin Roots: `neuro` (nerve/brain), `chron` (time), `photo` (light), `tele` (far), `metry` (measure -> telemetry!).\n• Persuasive Writing: Always back up your Claim with measurable Evidence (data from your experiment!).",
+      "steps": [
+        "1. Read the Year 5 (Grade 5 (Ages 10-11)) 📖 Reading & Language Arts lesson above.",
+        "2. Click '▸ 1. Load Preset' to configure the interactive simulation for this subject.",
+        "3. Click '⚡ Turbo +25 Gens' (or open '✎ 3. Python Challenge' and click '▶ Run Code') to complete the assignment.",
+        "4. Click '✓ 2. Check Goal' to record your grade on your Year-by-Year Report Card!"
+      ],
+      "preset_params": {
+        "dataset_id": 1.0,
+        "hidden_neurons": 8.0,
+        "steps_per_frame": 15.0,
+        "learning_rate": 0.28
+      },
+      "goal_metric": "best_ever",
+      "goal_op": ">=",
+      "goal_target": 82.0,
+      "goal_desc": "Complete the Y5 Reading & Writing: Citing Evidence, Greek/Latin Roots & Persuasive Essays lab & code check (best_ever >= 82.0)",
+      "coding_challenge": "# 📖 YEAR 5 ELA CHECK: Greek & Latin Scientific Roots\nroots = {'tele': 'far', 'metry': 'measure', 'neuro': 'brain/nerve'}\nprint('Telemetry =', roots['tele'], '+', roots['metry'])\nassert len(roots) == 3\n"
+    },
+    {
+      "id": "y05_history",
+      "year": 5,
+      "year_number": 5,
+      "subject": "history",
+      "subject_key": "history",
+      "subject_icon": "🌍",
+      "subject_name": "Social Studies & History",
+      "track": "Year 5 (Grade 5 (Ages 10-11)) — 🌍 Social Studies & History",
+      "title": "Y5 Social Studies: Branches of Government, Checks & Balances & Civic Rules",
+      "grade_level": "Grade 5 (Ages 10-11)",
+      "lab_id": "nn_playground",
+      "badge": "🏅 Y5 Historian & Citizen",
+      "story": "TRADITIONAL SOCIAL STUDIES & CIVICS LESSON (GRADE 5):\nConstitutional democracies divide power into 3 Branches with Checks and Balances:\n  1. Legislative (makes the laws)\n  2. Executive (carries out the laws)\n  3. Judicial (evaluates whether rules are followed fairly)\nSimilarly, SynapseOS uses a Safety Shield to check commands before execution!",
+      "steps": [
+        "1. Read the Year 5 (Grade 5 (Ages 10-11)) 🌍 Social Studies & History lesson above.",
+        "2. Click '▸ 1. Load Preset' to configure the interactive simulation for this subject.",
+        "3. Click '⚡ Turbo +25 Gens' (or open '✎ 3. Python Challenge' and click '▶ Run Code') to complete the assignment.",
+        "4. Click '✓ 2. Check Goal' to record your grade on your Year-by-Year Report Card!"
+      ],
+      "preset_params": {
+        "dataset_id": 2.0,
+        "hidden_neurons": 8.0,
+        "steps_per_frame": 15.0,
+        "learning_rate": 0.28
+      },
+      "goal_metric": "best_ever",
+      "goal_op": ">=",
+      "goal_target": 82.0,
+      "goal_desc": "Complete the Y5 Social Studies: Branches of Government, Checks & Balances & Civic Rules lab & code check (best_ever >= 82.0)",
+      "coding_challenge": "# 🏛️ YEAR 5 CIVICS & SAFETY SHIELD LAB\nfrom cortex.engine import CortexEngine\ncheck = CortexEngine.evaluate_command_safety('df -h')\nprint('Civic Safety Check on df -h:', check['category'], '| Allowed:', check['allowed'])\nassert check['allowed'] is True\n"
+    },
+    {
+      "id": "y05_ai_cs",
+      "year": 5,
+      "year_number": 5,
+      "subject": "ai_cs",
+      "subject_key": "ai_cs",
+      "subject_icon": "🤖",
+      "subject_name": "AI & Coding Assignment",
+      "track": "Year 5 (Grade 5 (Ages 10-11)) — 🤖 AI & Coding Assignment",
+      "title": "Y5 AI Assignment: Growing Hidden Neurons on the 2D Coordinate Plane",
+      "grade_level": "Grade 5 (Ages 10-11)",
+      "lab_id": "nn_playground",
+      "badge": "🏆 Y5 AI Graduate",
+      "story": "YEAR 5 BUILT-IN AI ASSIGNMENT:\nUse `modify_brain_structure(delta_neurons=4)` in Python to grow hidden neurons and separate Concentric Rings on the `(x, y)` coordinate plane!",
+      "steps": [
+        "1. Read the Year 5 (Grade 5 (Ages 10-11)) 🤖 AI & Coding Assignment lesson above.",
+        "2. Click '▸ 1. Load Preset' to configure the interactive simulation for this subject.",
+        "3. Click '⚡ Turbo +25 Gens' (or open '✎ 3. Python Challenge' and click '▶ Run Code') to complete the assignment.",
+        "4. Click '✓ 2. Check Goal' to record your grade on your Year-by-Year Report Card!"
+      ],
+      "preset_params": {
+        "dataset_id": 1.0,
+        "hidden_neurons": 12.0,
+        "learning_rate": 0.25,
+        "steps_per_frame": 15.0
+      },
+      "goal_metric": "best_ever",
+      "goal_op": ">=",
+      "goal_target": 82.0,
+      "goal_desc": "Complete the Y5 AI Assignment: Growing Hidden Neurons on the 2D Coordinate Plane lab & code check (best_ever >= 82.0)",
+      "coding_challenge": "# 🤖 YEAR 5 AI CAPSTONE: Growing Hidden Neurons\nfrom workbench.labs.nn_playground import NeuralPlaygroundLab\n\nlab = NeuralPlaygroundLab()\nlab.update_param('dataset_id', 1)  # Concentric Rings\nlab.modify_brain_structure(delta_neurons=4)\nstats = lab.fast_forward_generations(30)\nprint(f\"Hidden Neurons: {stats['species']} -> Accuracy: {stats['best_ever']}%\")\n"
+    }
+  ],
+  "kid_levels": [
+    {
+      "level": 1,
+      "lab_id": "moon_lander",
+      "title_en": "Y5 L1: Year 5 (Grade 5) Space Lander (Physics & Math)",
+      "title_fr": "A5 N1 : Fusée Spatiale (Année 5 (CM2))",
+      "speech_en": "Welcome to Year 5 (Grade 5)! Apply your Math & Science forces (Gravity=2.28) to land softly!",
+      "speech_fr": "Bienvenue en Année 5 (CM2) ! Utilise les forces physiques (Gravité=2.28) pour atterrir !",
+      "obj1_en": "Apply Force Balance",
+      "obj1_fr": "Équilibrer les forces",
+      "obj2_en": "Soft Touchdown",
+      "obj2_fr": "Atterrissage doux",
+      "btn1_en": [
+        "Train AI",
+        "Pilot"
+      ],
+      "btn1_fr": [
+        "Entraîner",
+        "Pilote"
+      ],
+      "btn2_en": [
+        "Boost",
+        "Fuel"
+      ],
+      "btn2_fr": [
+        "Plus de",
+        "Carburant"
+      ],
+      "btn3_en": [
+        "Tune",
+        "Gravity"
+      ],
+      "btn3_fr": [
+        "Ajuster",
+        "Gravité"
+      ],
+      "preset": {
+        "gravity": 2.28,
+        "wind": 0.2,
+        "fuel_capacity": 174.0
+      }
+    },
+    {
+      "level": 2,
+      "lab_id": "raycast_car",
+      "title_en": "Y5 L2: Year 5 (Grade 5) Lidar Geometry & Waves",
+      "title_fr": "A5 N2 : Géométrie Laser Lidar (Année 5 (CM2))",
+      "speech_en": "Year 5 (Grade 5) Geometry Lab: Use 5 laser angle beams (149px) to steer cleanly!",
+      "speech_fr": "Labo Géométrie Année 5 (CM2) : Utilise les 5 rayons laser (149px) !",
+      "obj1_en": "Zero Wall Hits",
+      "obj1_fr": "Zéro collision",
+      "obj2_en": "Complete Circuit",
+      "obj2_fr": "Circuit complet",
+      "btn1_en": [
+        "Evolve",
+        "Brain"
+      ],
+      "btn1_fr": [
+        "Évoluer",
+        "Cerveau"
+      ],
+      "btn2_en": [
+        "Extend",
+        "Lasers"
+      ],
+      "btn2_fr": [
+        "Allonger",
+        "Lasers"
+      ],
+      "btn3_en": [
+        "Adjust",
+        "Speed"
+      ],
+      "btn3_fr": [
+        "Régler",
+        "Vitesse"
+      ],
+      "preset": {
+        "sensor_range": 149.0,
+        "max_speed": 5.1,
+        "track_width": 39.2
+      }
+    },
+    {
+      "level": 3,
+      "lab_id": "rl_gridworld",
+      "title_en": "Y5 L3: Year 5 (Grade 5) Compass Map & Probability Maze",
+      "title_fr": "A5 N3 : Carte & Labyrinthe (Année 5 (CM2))",
+      "speech_en": "Year 5 (Grade 5) Geography & Math: Navigate N/S/E/W around hazards to reach the goal!",
+      "speech_fr": "Géographie Année 5 (CM2) : Navigue N/S/E/O autour de la lave vers le trésor !",
+      "obj1_en": "Dodge Lava Cliffs",
+      "obj1_fr": "Éviter la lave",
+      "obj2_en": "Optimal Map Path",
+      "obj2_fr": "Chemin optimal",
+      "btn1_en": [
+        "Learn",
+        "Map"
+      ],
+      "btn1_fr": [
+        "Apprendre",
+        "Carte"
+      ],
+      "btn2_en": [
+        "High",
+        "Foresight"
+      ],
+      "btn2_fr": [
+        "Grande",
+        "Vision"
+      ],
+      "btn3_en": [
+        "Low",
+        "Risk"
+      ],
+      "btn3_fr": [
+        "Moins de",
+        "Risque"
+      ],
+      "preset": {
+        "alpha": 0.35,
+        "gamma": 0.96,
+        "epsilon": 0.1,
+        "use_sarsa": 0.0
+      }
+    },
+    {
+      "level": 4,
+      "lab_id": "cartpole_rl",
+      "title_en": "Y5 L4: Year 5 (Grade 5) Pendulum Forces & Balance",
+      "title_fr": "A5 N4 : Pendule & Équilibre (Année 5 (CM2))",
+      "speech_en": "Year 5 (Grade 5) Physics: Balance torque, inertia, and gravity on the moving cart!",
+      "speech_fr": "Physique Année 5 (CM2) : Équilibre l'inertie et la gravité sur le chariot !",
+      "obj1_en": "Keep Upright",
+      "obj1_fr": "Rester droit",
+      "obj2_en": "300+ Steps",
+      "obj2_fr": "300+ Pas",
+      "btn1_en": [
+        "Train",
+        "Policy"
+      ],
+      "btn1_fr": [
+        "Entraîner",
+        "IA"
+      ],
+      "btn2_en": [
+        "Motor",
+        "Force"
+      ],
+      "btn2_fr": [
+        "Force",
+        "Moteur"
+      ],
+      "btn3_en": [
+        "Calm",
+        "Wind"
+      ],
+      "btn3_fr": [
+        "Calmer",
+        "Vent"
+      ],
+      "preset": {
+        "gravity": 9.8,
+        "force_mag": 13.0,
+        "wind_gust": 0.2
+      }
+    },
+    {
+      "level": 5,
+      "lab_id": "nn_playground",
+      "title_en": "Y5 L5: Year 5 (Grade 5) (x,y) Coordinates & Neural Graph",
+      "title_fr": "A5 N5 : Coordonnées (x,y) & Neurones (Année 5 (CM2))",
+      "speech_en": "Year 5 (Grade 5) Algebra & Biology: Use 11 hidden neurons to separate 2D points!",
+      "speech_fr": "Algèbre Année 5 (CM2) : Utilise 11 neurones cachés pour séparer les points !",
+      "obj1_en": "Curve Boundary",
+      "obj1_fr": "Courber frontière",
+      "obj2_en": "90% Accuracy",
+      "obj2_fr": "Précision 90%",
+      "btn1_en": [
+        "Add",
+        "Neurons"
+      ],
+      "btn1_fr": [
+        "Ajouter",
+        "Neurones"
+      ],
+      "btn2_en": [
+        "Switch",
+        "Dataset"
+      ],
+      "btn2_fr": [
+        "Changer",
+        "Forme"
+      ],
+      "btn3_en": [
+        "Scramble",
+        "Points"
+      ],
+      "btn3_fr": [
+        "Mélanger",
+        "Points"
+      ],
+      "preset": {
+        "dataset_id": 0.0,
+        "hidden_neurons": 11.0,
+        "learning_rate": 0.24
+      }
+    },
+    {
+      "level": 6,
+      "lab_id": "swarm_ecosystem",
+      "title_en": "Y5 L6: Year 5 (Grade 5) Ecosystem Food Web & Genetics",
+      "title_fr": "A5 N6 : Écosystème & Génétique (Année 5 (CM2))",
+      "speech_en": "Year 5 (Grade 5) Life Science: Balance producers (food orbs), prey fish, and predators!",
+      "speech_fr": "Biologie Année 5 (CM2) : Équilibre la chaîne alimentaire et l'essaim !",
+      "obj1_en": "Flock Cohesion",
+      "obj1_fr": "Cohésion groupe",
+      "obj2_en": "Ecosystem Balance",
+      "obj2_fr": "Équilibre vivant",
+      "btn1_en": [
+        "Evolve",
+        "Genes"
+      ],
+      "btn1_fr": [
+        "Évoluer",
+        "Gènes"
+      ],
+      "btn2_en": [
+        "More",
+        "Producers"
+      ],
+      "btn2_fr": [
+        "Plus de",
+        "Plantes"
+      ],
+      "btn3_en": [
+        "Speed",
+        "Adaptation"
+      ],
+      "btn3_fr": [
+        "Vitesse",
+        "Agile"
+      ],
+      "preset": {
+        "num_prey": 40.0,
+        "num_predators": 4.0,
+        "food_count": 32.0
+      }
+    },
+    {
+      "level": 7,
+      "lab_id": "prime_attention",
+      "title_en": "Y5 L7: Year 5 (Grade 5) Reading Context & Memory Vault",
+      "title_fr": "A5 N7 : Lecture & Coffre Mémoire (Année 5 (CM2))",
+      "speech_en": "Year 5 (Grade 5) Reading & CS: Preserve key story clues in the 67 KB PRIME Memory Vault!",
+      "speech_fr": "Lecture & IA Année 5 (CM2) : Garde les indices clés dans le Coffre Mémoire !",
+      "obj1_en": "O(1) RAM Budget",
+      "obj1_fr": "Mémoire O(1)",
+      "obj2_en": "High Recall",
+      "obj2_fr": "Rappel élevé",
+      "btn1_en": [
+        "Add",
+        "Clues"
+      ],
+      "btn1_fr": [
+        "Ajouter",
+        "Indices"
+      ],
+      "btn2_en": [
+        "Expand",
+        "Window"
+      ],
+      "btn2_fr": [
+        "Grande",
+        "Fenêtre"
+      ],
+      "btn3_en": [
+        "Stabilize",
+        "Norm"
+      ],
+      "btn3_fr": [
+        "Stabiliser",
+        "Norme"
+      ],
+      "preset": {
+        "window_size": 64.0,
+        "distractor_gap": 256.0,
+        "use_qk_norm": 1.0
+      }
+    }
+  ]
+}

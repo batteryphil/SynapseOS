@@ -1,0 +1,471 @@
+{
+  "pack_id": "year_03",
+  "pack_number": 3,
+  "school_year": 3,
+  "year_number": 3,
+  "grade_label": "Grade 3 (Ages 8-9)",
+  "band": "Band A: Elementary Discovery",
+  "grade_band": "Band A: Elementary Discovery",
+  "title_en": "Year 3 (Grade 3): Multiplication, Solar System Gravity, Cause/Effect & Trade",
+  "title_fr": "Année 3 (CE2) : Multiplication, Système Solaire, Cause/Effet & Échanges",
+  "short_en": "Year 3 (Grade 3)",
+  "short_fr": "Année 3 (CE2)",
+  "subjects": [
+    "math",
+    "science",
+    "ela",
+    "history",
+    "ai_cs"
+  ],
+  "subject_lessons": [
+    {
+      "id": "y03_math",
+      "year": 3,
+      "year_number": 3,
+      "subject": "math",
+      "subject_key": "math",
+      "subject_icon": "📐",
+      "subject_name": "Mathematics",
+      "track": "Year 3 (Grade 3 (Ages 8-9)) — 📐 Mathematics",
+      "title": "Y3 Math: Multiplication, Division, Area & Unit Fractions",
+      "grade_level": "Grade 3 (Ages 8-9)",
+      "lab_id": "rl_gridworld",
+      "badge": "🏅 Y3 Math Scholar",
+      "story": "TRADITIONAL MATH LESSON (GRADE 3):\n• Multiplication (*) is fast repeated addition: 6 rockets × 10 fuel tanks = 60 tanks!\n• Division (/) splits a total into equal groups: 60 ÷ 6 = 10.\n• Area of a Rectangle = Length × Width.\n• Fractions: 1/2 means 1 part out of 2 equal parts (0.50).",
+      "steps": [
+        "1. Read the Year 3 (Grade 3 (Ages 8-9)) 📐 Mathematics lesson above.",
+        "2. Click '▸ 1. Load Preset' to configure the interactive simulation for this subject.",
+        "3. Click '⚡ Turbo +25 Gens' (or open '✎ 3. Python Challenge' and click '▶ Run Code') to complete the assignment.",
+        "4. Click '✓ 2. Check Goal' to record your grade on your Year-by-Year Report Card!"
+      ],
+      "preset_params": {
+        "alpha": 0.45,
+        "gamma": 0.95,
+        "epsilon": 0.08,
+        "max_ep_steps": 120.0
+      },
+      "goal_metric": "generation",
+      "goal_op": ">=",
+      "goal_target": 15.0,
+      "goal_desc": "Complete the Y3 Math: Multiplication, Division, Area & Unit Fractions lab & code check (generation >= 15.0)",
+      "coding_challenge": "# 📐 YEAR 3 MATH ASSIGNMENT: Multiplication, Area & Fractions\ngrid_cols = 10\ngrid_rows = 7\ntotal_grid_area = grid_cols * grid_rows\nhalf_area = total_grid_area / 2\nprint(f'Grid Area: {grid_cols} x {grid_rows} = {total_grid_area} tiles (1/2 is {half_area})')\nassert total_grid_area == 70\n"
+    },
+    {
+      "id": "y03_science",
+      "year": 3,
+      "year_number": 3,
+      "subject": "science",
+      "subject_key": "science",
+      "subject_icon": "🔬",
+      "subject_name": "Science",
+      "track": "Year 3 (Grade 3 (Ages 8-9)) — 🔬 Science",
+      "title": "Y3 Science: The Solar System, Planetary Gravity & Magnetism",
+      "grade_level": "Grade 3 (Ages 8-9)",
+      "lab_id": "moon_lander",
+      "badge": "🏅 Y3 Science Explorer",
+      "story": "TRADITIONAL SCIENCE LESSON (GRADE 3):\nOur Solar System has 8 planets orbiting the Sun: Mercury, Venus, Earth, Mars, Jupiter, Saturn, Uranus, Neptune.\nMore massive planets pull harder with Gravity:\n  • Moon Gravity:  1.62 m/s²\n  • Mars Gravity:  3.72 m/s² (more than 2× the Moon!)\n  • Earth Gravity: 9.80 m/s² (6× the Moon!)",
+      "steps": [
+        "1. Read the Year 3 (Grade 3 (Ages 8-9)) 🔬 Science lesson above.",
+        "2. Click '▸ 1. Load Preset' to configure the interactive simulation for this subject.",
+        "3. Click '⚡ Turbo +25 Gens' (or open '✎ 3. Python Challenge' and click '▶ Run Code') to complete the assignment.",
+        "4. Click '✓ 2. Check Goal' to record your grade on your Year-by-Year Report Card!"
+      ],
+      "preset_params": {
+        "gravity": 2.2,
+        "fuel_capacity": 200.0,
+        "thruster_power": 1.85,
+        "landing_bonus": 340.0
+      },
+      "goal_metric": "best_ever",
+      "goal_op": ">=",
+      "goal_target": 120.0,
+      "goal_desc": "Complete the Y3 Science: The Solar System, Planetary Gravity & Magnetism lab & code check (best_ever >= 120.0)",
+      "coding_challenge": "# 🔬 YEAR 3 SCIENCE LAB: Comparing Weight Across Worlds\nmass_kg = 100.0\nfor world, g in [('Moon', 1.62), ('Mars', 3.72), ('Earth', 9.80)]:\n    force_newtons = mass_kg * g\n    print(f'{world:<6} Gravity: {g} m/s^2 -> Downward Pull: {force_newtons:.0f} N')\n"
+    },
+    {
+      "id": "y03_ela",
+      "year": 3,
+      "year_number": 3,
+      "subject": "ela",
+      "subject_key": "ela",
+      "subject_icon": "📖",
+      "subject_name": "Reading & Language Arts",
+      "track": "Year 3 (Grade 3 (Ages 8-9)) — 📖 Reading & Language Arts",
+      "title": "Y3 Reading & Writing: Topic Sentences, Prefixes & Cause-and-Effect",
+      "grade_level": "Grade 3 (Ages 8-9)",
+      "lab_id": "cartpole_rl",
+      "badge": "🏅 Y3 Literary Thinker",
+      "story": "TRADITIONAL LANGUAGE ARTS LESSON (GRADE 3):\n• Prefixes change a word's meaning: `un-` (not, as in *unbalanced*), `re-` (again, as in *rebuild*).\n• Cause and Effect:\n  - CAUSE: Why something happened (\"Mars has stronger gravity than the Moon\").\n  - EFFECT: What happened as a result (\"The rocket needed more thruster power to land softly\").",
+      "steps": [
+        "1. Read the Year 3 (Grade 3 (Ages 8-9)) 📖 Reading & Language Arts lesson above.",
+        "2. Click '▸ 1. Load Preset' to configure the interactive simulation for this subject.",
+        "3. Click '⚡ Turbo +25 Gens' (or open '✎ 3. Python Challenge' and click '▶ Run Code') to complete the assignment.",
+        "4. Click '✓ 2. Check Goal' to record your grade on your Year-by-Year Report Card!"
+      ],
+      "preset_params": {
+        "gravity": 9.8,
+        "force_mag": 13.0,
+        "wind_gust": 0.15
+      },
+      "goal_metric": "best_ever",
+      "goal_op": ">=",
+      "goal_target": 260.0,
+      "goal_desc": "Complete the Y3 Reading & Writing: Topic Sentences, Prefixes & Cause-and-Effect lab & code check (best_ever >= 260.0)",
+      "coding_challenge": "# 📖 YEAR 3 ELA CHECK: Prefixes & Cause-and-Effect\nprefix_words = {'un' + 'balanced': 'not balanced', 're' + 'train': 'train again'}\nfor word, meaning in prefix_words.items():\n    print(f'{word}: {meaning}')\nassert 'unbalanced' in prefix_words\n"
+    },
+    {
+      "id": "y03_history",
+      "year": 3,
+      "year_number": 3,
+      "subject": "history",
+      "subject_key": "history",
+      "subject_icon": "🌍",
+      "subject_name": "Social Studies & History",
+      "track": "Year 3 (Grade 3 (Ages 8-9)) — 🌍 Social Studies & History",
+      "title": "Y3 Social Studies: Latitude/Longitude & Economics (Scarcity & Budgets)",
+      "grade_level": "Grade 3 (Ages 8-9)",
+      "lab_id": "moon_lander",
+      "badge": "🏅 Y3 Historian & Citizen",
+      "story": "TRADITIONAL SOCIAL STUDIES LESSON (GRADE 3):\n• Geography: Latitude lines run East-West (like the Equator); Longitude lines run North-South.\n• Economics: Scarcity means resources are limited! A rocket only has a limited budget of Fuel (160 units), so the AI pilot must save fuel instead of wasting it.",
+      "steps": [
+        "1. Read the Year 3 (Grade 3 (Ages 8-9)) 🌍 Social Studies & History lesson above.",
+        "2. Click '▸ 1. Load Preset' to configure the interactive simulation for this subject.",
+        "3. Click '⚡ Turbo +25 Gens' (or open '✎ 3. Python Challenge' and click '▶ Run Code') to complete the assignment.",
+        "4. Click '✓ 2. Check Goal' to record your grade on your Year-by-Year Report Card!"
+      ],
+      "preset_params": {
+        "gravity": 1.62,
+        "fuel_capacity": 160.0,
+        "thruster_power": 2.15,
+        "landing_bonus": 340.0
+      },
+      "goal_metric": "best_ever",
+      "goal_op": ">=",
+      "goal_target": 120.0,
+      "goal_desc": "Complete the Y3 Social Studies: Latitude/Longitude & Economics (Scarcity & Budgets) lab & code check (best_ever >= 120.0)",
+      "coding_challenge": "# 💰 YEAR 3 ECONOMICS LAB: Managing a Scarce Fuel Budget\nfuel_budget = 160.0\ncost_per_burn = 0.55\nmax_burns = int(fuel_budget // cost_per_burn)\nprint(f'With {fuel_budget} fuel, the rocket can fire its main thruster {max_burns} times!')\nassert max_burns == 290\n"
+    },
+    {
+      "id": "y03_ai_cs",
+      "year": 3,
+      "year_number": 3,
+      "subject": "ai_cs",
+      "subject_key": "ai_cs",
+      "subject_icon": "🤖",
+      "subject_name": "AI & Coding Assignment",
+      "track": "Year 3 (Grade 3 (Ages 8-9)) — 🤖 AI & Coding Assignment",
+      "title": "Y3 AI Assignment: 10-Generation Evolution Loop Across Planets",
+      "grade_level": "Grade 3 (Ages 8-9)",
+      "lab_id": "moon_lander",
+      "badge": "🏆 Y3 AI Graduate",
+      "story": "YEAR 3 BUILT-IN AI ASSIGNMENT:\nRun a 10-generation evolution loop in Python and observe how Trial-and-Error Selection improves the rocket fleet's score!",
+      "steps": [
+        "1. Read the Year 3 (Grade 3 (Ages 8-9)) 🤖 AI & Coding Assignment lesson above.",
+        "2. Click '▸ 1. Load Preset' to configure the interactive simulation for this subject.",
+        "3. Click '⚡ Turbo +25 Gens' (or open '✎ 3. Python Challenge' and click '▶ Run Code') to complete the assignment.",
+        "4. Click '✓ 2. Check Goal' to record your grade on your Year-by-Year Report Card!"
+      ],
+      "preset_params": {
+        "gravity": 1.62,
+        "fuel_capacity": 170.0,
+        "thruster_power": 2.15,
+        "landing_bonus": 340.0
+      },
+      "goal_metric": "best_ever",
+      "goal_op": ">=",
+      "goal_target": 120.0,
+      "goal_desc": "Complete the Y3 AI Assignment: 10-Generation Evolution Loop Across Planets lab & code check (best_ever >= 120.0)",
+      "coding_challenge": "# 🤖 YEAR 3 AI CAPSTONE: 10-Generation Evolution Loop\nfrom workbench.labs.moon_lander import NEATMoonLanderLab\n\nlab = NEATMoonLanderLab()\nstats = lab.fast_forward_generations(10)\nprint(f\"Gen {stats['generation']} | Best Score: {stats['best_ever']}\")\n"
+    }
+  ],
+  "kid_levels": [
+    {
+      "level": 1,
+      "lab_id": "moon_lander",
+      "title_en": "Y3 L1: Year 3 (Grade 3) Space Lander (Physics & Math)",
+      "title_fr": "A3 N1 : Fusée Spatiale (Année 3 (CE2))",
+      "speech_en": "Welcome to Year 3 (Grade 3)! Apply your Math & Science forces (Gravity=1.84) to land softly!",
+      "speech_fr": "Bienvenue en Année 3 (CE2) ! Utilise les forces physiques (Gravité=1.84) pour atterrir !",
+      "obj1_en": "Apply Force Balance",
+      "obj1_fr": "Équilibrer les forces",
+      "obj2_en": "Soft Touchdown",
+      "obj2_fr": "Atterrissage doux",
+      "btn1_en": [
+        "Train AI",
+        "Pilot"
+      ],
+      "btn1_fr": [
+        "Entraîner",
+        "Pilote"
+      ],
+      "btn2_en": [
+        "Boost",
+        "Fuel"
+      ],
+      "btn2_fr": [
+        "Plus de",
+        "Carburant"
+      ],
+      "btn3_en": [
+        "Tune",
+        "Gravity"
+      ],
+      "btn3_fr": [
+        "Ajuster",
+        "Gravité"
+      ],
+      "preset": {
+        "gravity": 1.84,
+        "wind": 0.1,
+        "fuel_capacity": 182.0
+      }
+    },
+    {
+      "level": 2,
+      "lab_id": "raycast_car",
+      "title_en": "Y3 L2: Year 3 (Grade 3) Lidar Geometry & Waves",
+      "title_fr": "A3 N2 : Géométrie Laser Lidar (Année 3 (CE2))",
+      "speech_en": "Year 3 (Grade 3) Geometry Lab: Use 5 laser angle beams (137px) to steer cleanly!",
+      "speech_fr": "Labo Géométrie Année 3 (CE2) : Utilise les 5 rayons laser (137px) !",
+      "obj1_en": "Zero Wall Hits",
+      "obj1_fr": "Zéro collision",
+      "obj2_en": "Complete Circuit",
+      "obj2_fr": "Circuit complet",
+      "btn1_en": [
+        "Evolve",
+        "Brain"
+      ],
+      "btn1_fr": [
+        "Évoluer",
+        "Cerveau"
+      ],
+      "btn2_en": [
+        "Extend",
+        "Lasers"
+      ],
+      "btn2_fr": [
+        "Allonger",
+        "Lasers"
+      ],
+      "btn3_en": [
+        "Adjust",
+        "Speed"
+      ],
+      "btn3_fr": [
+        "Régler",
+        "Vitesse"
+      ],
+      "preset": {
+        "sensor_range": 137.0,
+        "max_speed": 4.6,
+        "track_width": 41.6
+      }
+    },
+    {
+      "level": 3,
+      "lab_id": "rl_gridworld",
+      "title_en": "Y3 L3: Year 3 (Grade 3) Compass Map & Probability Maze",
+      "title_fr": "A3 N3 : Carte & Labyrinthe (Année 3 (CE2))",
+      "speech_en": "Year 3 (Grade 3) Geography & Math: Navigate N/S/E/W around hazards to reach the goal!",
+      "speech_fr": "Géographie Année 3 (CE2) : Navigue N/S/E/O autour de la lave vers le trésor !",
+      "obj1_en": "Dodge Lava Cliffs",
+      "obj1_fr": "Éviter la lave",
+      "obj2_en": "Optimal Map Path",
+      "obj2_fr": "Chemin optimal",
+      "btn1_en": [
+        "Learn",
+        "Map"
+      ],
+      "btn1_fr": [
+        "Apprendre",
+        "Carte"
+      ],
+      "btn2_en": [
+        "High",
+        "Foresight"
+      ],
+      "btn2_fr": [
+        "Grande",
+        "Vision"
+      ],
+      "btn3_en": [
+        "Low",
+        "Risk"
+      ],
+      "btn3_fr": [
+        "Moins de",
+        "Risque"
+      ],
+      "preset": {
+        "alpha": 0.35,
+        "gamma": 0.96,
+        "epsilon": 0.1,
+        "use_sarsa": 0.0
+      }
+    },
+    {
+      "level": 4,
+      "lab_id": "cartpole_rl",
+      "title_en": "Y3 L4: Year 3 (Grade 3) Pendulum Forces & Balance",
+      "title_fr": "A3 N4 : Pendule & Équilibre (Année 3 (CE2))",
+      "speech_en": "Year 3 (Grade 3) Physics: Balance torque, inertia, and gravity on the moving cart!",
+      "speech_fr": "Physique Année 3 (CE2) : Équilibre l'inertie et la gravité sur le chariot !",
+      "obj1_en": "Keep Upright",
+      "obj1_fr": "Rester droit",
+      "obj2_en": "300+ Steps",
+      "obj2_fr": "300+ Pas",
+      "btn1_en": [
+        "Train",
+        "Policy"
+      ],
+      "btn1_fr": [
+        "Entraîner",
+        "IA"
+      ],
+      "btn2_en": [
+        "Motor",
+        "Force"
+      ],
+      "btn2_fr": [
+        "Force",
+        "Moteur"
+      ],
+      "btn3_en": [
+        "Calm",
+        "Wind"
+      ],
+      "btn3_fr": [
+        "Calmer",
+        "Vent"
+      ],
+      "preset": {
+        "gravity": 9.8,
+        "force_mag": 13.0,
+        "wind_gust": 0.16
+      }
+    },
+    {
+      "level": 5,
+      "lab_id": "nn_playground",
+      "title_en": "Y3 L5: Year 3 (Grade 3) (x,y) Coordinates & Neural Graph",
+      "title_fr": "A3 N5 : Coordonnées (x,y) & Neurones (Année 3 (CE2))",
+      "speech_en": "Year 3 (Grade 3) Algebra & Biology: Use 9 hidden neurons to separate 2D points!",
+      "speech_fr": "Algèbre Année 3 (CE2) : Utilise 9 neurones cachés pour séparer les points !",
+      "obj1_en": "Curve Boundary",
+      "obj1_fr": "Courber frontière",
+      "obj2_en": "90% Accuracy",
+      "obj2_fr": "Précision 90%",
+      "btn1_en": [
+        "Add",
+        "Neurons"
+      ],
+      "btn1_fr": [
+        "Ajouter",
+        "Neurones"
+      ],
+      "btn2_en": [
+        "Switch",
+        "Dataset"
+      ],
+      "btn2_fr": [
+        "Changer",
+        "Forme"
+      ],
+      "btn3_en": [
+        "Scramble",
+        "Points"
+      ],
+      "btn3_fr": [
+        "Mélanger",
+        "Points"
+      ],
+      "preset": {
+        "dataset_id": 2.0,
+        "hidden_neurons": 9.0,
+        "learning_rate": 0.24
+      }
+    },
+    {
+      "level": 6,
+      "lab_id": "swarm_ecosystem",
+      "title_en": "Y3 L6: Year 3 (Grade 3) Ecosystem Food Web & Genetics",
+      "title_fr": "A3 N6 : Écosystème & Génétique (Année 3 (CE2))",
+      "speech_en": "Year 3 (Grade 3) Life Science: Balance producers (food orbs), prey fish, and predators!",
+      "speech_fr": "Biologie Année 3 (CE2) : Équilibre la chaîne alimentaire et l'essaim !",
+      "obj1_en": "Flock Cohesion",
+      "obj1_fr": "Cohésion groupe",
+      "obj2_en": "Ecosystem Balance",
+      "obj2_fr": "Équilibre vivant",
+      "btn1_en": [
+        "Evolve",
+        "Genes"
+      ],
+      "btn1_fr": [
+        "Évoluer",
+        "Gènes"
+      ],
+      "btn2_en": [
+        "More",
+        "Producers"
+      ],
+      "btn2_fr": [
+        "Plus de",
+        "Plantes"
+      ],
+      "btn3_en": [
+        "Speed",
+        "Adaptation"
+      ],
+      "btn3_fr": [
+        "Vitesse",
+        "Agile"
+      ],
+      "preset": {
+        "num_prey": 40.0,
+        "num_predators": 4.0,
+        "food_count": 32.0
+      }
+    },
+    {
+      "level": 7,
+      "lab_id": "prime_attention",
+      "title_en": "Y3 L7: Year 3 (Grade 3) Reading Context & Memory Vault",
+      "title_fr": "A3 N7 : Lecture & Coffre Mémoire (Année 3 (CE2))",
+      "speech_en": "Year 3 (Grade 3) Reading & CS: Preserve key story clues in the 67 KB PRIME Memory Vault!",
+      "speech_fr": "Lecture & IA Année 3 (CE2) : Garde les indices clés dans le Coffre Mémoire !",
+      "obj1_en": "O(1) RAM Budget",
+      "obj1_fr": "Mémoire O(1)",
+      "obj2_en": "High Recall",
+      "obj2_fr": "Rappel élevé",
+      "btn1_en": [
+        "Add",
+        "Clues"
+      ],
+      "btn1_fr": [
+        "Ajouter",
+        "Indices"
+      ],
+      "btn2_en": [
+        "Expand",
+        "Window"
+      ],
+      "btn2_fr": [
+        "Grande",
+        "Fenêtre"
+      ],
+      "btn3_en": [
+        "Stabilize",
+        "Norm"
+      ],
+      "btn3_fr": [
+        "Stabiliser",
+        "Norme"
+      ],
+      "preset": {
+        "window_size": 64.0,
+        "distractor_gap": 256.0,
+        "use_qk_norm": 1.0
+      }
+    }
+  ]
+}

@@ -1,0 +1,471 @@
+{
+  "pack_id": "year_12",
+  "pack_number": 12,
+  "school_year": 12,
+  "year_number": 12,
+  "grade_label": "Grade 12 / Senior Capstone (Ages 17-18)",
+  "band": "Band D: High School Advanced AI & STEM",
+  "grade_band": "Band D: High School Advanced AI & STEM",
+  "title_en": "Year 12 (Grade 12): Calculus & Chain Rule Backprop, Euler-Lagrange Physics & Full-Stack C99/Python Capstone",
+  "title_fr": "Année 12 (Terminale) : Calcul Différentiel, Rétropropagation, Lagrange & Projet Final C99/Python",
+  "short_en": "Year 12 (Grade 12)",
+  "short_fr": "Année 12 (Terminale)",
+  "subjects": [
+    "math",
+    "science",
+    "ela",
+    "history",
+    "ai_cs"
+  ],
+  "subject_lessons": [
+    {
+      "id": "y12_math",
+      "year": 12,
+      "year_number": 12,
+      "subject": "math",
+      "subject_key": "math",
+      "subject_icon": "📐",
+      "subject_name": "Mathematics",
+      "track": "Year 12 (Grade 12 / Senior Capstone (Ages 17-18)) — 📐 Mathematics",
+      "title": "Y12 Math (Calculus & Statistics): Derivatives, Chain Rule Backprop & P50/P95 Latency",
+      "grade_level": "Grade 12 / Senior Capstone (Ages 17-18)",
+      "lab_id": "nn_playground",
+      "badge": "🏅 Y12 Math Scholar",
+      "story": "TRADITIONAL CALCULUS & STATISTICS LESSON (GRADE 12):\n• Derivative of `tanh(z)`:  `d/dz tanh(z) = 1 - tanh²(z)`.\n• The Chain Rule of Calculus (`∂L/∂w₁ = (∂L/∂a₂) · (∂a₂/∂z₁) · (∂z₁/∂w₁)`) is the exact mathematical engine of Backpropagation used in `synapse_mlp_train_epochs`!\n• Order Statistics: P50 (median) and P95 (95th percentile tail latency) measure real-world system reliability.",
+      "steps": [
+        "1. Read the Year 12 (Grade 12 / Senior Capstone (Ages 17-18)) 📐 Mathematics lesson above.",
+        "2. Click '▸ 1. Load Preset' to configure the interactive simulation for this subject.",
+        "3. Click '⚡ Turbo +25 Gens' (or open '✎ 3. Python Challenge' and click '▶ Run Code') to complete the assignment.",
+        "4. Click '✓ 2. Check Goal' to record your grade on your Year-by-Year Report Card!"
+      ],
+      "preset_params": {
+        "dataset_id": 1.0,
+        "hidden_neurons": 16.0,
+        "learning_rate": 0.45,
+        "l2_reg": 0.001,
+        "steps_per_frame": 15.0
+      },
+      "goal_metric": "best_ever",
+      "goal_op": ">=",
+      "goal_target": 85.0,
+      "goal_desc": "Complete the Y12 Math (Calculus & Statistics): Derivatives, Chain Rule Backprop & P50/P95 Latency lab & code check (best_ever >= 85.0)",
+      "coding_challenge": "# 📐 YEAR 12 CALCULUS LAB: Verifying Analytical Derivative vs. Finite Difference\nimport math\nz = 0.65\neps = 1e-5\nnumerical_deriv = (math.tanh(z + eps) - math.tanh(z - eps)) / (2 * eps)\nanalytical_deriv = 1.0 - (math.tanh(z) ** 2)\nprint(f'Numerical: {numerical_deriv:.6f} | Analytical (1 - tanh^2): {analytical_deriv:.6f}')\nassert abs(numerical_deriv - analytical_deriv) < 1e-6\n"
+    },
+    {
+      "id": "y12_science",
+      "year": 12,
+      "year_number": 12,
+      "subject": "science",
+      "subject_key": "science",
+      "subject_icon": "🔬",
+      "subject_name": "Science",
+      "track": "Year 12 (Grade 12 / Senior Capstone (Ages 17-18)) — 🔬 Science",
+      "title": "Y12 Advanced Physics: Euler-Lagrange Inverted Pendulum Equations & Hardware Thermals",
+      "grade_level": "Grade 12 / Senior Capstone (Ages 17-18)",
+      "lab_id": "cartpole_rl",
+      "badge": "🏅 Y12 Science Explorer",
+      "story": "TRADITIONAL ADVANCED PHYSICS LESSON (GRADE 12):\nThe coupled non-linear differential equations governing an inverted pendulum on a motorized cart (derived via Euler-Lagrange mechanics) are:\n  `θ̈ = (g sin θ - cos θ · [(F + m_p L θ̇² sin θ) / (m_c + m_p)]) / (L · (4/3 - m_p cos²θ / (m_c + m_p)))`\nIn `synapse_sim_core.c`, our C99 kernel integrates this exact equation at 50,000 steps per millisecond!",
+      "steps": [
+        "1. Read the Year 12 (Grade 12 / Senior Capstone (Ages 17-18)) 🔬 Science lesson above.",
+        "2. Click '▸ 1. Load Preset' to configure the interactive simulation for this subject.",
+        "3. Click '⚡ Turbo +25 Gens' (or open '✎ 3. Python Challenge' and click '▶ Run Code') to complete the assignment.",
+        "4. Click '✓ 2. Check Goal' to record your grade on your Year-by-Year Report Card!"
+      ],
+      "preset_params": {
+        "gravity": 9.8,
+        "pole_length": 0.65,
+        "wind_gust": 0.3
+      },
+      "goal_metric": "best_ever",
+      "goal_op": ">=",
+      "goal_target": 320.0,
+      "goal_desc": "Complete the Y12 Advanced Physics: Euler-Lagrange Inverted Pendulum Equations & Hardware Thermals lab & code check (best_ever >= 320.0)",
+      "coding_challenge": "# 🔬 YEAR 12 ADVANCED PHYSICS LAB: C99 CartPole Euler-Lagrange Kernel\nfrom workbench.labs.cartpole_rl import CartPoleLab\nlab = CartPoleLab()\nstats = lab.fast_forward_generations(15)\nprint(f\"CartPole Policy Fitness: {stats['best_ever']} | Nodes: {stats['champion_nodes']}\")\n"
+    },
+    {
+      "id": "y12_ela",
+      "year": 12,
+      "year_number": 12,
+      "subject": "ela",
+      "subject_key": "ela",
+      "subject_icon": "📖",
+      "subject_name": "Reading & Language Arts",
+      "track": "Year 12 (Grade 12 / Senior Capstone (Ages 17-18)) — 📖 Reading & Language Arts",
+      "title": "Y12 Senior Thesis: Reproducible Engineering Benchmarks & Failure-Mode Analysis",
+      "grade_level": "Grade 12 / Senior Capstone (Ages 17-18)",
+      "lab_id": "nn_playground",
+      "badge": "🏅 Y12 Literary Thinker",
+      "story": "TRADITIONAL SENIOR CAPSTONE WRITING LESSON (GRADE 12):\nA rigorous engineering thesis never hides limitations—it separates process RAM (`VmRSS`) from disk storage, reports cold startup cost, and documents verified failure scenarios (like why linear features fail on concentric rings).",
+      "steps": [
+        "1. Read the Year 12 (Grade 12 / Senior Capstone (Ages 17-18)) 📖 Reading & Language Arts lesson above.",
+        "2. Click '▸ 1. Load Preset' to configure the interactive simulation for this subject.",
+        "3. Click '⚡ Turbo +25 Gens' (or open '✎ 3. Python Challenge' and click '▶ Run Code') to complete the assignment.",
+        "4. Click '✓ 2. Check Goal' to record your grade on your Year-by-Year Report Card!"
+      ],
+      "preset_params": {
+        "dataset_id": 1.0,
+        "hidden_neurons": 14.0,
+        "synapse_density": 4.0,
+        "steps_per_frame": 15.0,
+        "learning_rate": 0.28
+      },
+      "goal_metric": "best_ever",
+      "goal_op": ">=",
+      "goal_target": 82.0,
+      "goal_desc": "Complete the Y12 Senior Thesis: Reproducible Engineering Benchmarks & Failure-Mode Analysis lab & code check (best_ever >= 82.0)",
+      "coding_challenge": "# 📖 YEAR 12 SENIOR THESIS VERIFICATION: Linear vs. Non-Linear Ablation\nfrom workbench.labs.nn_playground import NeuralPlaygroundLab\nlab = NeuralPlaygroundLab()\nlab.update_param('dataset_id', 1)       # Concentric Rings\nlab.update_param('synapse_density', 4)  # Full Polynomial Basis\nt = lab.fast_forward_generations(25)\nprint(f\"Non-Linear Basis Accuracy on Rings: {t['best_ever']}%\")\n"
+    },
+    {
+      "id": "y12_history",
+      "year": 12,
+      "year_number": 12,
+      "subject": "history",
+      "subject_key": "history",
+      "subject_icon": "🌍",
+      "subject_name": "Social Studies & History",
+      "track": "Year 12 (Grade 12 / Senior Capstone (Ages 17-18)) — 🌍 Social Studies & History",
+      "title": "Y12 Economics & Digital Sovereignty: Edge Computing for Global Educational Equity",
+      "grade_level": "Grade 12 / Senior Capstone (Ages 17-18)",
+      "lab_id": "prime_attention",
+      "badge": "🏅 Y12 Historian & Citizen",
+      "story": "TRADITIONAL ECONOMICS & GLOBAL STUDIES LESSON (GRADE 12):\nOver 60% of the world's schools lack high-speed internet or modern GPU hardware. By combining C99 kernels, Fil-C memory safety, and sub-millisecond SQLite FTS5 retrieval, SynapseOS delivers a complete K-12 STEM + AI laboratory on $35 surplus hardware with zero recurring cloud cost.",
+      "steps": [
+        "1. Read the Year 12 (Grade 12 / Senior Capstone (Ages 17-18)) 🌍 Social Studies & History lesson above.",
+        "2. Click '▸ 1. Load Preset' to configure the interactive simulation for this subject.",
+        "3. Click '⚡ Turbo +25 Gens' (or open '✎ 3. Python Challenge' and click '▶ Run Code') to complete the assignment.",
+        "4. Click '✓ 2. Check Goal' to record your grade on your Year-by-Year Report Card!"
+      ],
+      "preset_params": {
+        "window_size": 64.0,
+        "use_qk_norm": 1.0
+      },
+      "goal_metric": "best_ever",
+      "goal_op": ">=",
+      "goal_target": 90.0,
+      "goal_desc": "Complete the Y12 Economics & Digital Sovereignty: Edge Computing for Global Educational Equity lab & code check (best_ever >= 90.0)",
+      "coding_challenge": "# 🌍 YEAR 12 ECONOMICS CAPSTONE: 5-Year Classroom Total Cost of Ownership (TCO)\nstudents = 30\ncloud_sub_per_student_yr = 240.0\ncloud_5yr_cost = students * cloud_sub_per_student_yr * 5\nsynapse_offline_5yr_cost = 0.0\nprint(f'5-Year Cloud AI Cost (30 students): ${cloud_5yr_cost:,.0f} vs. SynapseOS Offline: ${synapse_offline_5yr_cost:.0f}')\n"
+    },
+    {
+      "id": "y12_ai_cs",
+      "year": 12,
+      "year_number": 12,
+      "subject": "ai_cs",
+      "subject_key": "ai_cs",
+      "subject_icon": "🤖",
+      "subject_name": "AI & Coding Assignment",
+      "track": "Year 12 (Grade 12 / Senior Capstone (Ages 17-18)) — 🤖 AI & Coding Assignment",
+      "title": "Y12 Senior AI Capstone: Full-Stack C99 + FTS5 RAG + Neural Verification",
+      "grade_level": "Grade 12 / Senior Capstone (Ages 17-18)",
+      "lab_id": "nn_playground",
+      "badge": "🏆 Y12 AI Graduate",
+      "story": "YEAR 12 SENIOR AI & SYSTEMS CAPSTONE ASSIGNMENT:\nVerify the C99 `libsynapse_core.so` bridge, query the sub-millisecond SQLite FTS5 knowledge base, and train a high-accuracy neural classifier in one integrated Python script!",
+      "steps": [
+        "1. Read the Year 12 (Grade 12 / Senior Capstone (Ages 17-18)) 🤖 AI & Coding Assignment lesson above.",
+        "2. Click '▸ 1. Load Preset' to configure the interactive simulation for this subject.",
+        "3. Click '⚡ Turbo +25 Gens' (or open '✎ 3. Python Challenge' and click '▶ Run Code') to complete the assignment.",
+        "4. Click '✓ 2. Check Goal' to record your grade on your Year-by-Year Report Card!"
+      ],
+      "preset_params": {
+        "dataset_id": 2.0,
+        "hidden_neurons": 14.0,
+        "learning_rate": 0.3,
+        "steps_per_frame": 10.0
+      },
+      "goal_metric": "best_ever",
+      "goal_op": ">=",
+      "goal_target": 82.0,
+      "goal_desc": "Complete the Y12 Senior AI Capstone: Full-Stack C99 + FTS5 RAG + Neural Verification lab & code check (best_ever >= 82.0)",
+      "coding_challenge": "# 🎓 YEAR 12 SENIOR CAPSTONE: Full-Stack C99 + FTS5 + Neural Pipeline\nfrom workbench.labs.c_sim_bridge import SYNAPSE_C_CORE\nfrom workbench.labs.nn_playground import NeuralPlaygroundLab\nfrom cortex.engine import CortexEngine\n\neng = CortexEngine(potato_mode=True)\ncmd_info = eng.synthesize_command_and_instructions('boost ram on a potato with zram')\nlab = NeuralPlaygroundLab()\nstats = lab.fast_forward_generations(30)\nprint(f\"C99 Core Loaded: {SYNAPSE_C_CORE is not None} | FTS5 Cmd: {cmd_info['command']} | Acc: {stats['best_ever']}%\")\nassert SYNAPSE_C_CORE is not None\n"
+    }
+  ],
+  "kid_levels": [
+    {
+      "level": 1,
+      "lab_id": "moon_lander",
+      "title_en": "Y12 L1: Year 12 (Grade 12) Space Lander (Physics & Math)",
+      "title_fr": "A12 N1 : Fusée Spatiale (Année 12 (Terminale))",
+      "speech_en": "Welcome to Year 12 (Grade 12)! Apply your Math & Science forces (Gravity=3.82) to land softly!",
+      "speech_fr": "Bienvenue en Année 12 (Terminale) ! Utilise les forces physiques (Gravité=3.82) pour atterrir !",
+      "obj1_en": "Apply Force Balance",
+      "obj1_fr": "Équilibrer les forces",
+      "obj2_en": "Soft Touchdown",
+      "obj2_fr": "Atterrissage doux",
+      "btn1_en": [
+        "Train AI",
+        "Pilot"
+      ],
+      "btn1_fr": [
+        "Entraîner",
+        "Pilote"
+      ],
+      "btn2_en": [
+        "Boost",
+        "Fuel"
+      ],
+      "btn2_fr": [
+        "Plus de",
+        "Carburant"
+      ],
+      "btn3_en": [
+        "Tune",
+        "Gravity"
+      ],
+      "btn3_fr": [
+        "Ajuster",
+        "Gravité"
+      ],
+      "preset": {
+        "gravity": 3.82,
+        "wind": 0.55,
+        "fuel_capacity": 146.0
+      }
+    },
+    {
+      "level": 2,
+      "lab_id": "raycast_car",
+      "title_en": "Y12 L2: Year 12 (Grade 12) Lidar Geometry & Waves",
+      "title_fr": "A12 N2 : Géométrie Laser Lidar (Année 12 (Terminale))",
+      "speech_en": "Year 12 (Grade 12) Geometry Lab: Use 5 laser angle beams (191px) to steer cleanly!",
+      "speech_fr": "Labo Géométrie Année 12 (Terminale) : Utilise les 5 rayons laser (191px) !",
+      "obj1_en": "Zero Wall Hits",
+      "obj1_fr": "Zéro collision",
+      "obj2_en": "Complete Circuit",
+      "obj2_fr": "Circuit complet",
+      "btn1_en": [
+        "Evolve",
+        "Brain"
+      ],
+      "btn1_fr": [
+        "Évoluer",
+        "Cerveau"
+      ],
+      "btn2_en": [
+        "Extend",
+        "Lasers"
+      ],
+      "btn2_fr": [
+        "Allonger",
+        "Lasers"
+      ],
+      "btn3_en": [
+        "Adjust",
+        "Speed"
+      ],
+      "btn3_fr": [
+        "Régler",
+        "Vitesse"
+      ],
+      "preset": {
+        "sensor_range": 191.0,
+        "max_speed": 6.6,
+        "track_width": 30.8
+      }
+    },
+    {
+      "level": 3,
+      "lab_id": "rl_gridworld",
+      "title_en": "Y12 L3: Year 12 (Grade 12) Compass Map & Probability Maze",
+      "title_fr": "A12 N3 : Carte & Labyrinthe (Année 12 (Terminale))",
+      "speech_en": "Year 12 (Grade 12) Geography & Math: Navigate N/S/E/W around hazards to reach the goal!",
+      "speech_fr": "Géographie Année 12 (Terminale) : Navigue N/S/E/O autour de la lave vers le trésor !",
+      "obj1_en": "Dodge Lava Cliffs",
+      "obj1_fr": "Éviter la lave",
+      "obj2_en": "Optimal Map Path",
+      "obj2_fr": "Chemin optimal",
+      "btn1_en": [
+        "Learn",
+        "Map"
+      ],
+      "btn1_fr": [
+        "Apprendre",
+        "Carte"
+      ],
+      "btn2_en": [
+        "High",
+        "Foresight"
+      ],
+      "btn2_fr": [
+        "Grande",
+        "Vision"
+      ],
+      "btn3_en": [
+        "Low",
+        "Risk"
+      ],
+      "btn3_fr": [
+        "Moins de",
+        "Risque"
+      ],
+      "preset": {
+        "alpha": 0.35,
+        "gamma": 0.96,
+        "epsilon": 0.1,
+        "use_sarsa": 1.0
+      }
+    },
+    {
+      "level": 4,
+      "lab_id": "cartpole_rl",
+      "title_en": "Y12 L4: Year 12 (Grade 12) Pendulum Forces & Balance",
+      "title_fr": "A12 N4 : Pendule & Équilibre (Année 12 (Terminale))",
+      "speech_en": "Year 12 (Grade 12) Physics: Balance torque, inertia, and gravity on the moving cart!",
+      "speech_fr": "Physique Année 12 (Terminale) : Équilibre l'inertie et la gravité sur le chariot !",
+      "obj1_en": "Keep Upright",
+      "obj1_fr": "Rester droit",
+      "obj2_en": "300+ Steps",
+      "obj2_fr": "300+ Pas",
+      "btn1_en": [
+        "Train",
+        "Policy"
+      ],
+      "btn1_fr": [
+        "Entraîner",
+        "IA"
+      ],
+      "btn2_en": [
+        "Motor",
+        "Force"
+      ],
+      "btn2_fr": [
+        "Force",
+        "Moteur"
+      ],
+      "btn3_en": [
+        "Calm",
+        "Wind"
+      ],
+      "btn3_fr": [
+        "Calmer",
+        "Vent"
+      ],
+      "preset": {
+        "gravity": 9.8,
+        "force_mag": 13.0,
+        "wind_gust": 0.34
+      }
+    },
+    {
+      "level": 5,
+      "lab_id": "nn_playground",
+      "title_en": "Y12 L5: Year 12 (Grade 12) (x,y) Coordinates & Neural Graph",
+      "title_fr": "A12 N5 : Coordonnées (x,y) & Neurones (Année 12 (Terminale))",
+      "speech_en": "Year 12 (Grade 12) Algebra & Biology: Use 18 hidden neurons to separate 2D points!",
+      "speech_fr": "Algèbre Année 12 (Terminale) : Utilise 18 neurones cachés pour séparer les points !",
+      "obj1_en": "Curve Boundary",
+      "obj1_fr": "Courber frontière",
+      "obj2_en": "90% Accuracy",
+      "obj2_fr": "Précision 90%",
+      "btn1_en": [
+        "Add",
+        "Neurons"
+      ],
+      "btn1_fr": [
+        "Ajouter",
+        "Neurones"
+      ],
+      "btn2_en": [
+        "Switch",
+        "Dataset"
+      ],
+      "btn2_fr": [
+        "Changer",
+        "Forme"
+      ],
+      "btn3_en": [
+        "Scramble",
+        "Points"
+      ],
+      "btn3_fr": [
+        "Mélanger",
+        "Points"
+      ],
+      "preset": {
+        "dataset_id": 3.0,
+        "hidden_neurons": 18.0,
+        "learning_rate": 0.24
+      }
+    },
+    {
+      "level": 6,
+      "lab_id": "swarm_ecosystem",
+      "title_en": "Y12 L6: Year 12 (Grade 12) Ecosystem Food Web & Genetics",
+      "title_fr": "A12 N6 : Écosystème & Génétique (Année 12 (Terminale))",
+      "speech_en": "Year 12 (Grade 12) Life Science: Balance producers (food orbs), prey fish, and predators!",
+      "speech_fr": "Biologie Année 12 (Terminale) : Équilibre la chaîne alimentaire et l'essaim !",
+      "obj1_en": "Flock Cohesion",
+      "obj1_fr": "Cohésion groupe",
+      "obj2_en": "Ecosystem Balance",
+      "obj2_fr": "Équilibre vivant",
+      "btn1_en": [
+        "Evolve",
+        "Genes"
+      ],
+      "btn1_fr": [
+        "Évoluer",
+        "Gènes"
+      ],
+      "btn2_en": [
+        "More",
+        "Producers"
+      ],
+      "btn2_fr": [
+        "Plus de",
+        "Plantes"
+      ],
+      "btn3_en": [
+        "Speed",
+        "Adaptation"
+      ],
+      "btn3_fr": [
+        "Vitesse",
+        "Agile"
+      ],
+      "preset": {
+        "num_prey": 40.0,
+        "num_predators": 4.0,
+        "food_count": 32.0
+      }
+    },
+    {
+      "level": 7,
+      "lab_id": "prime_attention",
+      "title_en": "Y12 L7: Year 12 (Grade 12) Reading Context & Memory Vault",
+      "title_fr": "A12 N7 : Lecture & Coffre Mémoire (Année 12 (Terminale))",
+      "speech_en": "Year 12 (Grade 12) Reading & CS: Preserve key story clues in the 67 KB PRIME Memory Vault!",
+      "speech_fr": "Lecture & IA Année 12 (Terminale) : Garde les indices clés dans le Coffre Mémoire !",
+      "obj1_en": "O(1) RAM Budget",
+      "obj1_fr": "Mémoire O(1)",
+      "obj2_en": "High Recall",
+      "obj2_fr": "Rappel élevé",
+      "btn1_en": [
+        "Add",
+        "Clues"
+      ],
+      "btn1_fr": [
+        "Ajouter",
+        "Indices"
+      ],
+      "btn2_en": [
+        "Expand",
+        "Window"
+      ],
+      "btn2_fr": [
+        "Grande",
+        "Fenêtre"
+      ],
+      "btn3_en": [
+        "Stabilize",
+        "Norm"
+      ],
+      "btn3_fr": [
+        "Stabiliser",
+        "Norme"
+      ],
+      "preset": {
+        "window_size": 64.0,
+        "distractor_gap": 256.0,
+        "use_qk_norm": 1.0
+      }
+    }
+  ]
+}

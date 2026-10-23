@@ -1,0 +1,473 @@
+{
+  "pack_id": "year_08",
+  "pack_number": 8,
+  "school_year": 8,
+  "year_number": 8,
+  "grade_label": "Grade 8 (Ages 13-14)",
+  "band": "Band C: Middle School Foundations",
+  "grade_band": "Band C: Middle School Foundations",
+  "title_en": "Year 8 (Grade 8): Pythagorean Theorem, Genetics & Waves, Debate & Q-Learning vs. SARSA",
+  "title_fr": "Année 8 (4e) : Théorème de Pythagore, Génétique, Débat & Q-Learning vs SARSA",
+  "short_en": "Year 8 (Grade 8)",
+  "short_fr": "Année 8 (4e)",
+  "subjects": [
+    "math",
+    "science",
+    "ela",
+    "history",
+    "ai_cs"
+  ],
+  "subject_lessons": [
+    {
+      "id": "y08_math",
+      "year": 8,
+      "year_number": 8,
+      "subject": "math",
+      "subject_key": "math",
+      "subject_icon": "📐",
+      "subject_name": "Mathematics",
+      "track": "Year 8 (Grade 8 (Ages 13-14)) — 📐 Mathematics",
+      "title": "Y8 Math: The Pythagorean Theorem (a² + b² = c²) & Euclidean Distance",
+      "grade_level": "Grade 8 (Ages 13-14)",
+      "lab_id": "raycast_car",
+      "badge": "🏅 Y8 Math Scholar",
+      "story": "TRADITIONAL MATH LESSON (GRADE 8):\nIn any right triangle with legs `a` and `b` and hypotenuse `c`:\n  `a² + b² = c²`   ->   `c = sqrt(a² + b²)`\nEvery single AI lab in SynapseOS uses the Pythagorean Theorem (`math.hypot(dx, dy)`) to measure the exact straight-line distance from a car to a wall, a fish to a shark, or a rocket to the landing pad!",
+      "steps": [
+        "1. Read the Year 8 (Grade 8 (Ages 13-14)) 📐 Mathematics lesson above.",
+        "2. Click '▸ 1. Load Preset' to configure the interactive simulation for this subject.",
+        "3. Click '⚡ Turbo +25 Gens' (or open '✎ 3. Python Challenge' and click '▶ Run Code') to complete the assignment.",
+        "4. Click '✓ 2. Check Goal' to record your grade on your Year-by-Year Report Card!"
+      ],
+      "preset_params": {
+        "sensor_range": 175.0,
+        "max_speed": 5.8,
+        "track_width": 34.0
+      },
+      "goal_metric": "best_ever",
+      "goal_op": ">=",
+      "goal_target": 140.0,
+      "goal_desc": "Complete the Y8 Math: The Pythagorean Theorem (a² + b² = c²) & Euclidean Distance lab & code check (best_ever >= 140.0)",
+      "coding_challenge": "# 📐 YEAR 8 MATH ASSIGNMENT: Pythagorean Euclidean Distance\nimport math\ndx, dy = 3.0, 4.0\nhypotenuse = math.sqrt(dx**2 + dy**2)\nprint(f'Right Triangle Legs ({dx}, {dy}) -> Hypotenuse c = {hypotenuse:.1f}')\nassert hypotenuse == 5.0\n"
+    },
+    {
+      "id": "y08_science",
+      "year": 8,
+      "year_number": 8,
+      "subject": "science",
+      "subject_key": "science",
+      "subject_icon": "🔬",
+      "subject_name": "Science",
+      "track": "Year 8 (Grade 8 (Ages 13-14)) — 🔬 Science",
+      "title": "Y8 Science: Genetics (Genotype vs. Phenotype), Waves & Orbital Mechanics",
+      "grade_level": "Grade 8 (Ages 13-14)",
+      "lab_id": "swarm_ecosystem",
+      "badge": "🏅 Y8 Science Explorer",
+      "story": "TRADITIONAL SCIENCE LESSON (GRADE 8):\n• Genetics: An organism's Genotype is its internal genetic code (like the 4 floating-point `genes` array in our Boids Swarm or the node/connection genes in NEAT), while its Phenotype is its observable behavior in the environment!\n• Mutations introduce variation; beneficial alleles increase in frequency across generations.",
+      "steps": [
+        "1. Read the Year 8 (Grade 8 (Ages 13-14)) 🔬 Science lesson above.",
+        "2. Click '▸ 1. Load Preset' to configure the interactive simulation for this subject.",
+        "3. Click '⚡ Turbo +25 Gens' (or open '✎ 3. Python Challenge' and click '▶ Run Code') to complete the assignment.",
+        "4. Click '✓ 2. Check Goal' to record your grade on your Year-by-Year Report Card!"
+      ],
+      "preset_params": {
+        "num_prey": 45.0,
+        "num_predators": 5.0,
+        "mutation_sigma": 0.18
+      },
+      "goal_metric": "best_ever",
+      "goal_op": ">=",
+      "goal_target": 140.0,
+      "goal_desc": "Complete the Y8 Science: Genetics (Genotype vs. Phenotype), Waves & Orbital Mechanics lab & code check (best_ever >= 140.0)",
+      "coding_challenge": "# 🔬 YEAR 8 GENETICS LAB: Genotype vs. Phenotype Crossover\nparent_a_genes = [1.4, 2.2, 0.6, 1.1]\nparent_b_genes = [1.6, 1.8, 0.8, 0.9]\nchild_genotype = [(a + b) / 2.0 for a, b in zip(parent_a_genes, parent_b_genes)]\nprint('Offspring Genotype:', [round(g, 2) for g in child_genotype])\n"
+    },
+    {
+      "id": "y08_ela",
+      "year": 8,
+      "year_number": 8,
+      "subject": "ela",
+      "subject_key": "ela",
+      "subject_icon": "📖",
+      "subject_name": "Reading & Language Arts",
+      "track": "Year 8 (Grade 8 (Ages 13-14)) — 📖 Reading & Language Arts",
+      "title": "Y8 ELA: Counterarguments, Socratic Seminar & Technical Lab Documentation",
+      "grade_level": "Grade 8 (Ages 13-14)",
+      "lab_id": "rl_gridworld",
+      "badge": "🏅 Y8 Literary Thinker",
+      "story": "TRADITIONAL LANGUAGE ARTS LESSON (GRADE 8):\nA strong argumentative essay doesn't ignore opposing views—it addresses the Counterargument fairly and explains the trade-offs with evidence.\n• Example Trade-off: Bold Q-Learning finds the shortest path along a cliff edge, whereas Cautious SARSA takes a slightly longer detour that is much safer when wind gusts are high!",
+      "steps": [
+        "1. Read the Year 8 (Grade 8 (Ages 13-14)) 📖 Reading & Language Arts lesson above.",
+        "2. Click '▸ 1. Load Preset' to configure the interactive simulation for this subject.",
+        "3. Click '⚡ Turbo +25 Gens' (or open '✎ 3. Python Challenge' and click '▶ Run Code') to complete the assignment.",
+        "4. Click '✓ 2. Check Goal' to record your grade on your Year-by-Year Report Card!"
+      ],
+      "preset_params": {
+        "use_sarsa": 1.0,
+        "wind_prob": 0.15,
+        "alpha": 0.45,
+        "epsilon": 0.08,
+        "max_ep_steps": 120.0
+      },
+      "goal_metric": "generation",
+      "goal_op": ">=",
+      "goal_target": 15.0,
+      "goal_desc": "Complete the Y8 ELA: Counterarguments, Socratic Seminar & Technical Lab Documentation lab & code check (generation >= 15.0)",
+      "coding_challenge": "# 📖 YEAR 8 ELA & TRADE-OFF ANALYSIS\ntradeoff = {\n    'Q-Learning': 'Optimistic shortest path, higher risk near windy cliffs',\n    'SARSA': 'On-policy cautious path, accounts for exploration & wind slip'\n}\nfor algo, summary in tradeoff.items():\n    print(f'• {algo:<10}: {summary}')\n"
+    },
+    {
+      "id": "y08_history",
+      "year": 8,
+      "year_number": 8,
+      "subject": "history",
+      "subject_key": "history",
+      "subject_icon": "🌍",
+      "subject_name": "Social Studies & History",
+      "track": "Year 8 (Grade 8 (Ages 13-14)) — 🌍 Social Studies & History",
+      "title": "Y8 History & Civics: The Industrial Revolution, Constitutional Law & Automation",
+      "grade_level": "Grade 8 (Ages 13-14)",
+      "lab_id": "rl_gridworld",
+      "badge": "🏅 Y8 Historian & Citizen",
+      "story": "TRADITIONAL HISTORY & CIVICS LESSON (GRADE 8):\nFrom the 18th-century steam engine and mechanical looms to 20th-century computers and 21st-century AI, each wave of automation transformed how people work, learn, and govern technology.",
+      "steps": [
+        "1. Read the Year 8 (Grade 8 (Ages 13-14)) 🌍 Social Studies & History lesson above.",
+        "2. Click '▸ 1. Load Preset' to configure the interactive simulation for this subject.",
+        "3. Click '⚡ Turbo +25 Gens' (or open '✎ 3. Python Challenge' and click '▶ Run Code') to complete the assignment.",
+        "4. Click '✓ 2. Check Goal' to record your grade on your Year-by-Year Report Card!"
+      ],
+      "preset_params": {
+        "use_sarsa": 0.0,
+        "wind_prob": 0.1,
+        "alpha": 0.45,
+        "epsilon": 0.08,
+        "max_ep_steps": 120.0
+      },
+      "goal_metric": "generation",
+      "goal_op": ">=",
+      "goal_target": 15.0,
+      "goal_desc": "Complete the Y8 History & Civics: The Industrial Revolution, Constitutional Law & Automation lab & code check (generation >= 15.0)",
+      "coding_challenge": "# 🏛️ YEAR 8 HISTORY OF COMPUTING & AUTOMATION\neras = ['1769: Steam Engine', '1843: Ada Lovelace Algorithm', '1947: Transistor', '2026: Local Edge AI']\nprint(' -> '.join(eras))\n"
+    },
+    {
+      "id": "y08_ai_cs",
+      "year": 8,
+      "year_number": 8,
+      "subject": "ai_cs",
+      "subject_key": "ai_cs",
+      "subject_icon": "🤖",
+      "subject_name": "AI & Coding Assignment",
+      "track": "Year 8 (Grade 8 (Ages 13-14)) — 🤖 AI & Coding Assignment",
+      "title": "Y8 AI Assignment: Benchmarking Q-Learning vs. SARSA Near Lava Cliffs",
+      "grade_level": "Grade 8 (Ages 13-14)",
+      "lab_id": "rl_gridworld",
+      "badge": "🏆 Y8 AI Graduate",
+      "story": "YEAR 8 BUILT-IN AI ASSIGNMENT:\nRun a head-to-head Python experiment comparing Off-Policy Q-Learning (`use_sarsa=0`) against On-Policy SARSA (`use_sarsa=1`) over 40 episodes!",
+      "steps": [
+        "1. Read the Year 8 (Grade 8 (Ages 13-14)) 🤖 AI & Coding Assignment lesson above.",
+        "2. Click '▸ 1. Load Preset' to configure the interactive simulation for this subject.",
+        "3. Click '⚡ Turbo +25 Gens' (or open '✎ 3. Python Challenge' and click '▶ Run Code') to complete the assignment.",
+        "4. Click '✓ 2. Check Goal' to record your grade on your Year-by-Year Report Card!"
+      ],
+      "preset_params": {
+        "use_sarsa": 1.0,
+        "wind_prob": 0.1,
+        "alpha": 0.45,
+        "epsilon": 0.08,
+        "max_ep_steps": 120.0
+      },
+      "goal_metric": "generation",
+      "goal_op": ">=",
+      "goal_target": 15.0,
+      "goal_desc": "Complete the Y8 AI Assignment: Benchmarking Q-Learning vs. SARSA Near Lava Cliffs lab & code check (generation >= 15.0)",
+      "coding_challenge": "# 🤖 YEAR 8 AI CAPSTONE: Q-Learning vs. SARSA Head-to-Head\nfrom workbench.labs.rl_gridworld import RLGridWorldLab\n\nfor sarsa_flag, name in [(0.0, 'Q-Learning'), (1.0, 'SARSA')]:\n    lab = RLGridWorldLab()\n    lab.update_param('use_sarsa', sarsa_flag)\n    lab.update_param('wind_prob', 0.10)\n    t = lab.fast_forward_generations(40)\n    print(f\"{name:<10} -> Wins: {t['species']:2d} | Best Return: {t['best_ever']:6.1f}\")\n"
+    }
+  ],
+  "kid_levels": [
+    {
+      "level": 1,
+      "lab_id": "moon_lander",
+      "title_en": "Y8 L1: Year 8 (Grade 8) Space Lander (Physics & Math)",
+      "title_fr": "A8 N1 : Fusée Spatiale (Année 8 (4e))",
+      "speech_en": "Welcome to Year 8 (Grade 8)! Apply your Math & Science forces (Gravity=2.94) to land softly!",
+      "speech_fr": "Bienvenue en Année 8 (4e) ! Utilise les forces physiques (Gravité=2.94) pour atterrir !",
+      "obj1_en": "Apply Force Balance",
+      "obj1_fr": "Équilibrer les forces",
+      "obj2_en": "Soft Touchdown",
+      "obj2_fr": "Atterrissage doux",
+      "btn1_en": [
+        "Train AI",
+        "Pilot"
+      ],
+      "btn1_fr": [
+        "Entraîner",
+        "Pilote"
+      ],
+      "btn2_en": [
+        "Boost",
+        "Fuel"
+      ],
+      "btn2_fr": [
+        "Plus de",
+        "Carburant"
+      ],
+      "btn3_en": [
+        "Tune",
+        "Gravity"
+      ],
+      "btn3_fr": [
+        "Ajuster",
+        "Gravité"
+      ],
+      "preset": {
+        "gravity": 2.94,
+        "wind": 0.35,
+        "fuel_capacity": 162.0
+      }
+    },
+    {
+      "level": 2,
+      "lab_id": "raycast_car",
+      "title_en": "Y8 L2: Year 8 (Grade 8) Lidar Geometry & Waves",
+      "title_fr": "A8 N2 : Géométrie Laser Lidar (Année 8 (4e))",
+      "speech_en": "Year 8 (Grade 8) Geometry Lab: Use 5 laser angle beams (167px) to steer cleanly!",
+      "speech_fr": "Labo Géométrie Année 8 (4e) : Utilise les 5 rayons laser (167px) !",
+      "obj1_en": "Zero Wall Hits",
+      "obj1_fr": "Zéro collision",
+      "obj2_en": "Complete Circuit",
+      "obj2_fr": "Circuit complet",
+      "btn1_en": [
+        "Evolve",
+        "Brain"
+      ],
+      "btn1_fr": [
+        "Évoluer",
+        "Cerveau"
+      ],
+      "btn2_en": [
+        "Extend",
+        "Lasers"
+      ],
+      "btn2_fr": [
+        "Allonger",
+        "Lasers"
+      ],
+      "btn3_en": [
+        "Adjust",
+        "Speed"
+      ],
+      "btn3_fr": [
+        "Régler",
+        "Vitesse"
+      ],
+      "preset": {
+        "sensor_range": 167.0,
+        "max_speed": 5.7,
+        "track_width": 35.6
+      }
+    },
+    {
+      "level": 3,
+      "lab_id": "rl_gridworld",
+      "title_en": "Y8 L3: Year 8 (Grade 8) Compass Map & Probability Maze",
+      "title_fr": "A8 N3 : Carte & Labyrinthe (Année 8 (4e))",
+      "speech_en": "Year 8 (Grade 8) Geography & Math: Navigate N/S/E/W around hazards to reach the goal!",
+      "speech_fr": "Géographie Année 8 (4e) : Navigue N/S/E/O autour de la lave vers le trésor !",
+      "obj1_en": "Dodge Lava Cliffs",
+      "obj1_fr": "Éviter la lave",
+      "obj2_en": "Optimal Map Path",
+      "obj2_fr": "Chemin optimal",
+      "btn1_en": [
+        "Learn",
+        "Map"
+      ],
+      "btn1_fr": [
+        "Apprendre",
+        "Carte"
+      ],
+      "btn2_en": [
+        "High",
+        "Foresight"
+      ],
+      "btn2_fr": [
+        "Grande",
+        "Vision"
+      ],
+      "btn3_en": [
+        "Low",
+        "Risk"
+      ],
+      "btn3_fr": [
+        "Moins de",
+        "Risque"
+      ],
+      "preset": {
+        "alpha": 0.35,
+        "gamma": 0.96,
+        "epsilon": 0.1,
+        "use_sarsa": 1.0
+      }
+    },
+    {
+      "level": 4,
+      "lab_id": "cartpole_rl",
+      "title_en": "Y8 L4: Year 8 (Grade 8) Pendulum Forces & Balance",
+      "title_fr": "A8 N4 : Pendule & Équilibre (Année 8 (4e))",
+      "speech_en": "Year 8 (Grade 8) Physics: Balance torque, inertia, and gravity on the moving cart!",
+      "speech_fr": "Physique Année 8 (4e) : Équilibre l'inertie et la gravité sur le chariot !",
+      "obj1_en": "Keep Upright",
+      "obj1_fr": "Rester droit",
+      "obj2_en": "300+ Steps",
+      "obj2_fr": "300+ Pas",
+      "btn1_en": [
+        "Train",
+        "Policy"
+      ],
+      "btn1_fr": [
+        "Entraîner",
+        "IA"
+      ],
+      "btn2_en": [
+        "Motor",
+        "Force"
+      ],
+      "btn2_fr": [
+        "Force",
+        "Moteur"
+      ],
+      "btn3_en": [
+        "Calm",
+        "Wind"
+      ],
+      "btn3_fr": [
+        "Calmer",
+        "Vent"
+      ],
+      "preset": {
+        "gravity": 9.8,
+        "force_mag": 13.0,
+        "wind_gust": 0.26
+      }
+    },
+    {
+      "level": 5,
+      "lab_id": "nn_playground",
+      "title_en": "Y8 L5: Year 8 (Grade 8) (x,y) Coordinates & Neural Graph",
+      "title_fr": "A8 N5 : Coordonnées (x,y) & Neurones (Année 8 (4e))",
+      "speech_en": "Year 8 (Grade 8) Algebra & Biology: Use 14 hidden neurons to separate 2D points!",
+      "speech_fr": "Algèbre Année 8 (4e) : Utilise 14 neurones cachés pour séparer les points !",
+      "obj1_en": "Curve Boundary",
+      "obj1_fr": "Courber frontière",
+      "obj2_en": "90% Accuracy",
+      "obj2_fr": "Précision 90%",
+      "btn1_en": [
+        "Add",
+        "Neurons"
+      ],
+      "btn1_fr": [
+        "Ajouter",
+        "Neurones"
+      ],
+      "btn2_en": [
+        "Switch",
+        "Dataset"
+      ],
+      "btn2_fr": [
+        "Changer",
+        "Forme"
+      ],
+      "btn3_en": [
+        "Scramble",
+        "Points"
+      ],
+      "btn3_fr": [
+        "Mélanger",
+        "Points"
+      ],
+      "preset": {
+        "dataset_id": 3.0,
+        "hidden_neurons": 14.0,
+        "learning_rate": 0.24
+      }
+    },
+    {
+      "level": 6,
+      "lab_id": "swarm_ecosystem",
+      "title_en": "Y8 L6: Year 8 (Grade 8) Ecosystem Food Web & Genetics",
+      "title_fr": "A8 N6 : Écosystème & Génétique (Année 8 (4e))",
+      "speech_en": "Year 8 (Grade 8) Life Science: Balance producers (food orbs), prey fish, and predators!",
+      "speech_fr": "Biologie Année 8 (4e) : Équilibre la chaîne alimentaire et l'essaim !",
+      "obj1_en": "Flock Cohesion",
+      "obj1_fr": "Cohésion groupe",
+      "obj2_en": "Ecosystem Balance",
+      "obj2_fr": "Équilibre vivant",
+      "btn1_en": [
+        "Evolve",
+        "Genes"
+      ],
+      "btn1_fr": [
+        "Évoluer",
+        "Gènes"
+      ],
+      "btn2_en": [
+        "More",
+        "Producers"
+      ],
+      "btn2_fr": [
+        "Plus de",
+        "Plantes"
+      ],
+      "btn3_en": [
+        "Speed",
+        "Adaptation"
+      ],
+      "btn3_fr": [
+        "Vitesse",
+        "Agile"
+      ],
+      "preset": {
+        "num_prey": 40.0,
+        "num_predators": 4.0,
+        "food_count": 32.0
+      }
+    },
+    {
+      "level": 7,
+      "lab_id": "prime_attention",
+      "title_en": "Y8 L7: Year 8 (Grade 8) Reading Context & Memory Vault",
+      "title_fr": "A8 N7 : Lecture & Coffre Mémoire (Année 8 (4e))",
+      "speech_en": "Year 8 (Grade 8) Reading & CS: Preserve key story clues in the 67 KB PRIME Memory Vault!",
+      "speech_fr": "Lecture & IA Année 8 (4e) : Garde les indices clés dans le Coffre Mémoire !",
+      "obj1_en": "O(1) RAM Budget",
+      "obj1_fr": "Mémoire O(1)",
+      "obj2_en": "High Recall",
+      "obj2_fr": "Rappel élevé",
+      "btn1_en": [
+        "Add",
+        "Clues"
+      ],
+      "btn1_fr": [
+        "Ajouter",
+        "Indices"
+      ],
+      "btn2_en": [
+        "Expand",
+        "Window"
+      ],
+      "btn2_fr": [
+        "Grande",
+        "Fenêtre"
+      ],
+      "btn3_en": [
+        "Stabilize",
+        "Norm"
+      ],
+      "btn3_fr": [
+        "Stabiliser",
+        "Norme"
+      ],
+      "preset": {
+        "window_size": 64.0,
+        "distractor_gap": 256.0,
+        "use_qk_norm": 1.0
+      }
+    }
+  ]
+}

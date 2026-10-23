@@ -1,0 +1,473 @@
+{
+  "pack_id": "year_01",
+  "pack_number": 1,
+  "school_year": 1,
+  "year_number": 1,
+  "grade_label": "Grade 1 (Ages 6-7)",
+  "band": "Band A: Elementary Discovery",
+  "grade_band": "Band A: Elementary Discovery",
+  "title_en": "Year 1 (Grade 1): Counting, Sky & Seasons, Phonics, Maps & Robot Senses",
+  "title_fr": "Année 1 (CP) : Compter, Saisons, Lecture, Cartes & Sens du Robot",
+  "short_en": "Year 1 (Grade 1)",
+  "short_fr": "Année 1 (CP)",
+  "subjects": [
+    "math",
+    "science",
+    "ela",
+    "history",
+    "ai_cs"
+  ],
+  "subject_lessons": [
+    {
+      "id": "y01_math",
+      "year": 1,
+      "year_number": 1,
+      "subject": "math",
+      "subject_key": "math",
+      "subject_icon": "📐",
+      "subject_name": "Mathematics",
+      "track": "Year 1 (Grade 1 (Ages 6-7)) — 📐 Mathematics",
+      "title": "Y1 Math: Counting to 100, Addition & 2D Shapes",
+      "grade_level": "Grade 1 (Ages 6-7)",
+      "lab_id": "moon_lander",
+      "badge": "🏅 Y1 Math Scholar",
+      "story": "TRADITIONAL MATH LESSON (GRADE 1):\nNumbers help us count everything around us! When we put two groups together, we use Addition (+). When we take away, we use Subtraction (-). We also compare numbers using Greater Than (>) and Less Than (<).\n\n• Example: If Lumi's rocket has 100 fuel units and we add 60 more, 100 + 60 = 160 fuel units!\n• Geometric Shapes: The landing pad is a flat rectangle, and the Moon is a round circle (sphere).",
+      "steps": [
+        "1. Read the Year 1 (Grade 1 (Ages 6-7)) 📐 Mathematics lesson above.",
+        "2. Click '▸ 1. Load Preset' to configure the interactive simulation for this subject.",
+        "3. Click '⚡ Turbo +25 Gens' (or open '✎ 3. Python Challenge' and click '▶ Run Code') to complete the assignment.",
+        "4. Click '✓ 2. Check Goal' to record your grade on your Year-by-Year Report Card!"
+      ],
+      "preset_params": {
+        "gravity": 1.4,
+        "fuel_capacity": 160.0,
+        "wind": 0.0,
+        "thruster_power": 2.15,
+        "landing_bonus": 340.0
+      },
+      "goal_metric": "best_ever",
+      "goal_op": ">=",
+      "goal_target": 120.0,
+      "goal_desc": "Complete the Y1 Math: Counting to 100, Addition & 2D Shapes lab & code check (best_ever >= 120.0)",
+      "coding_challenge": "# 📐 YEAR 1 MATH ASSIGNMENT: Addition & Comparing Numbers\nstarting_fuel = 100\nbonus_fuel = 60\ntotal_fuel = starting_fuel + bonus_fuel\npad_width = 52\nprint(f'Total Rocket Fuel: {total_fuel} (Is {total_fuel} > 120? {total_fuel > 120})')\nassert total_fuel == 160, 'Total fuel should be 160!'\n"
+    },
+    {
+      "id": "y01_science",
+      "year": 1,
+      "year_number": 1,
+      "subject": "science",
+      "subject_key": "science",
+      "subject_icon": "🔬",
+      "subject_name": "Science",
+      "track": "Year 1 (Grade 1 (Ages 6-7)) — 🔬 Science",
+      "title": "Y1 Science: Day & Night, Moon Phases & Push/Pull Forces",
+      "grade_level": "Grade 1 (Ages 6-7)",
+      "lab_id": "moon_lander",
+      "badge": "🏅 Y1 Science Explorer",
+      "story": "TRADITIONAL SCIENCE LESSON (GRADE 1):\nEvery object in the universe feels Pushes and Pulls called Forces!\n• Gravity is an invisible PULL force that pulls objects down toward the ground.\n• A Rocket Thruster is a PUSH force that pushes the rocket upward into the sky.\n• The Moon is smaller than Earth, so the Moon's gravity pull (1.62) is much gentler than Earth's (9.8)!",
+      "steps": [
+        "1. Read the Year 1 (Grade 1 (Ages 6-7)) 🔬 Science lesson above.",
+        "2. Click '▸ 1. Load Preset' to configure the interactive simulation for this subject.",
+        "3. Click '⚡ Turbo +25 Gens' (or open '✎ 3. Python Challenge' and click '▶ Run Code') to complete the assignment.",
+        "4. Click '✓ 2. Check Goal' to record your grade on your Year-by-Year Report Card!"
+      ],
+      "preset_params": {
+        "gravity": 1.62,
+        "thruster_power": 1.85,
+        "fuel_capacity": 180.0,
+        "landing_bonus": 340.0
+      },
+      "goal_metric": "best_ever",
+      "goal_op": ">=",
+      "goal_target": 120.0,
+      "goal_desc": "Complete the Y1 Science: Day & Night, Moon Phases & Push/Pull Forces lab & code check (best_ever >= 120.0)",
+      "coding_challenge": "# 🔬 YEAR 1 SCIENCE LAB: Push (Thrust) vs. Pull (Gravity)\nmoon_gravity_pull = 1.62\nearth_gravity_pull = 9.80\nrocket_thruster_push = 2.65\ncan_lift_off_moon = rocket_thruster_push > moon_gravity_pull\nprint(f'Moon Pull: {moon_gravity_pull} | Rocket Push: {rocket_thruster_push} | Liftoff: {can_lift_off_moon}')\nassert can_lift_off_moon is True\n"
+    },
+    {
+      "id": "y01_ela",
+      "year": 1,
+      "year_number": 1,
+      "subject": "ela",
+      "subject_key": "ela",
+      "subject_icon": "📖",
+      "subject_name": "Reading & Language Arts",
+      "track": "Year 1 (Grade 1 (Ages 6-7)) — 📖 Reading & Language Arts",
+      "title": "Y1 Reading & Phonics: Short Stories, Sight Words & Main Character",
+      "grade_level": "Grade 1 (Ages 6-7)",
+      "lab_id": "rl_gridworld",
+      "badge": "🏅 Y1 Literary Thinker",
+      "story": "TRADITIONAL READING & LANGUAGE ARTS LESSON (GRADE 1):\nRead this short story out loud:\n  \"Lumi is a little silver robot. Lumi looks for the bright gold star in the maze. Lumi steps over the hot red lava and wins a shiny trophy!\"\n\n• Reading Check:\n  1. Who is the main character? -> Lumi the robot.\n  2. What is the setting (where does it happen)? -> Inside the maze.\n  3. Sight Words to practice: look, bright, over, little, find.",
+      "steps": [
+        "1. Read the Year 1 (Grade 1 (Ages 6-7)) 📖 Reading & Language Arts lesson above.",
+        "2. Click '▸ 1. Load Preset' to configure the interactive simulation for this subject.",
+        "3. Click '⚡ Turbo +25 Gens' (or open '✎ 3. Python Challenge' and click '▶ Run Code') to complete the assignment.",
+        "4. Click '✓ 2. Check Goal' to record your grade on your Year-by-Year Report Card!"
+      ],
+      "preset_params": {
+        "alpha": 0.45,
+        "gamma": 0.95,
+        "epsilon": 0.08,
+        "max_ep_steps": 120.0
+      },
+      "goal_metric": "generation",
+      "goal_op": ">=",
+      "goal_target": 15.0,
+      "goal_desc": "Complete the Y1 Reading & Phonics: Short Stories, Sight Words & Main Character lab & code check (generation >= 15.0)",
+      "coding_challenge": "# 📖 YEAR 1 READING CHECK: Story Comprehension\nmain_character = 'Lumi'\ngoal_item = 'gold star'\nhazard_to_avoid = 'red lava'\nsentence = f'{main_character} found the {goal_item} and avoided the {hazard_to_avoid}!'\nprint(sentence)\nassert 'Lumi' in sentence and 'gold star' in sentence\n"
+    },
+    {
+      "id": "y01_history",
+      "year": 1,
+      "year_number": 1,
+      "subject": "history",
+      "subject_key": "history",
+      "subject_icon": "🌍",
+      "subject_name": "Social Studies & History",
+      "track": "Year 1 (Grade 1 (Ages 6-7)) — 🌍 Social Studies & History",
+      "title": "Y1 Social Studies: My Community & Compass Directions (N, S, E, W)",
+      "grade_level": "Grade 1 (Ages 6-7)",
+      "lab_id": "rl_gridworld",
+      "badge": "🏅 Y1 Historian & Citizen",
+      "story": "TRADITIONAL SOCIAL STUDIES & GEOGRAPHY LESSON (GRADE 1):\nMaps help people in our community find schools, parks, libraries, and homes!\nEvery map has a Compass Rose with 4 Cardinal Directions:\n  • North (Up ↑)\n  • East  (Right →)\n  • South (Down ↓)\n  • West  (Left ←)\nIn our Maze Map, Lumi starts in the West (left) and travels East (right) around the lava to reach the Treasure!",
+      "steps": [
+        "1. Read the Year 1 (Grade 1 (Ages 6-7)) 🌍 Social Studies & History lesson above.",
+        "2. Click '▸ 1. Load Preset' to configure the interactive simulation for this subject.",
+        "3. Click '⚡ Turbo +25 Gens' (or open '✎ 3. Python Challenge' and click '▶ Run Code') to complete the assignment.",
+        "4. Click '✓ 2. Check Goal' to record your grade on your Year-by-Year Report Card!"
+      ],
+      "preset_params": {
+        "alpha": 0.45,
+        "gamma": 0.95,
+        "epsilon": 0.08,
+        "max_ep_steps": 120.0
+      },
+      "goal_metric": "generation",
+      "goal_op": ">=",
+      "goal_target": 15.0,
+      "goal_desc": "Complete the Y1 Social Studies: My Community & Compass Directions (N, S, E, W) lab & code check (generation >= 15.0)",
+      "coding_challenge": "# 🗺️ YEAR 1 GEOGRAPHY LAB: Using the 4 Compass Directions\ncompass = {'North': (0, -1), 'East': (1, 0), 'South': (0, 1), 'West': (-1, 0)}\nfor direction, step in compass.items():\n    print(f'Compass Direction: {direction:<6} -> Map Step: {step}')\nassert len(compass) == 4\n"
+    },
+    {
+      "id": "y01_ai_cs",
+      "year": 1,
+      "year_number": 1,
+      "subject": "ai_cs",
+      "subject_key": "ai_cs",
+      "subject_icon": "🤖",
+      "subject_name": "AI & Coding Assignment",
+      "track": "Year 1 (Grade 1 (Ages 6-7)) — 🤖 AI & Coding Assignment",
+      "title": "Y1 AI Assignment: Teaching Lumi's Sensors & First Moon Landing",
+      "grade_level": "Grade 1 (Ages 6-7)",
+      "lab_id": "moon_lander",
+      "badge": "🏆 Y1 AI Graduate",
+      "story": "YEAR 1 BUILT-IN AI & CODING ASSIGNMENT:\nNow bring your Grade 1 Math, Science, Reading, and Map skills together! Give Lumi's rocket 180 units of fuel, gentle Moon gravity (1.62), and train the AI brain for 10 generations!",
+      "steps": [
+        "1. Read the Year 1 (Grade 1 (Ages 6-7)) 🤖 AI & Coding Assignment lesson above.",
+        "2. Click '▸ 1. Load Preset' to configure the interactive simulation for this subject.",
+        "3. Click '⚡ Turbo +25 Gens' (or open '✎ 3. Python Challenge' and click '▶ Run Code') to complete the assignment.",
+        "4. Click '✓ 2. Check Goal' to record your grade on your Year-by-Year Report Card!"
+      ],
+      "preset_params": {
+        "gravity": 1.62,
+        "fuel_capacity": 180.0,
+        "landing_bonus": 260.0,
+        "thruster_power": 2.15
+      },
+      "goal_metric": "best_ever",
+      "goal_op": ">=",
+      "goal_target": 120.0,
+      "goal_desc": "Complete the Y1 AI Assignment: Teaching Lumi's Sensors & First Moon Landing lab & code check (best_ever >= 120.0)",
+      "coding_challenge": "# 🤖 YEAR 1 AI CAPSTONE ASSIGNMENT\nfrom workbench.labs.moon_lander import NEATMoonLanderLab\n\nlab = NEATMoonLanderLab()\nlab.update_param('gravity', 1.62)\nlab.update_param('fuel_capacity', 180.0)\nstats = lab.fast_forward_generations(8)\nprint(f\"Year 1 AI Mission Complete! Best Score: {stats['best_ever']}\")\n"
+    }
+  ],
+  "kid_levels": [
+    {
+      "level": 1,
+      "lab_id": "moon_lander",
+      "title_en": "Y1 L1: Year 1 (Grade 1) Space Lander (Physics & Math)",
+      "title_fr": "A1 N1 : Fusée Spatiale (Année 1 (CP))",
+      "speech_en": "Welcome to Year 1 (Grade 1)! Apply your Math & Science forces (Gravity=1.4) to land softly!",
+      "speech_fr": "Bienvenue en Année 1 (CP) ! Utilise les forces physiques (Gravité=1.4) pour atterrir !",
+      "obj1_en": "Apply Force Balance",
+      "obj1_fr": "Équilibrer les forces",
+      "obj2_en": "Soft Touchdown",
+      "obj2_fr": "Atterrissage doux",
+      "btn1_en": [
+        "Train AI",
+        "Pilot"
+      ],
+      "btn1_fr": [
+        "Entraîner",
+        "Pilote"
+      ],
+      "btn2_en": [
+        "Boost",
+        "Fuel"
+      ],
+      "btn2_fr": [
+        "Plus de",
+        "Carburant"
+      ],
+      "btn3_en": [
+        "Tune",
+        "Gravity"
+      ],
+      "btn3_fr": [
+        "Ajuster",
+        "Gravité"
+      ],
+      "preset": {
+        "gravity": 1.4,
+        "wind": 0.0,
+        "fuel_capacity": 190.0
+      }
+    },
+    {
+      "level": 2,
+      "lab_id": "raycast_car",
+      "title_en": "Y1 L2: Year 1 (Grade 1) Lidar Geometry & Waves",
+      "title_fr": "A1 N2 : Géométrie Laser Lidar (Année 1 (CP))",
+      "speech_en": "Year 1 (Grade 1) Geometry Lab: Use 5 laser angle beams (125px) to steer cleanly!",
+      "speech_fr": "Labo Géométrie Année 1 (CP) : Utilise les 5 rayons laser (125px) !",
+      "obj1_en": "Zero Wall Hits",
+      "obj1_fr": "Zéro collision",
+      "obj2_en": "Complete Circuit",
+      "obj2_fr": "Circuit complet",
+      "btn1_en": [
+        "Evolve",
+        "Brain"
+      ],
+      "btn1_fr": [
+        "Évoluer",
+        "Cerveau"
+      ],
+      "btn2_en": [
+        "Extend",
+        "Lasers"
+      ],
+      "btn2_fr": [
+        "Allonger",
+        "Lasers"
+      ],
+      "btn3_en": [
+        "Adjust",
+        "Speed"
+      ],
+      "btn3_fr": [
+        "Régler",
+        "Vitesse"
+      ],
+      "preset": {
+        "sensor_range": 125.0,
+        "max_speed": 4.2,
+        "track_width": 44.0
+      }
+    },
+    {
+      "level": 3,
+      "lab_id": "rl_gridworld",
+      "title_en": "Y1 L3: Year 1 (Grade 1) Compass Map & Probability Maze",
+      "title_fr": "A1 N3 : Carte & Labyrinthe (Année 1 (CP))",
+      "speech_en": "Year 1 (Grade 1) Geography & Math: Navigate N/S/E/W around hazards to reach the goal!",
+      "speech_fr": "Géographie Année 1 (CP) : Navigue N/S/E/O autour de la lave vers le trésor !",
+      "obj1_en": "Dodge Lava Cliffs",
+      "obj1_fr": "Éviter la lave",
+      "obj2_en": "Optimal Map Path",
+      "obj2_fr": "Chemin optimal",
+      "btn1_en": [
+        "Learn",
+        "Map"
+      ],
+      "btn1_fr": [
+        "Apprendre",
+        "Carte"
+      ],
+      "btn2_en": [
+        "High",
+        "Foresight"
+      ],
+      "btn2_fr": [
+        "Grande",
+        "Vision"
+      ],
+      "btn3_en": [
+        "Low",
+        "Risk"
+      ],
+      "btn3_fr": [
+        "Moins de",
+        "Risque"
+      ],
+      "preset": {
+        "alpha": 0.35,
+        "gamma": 0.96,
+        "epsilon": 0.1,
+        "use_sarsa": 0.0
+      }
+    },
+    {
+      "level": 4,
+      "lab_id": "cartpole_rl",
+      "title_en": "Y1 L4: Year 1 (Grade 1) Pendulum Forces & Balance",
+      "title_fr": "A1 N4 : Pendule & Équilibre (Année 1 (CP))",
+      "speech_en": "Year 1 (Grade 1) Physics: Balance torque, inertia, and gravity on the moving cart!",
+      "speech_fr": "Physique Année 1 (CP) : Équilibre l'inertie et la gravité sur le chariot !",
+      "obj1_en": "Keep Upright",
+      "obj1_fr": "Rester droit",
+      "obj2_en": "300+ Steps",
+      "obj2_fr": "300+ Pas",
+      "btn1_en": [
+        "Train",
+        "Policy"
+      ],
+      "btn1_fr": [
+        "Entraîner",
+        "IA"
+      ],
+      "btn2_en": [
+        "Motor",
+        "Force"
+      ],
+      "btn2_fr": [
+        "Force",
+        "Moteur"
+      ],
+      "btn3_en": [
+        "Calm",
+        "Wind"
+      ],
+      "btn3_fr": [
+        "Calmer",
+        "Vent"
+      ],
+      "preset": {
+        "gravity": 9.8,
+        "force_mag": 13.0,
+        "wind_gust": 0.12
+      }
+    },
+    {
+      "level": 5,
+      "lab_id": "nn_playground",
+      "title_en": "Y1 L5: Year 1 (Grade 1) (x,y) Coordinates & Neural Graph",
+      "title_fr": "A1 N5 : Coordonnées (x,y) & Neurones (Année 1 (CP))",
+      "speech_en": "Year 1 (Grade 1) Algebra & Biology: Use 7 hidden neurons to separate 2D points!",
+      "speech_fr": "Algèbre Année 1 (CP) : Utilise 7 neurones cachés pour séparer les points !",
+      "obj1_en": "Curve Boundary",
+      "obj1_fr": "Courber frontière",
+      "obj2_en": "90% Accuracy",
+      "obj2_fr": "Précision 90%",
+      "btn1_en": [
+        "Add",
+        "Neurons"
+      ],
+      "btn1_fr": [
+        "Ajouter",
+        "Neurones"
+      ],
+      "btn2_en": [
+        "Switch",
+        "Dataset"
+      ],
+      "btn2_fr": [
+        "Changer",
+        "Forme"
+      ],
+      "btn3_en": [
+        "Scramble",
+        "Points"
+      ],
+      "btn3_fr": [
+        "Mélanger",
+        "Points"
+      ],
+      "preset": {
+        "dataset_id": 0.0,
+        "hidden_neurons": 7.0,
+        "learning_rate": 0.24
+      }
+    },
+    {
+      "level": 6,
+      "lab_id": "swarm_ecosystem",
+      "title_en": "Y1 L6: Year 1 (Grade 1) Ecosystem Food Web & Genetics",
+      "title_fr": "A1 N6 : Écosystème & Génétique (Année 1 (CP))",
+      "speech_en": "Year 1 (Grade 1) Life Science: Balance producers (food orbs), prey fish, and predators!",
+      "speech_fr": "Biologie Année 1 (CP) : Équilibre la chaîne alimentaire et l'essaim !",
+      "obj1_en": "Flock Cohesion",
+      "obj1_fr": "Cohésion groupe",
+      "obj2_en": "Ecosystem Balance",
+      "obj2_fr": "Équilibre vivant",
+      "btn1_en": [
+        "Evolve",
+        "Genes"
+      ],
+      "btn1_fr": [
+        "Évoluer",
+        "Gènes"
+      ],
+      "btn2_en": [
+        "More",
+        "Producers"
+      ],
+      "btn2_fr": [
+        "Plus de",
+        "Plantes"
+      ],
+      "btn3_en": [
+        "Speed",
+        "Adaptation"
+      ],
+      "btn3_fr": [
+        "Vitesse",
+        "Agile"
+      ],
+      "preset": {
+        "num_prey": 40.0,
+        "num_predators": 4.0,
+        "food_count": 32.0
+      }
+    },
+    {
+      "level": 7,
+      "lab_id": "prime_attention",
+      "title_en": "Y1 L7: Year 1 (Grade 1) Reading Context & Memory Vault",
+      "title_fr": "A1 N7 : Lecture & Coffre Mémoire (Année 1 (CP))",
+      "speech_en": "Year 1 (Grade 1) Reading & CS: Preserve key story clues in the 67 KB PRIME Memory Vault!",
+      "speech_fr": "Lecture & IA Année 1 (CP) : Garde les indices clés dans le Coffre Mémoire !",
+      "obj1_en": "O(1) RAM Budget",
+      "obj1_fr": "Mémoire O(1)",
+      "obj2_en": "High Recall",
+      "obj2_fr": "Rappel élevé",
+      "btn1_en": [
+        "Add",
+        "Clues"
+      ],
+      "btn1_fr": [
+        "Ajouter",
+        "Indices"
+      ],
+      "btn2_en": [
+        "Expand",
+        "Window"
+      ],
+      "btn2_fr": [
+        "Grande",
+        "Fenêtre"
+      ],
+      "btn3_en": [
+        "Stabilize",
+        "Norm"
+      ],
+      "btn3_fr": [
+        "Stabiliser",
+        "Norme"
+      ],
+      "preset": {
+        "window_size": 64.0,
+        "distractor_gap": 256.0,
+        "use_qk_norm": 1.0
+      }
+    }
+  ]
+}

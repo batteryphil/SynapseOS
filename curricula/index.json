@@ -1,0 +1,280 @@
+{
+  "curricula_years": [
+    {
+      "pack_id": "year_01",
+      "school_year": 1,
+      "year_number": 1,
+      "grade_label": "Grade 1 (Ages 6-7)",
+      "band": "Band A: Elementary Discovery",
+      "title_en": "Year 1 (Grade 1): Counting, Sky & Seasons, Phonics, Maps & Robot Senses",
+      "file": "year_01.json",
+      "subjects": [
+        "math",
+        "science",
+        "ela",
+        "history",
+        "ai_cs"
+      ],
+      "lesson_ids": [
+        "y01_math",
+        "y01_science",
+        "y01_ela",
+        "y01_history",
+        "y01_ai_cs"
+      ]
+    },
+    {
+      "pack_id": "year_02",
+      "school_year": 2,
+      "year_number": 2,
+      "grade_label": "Grade 2 (Ages 7-8)",
+      "band": "Band A: Elementary Discovery",
+      "title_en": "Year 2 (Grade 2): Place Value, Habitats & Food Chains, Nouns/Verbs & Continents",
+      "file": "year_02.json",
+      "subjects": [
+        "math",
+        "science",
+        "ela",
+        "history",
+        "ai_cs"
+      ],
+      "lesson_ids": [
+        "y02_math",
+        "y02_science",
+        "y02_ela",
+        "y02_history",
+        "y02_ai_cs"
+      ]
+    },
+    {
+      "pack_id": "year_03",
+      "school_year": 3,
+      "year_number": 3,
+      "grade_label": "Grade 3 (Ages 8-9)",
+      "band": "Band A: Elementary Discovery",
+      "title_en": "Year 3 (Grade 3): Multiplication, Solar System Gravity, Cause/Effect & Trade",
+      "file": "year_03.json",
+      "subjects": [
+        "math",
+        "science",
+        "ela",
+        "history",
+        "ai_cs"
+      ],
+      "lesson_ids": [
+        "y03_math",
+        "y03_science",
+        "y03_ela",
+        "y03_history",
+        "y03_ai_cs"
+      ]
+    },
+    {
+      "pack_id": "year_04",
+      "school_year": 4,
+      "year_number": 4,
+      "grade_label": "Grade 4 (Ages 9-10)",
+      "band": "Band B: Upper Elementary & Intro Python",
+      "title_en": "Year 4 (Grade 4): Angles & Decimals, Light/Laser Waves, Summaries & Explorers",
+      "file": "year_04.json",
+      "subjects": [
+        "math",
+        "science",
+        "ela",
+        "history",
+        "ai_cs"
+      ],
+      "lesson_ids": [
+        "y04_math",
+        "y04_science",
+        "y04_ela",
+        "y04_history",
+        "y04_ai_cs"
+      ]
+    },
+    {
+      "pack_id": "year_05",
+      "school_year": 5,
+      "year_number": 5,
+      "grade_label": "Grade 5 (Ages 10-11)",
+      "band": "Band B: Upper Elementary & Intro Python",
+      "title_en": "Year 5 (Grade 5): Coordinate Planes (x,y), Food Webs, Persuasive Writing & Civics",
+      "file": "year_05.json",
+      "subjects": [
+        "math",
+        "science",
+        "ela",
+        "history",
+        "ai_cs"
+      ],
+      "lesson_ids": [
+        "y05_math",
+        "y05_science",
+        "y05_ela",
+        "y05_history",
+        "y05_ai_cs"
+      ]
+    },
+    {
+      "pack_id": "year_06",
+      "school_year": 6,
+      "year_number": 6,
+      "grade_label": "Grade 6 (Ages 11-12)",
+      "band": "Band B: Early Middle School",
+      "title_en": "Year 6 (Grade 6): Ratios & Negative Numbers, Cell Biology, Argumentation & Ancient World",
+      "file": "year_06.json",
+      "subjects": [
+        "math",
+        "science",
+        "ela",
+        "history",
+        "ai_cs"
+      ],
+      "lesson_ids": [
+        "y06_math",
+        "y06_science",
+        "y06_ela",
+        "y06_history",
+        "y06_ai_cs"
+      ]
+    },
+    {
+      "pack_id": "year_07",
+      "school_year": 7,
+      "year_number": 7,
+      "grade_label": "Grade 7 (Ages 12-13)",
+      "band": "Band C: Middle School Foundations",
+      "title_en": "Year 7 (Grade 7): Linear Equations & Probability, Newton's Laws, Natural Selection & Reward Shaping",
+      "file": "year_07.json",
+      "subjects": [
+        "math",
+        "science",
+        "ela",
+        "history",
+        "ai_cs"
+      ],
+      "lesson_ids": [
+        "y07_math",
+        "y07_science",
+        "y07_ela",
+        "y07_history",
+        "y07_ai_cs"
+      ]
+    },
+    {
+      "pack_id": "year_08",
+      "school_year": 8,
+      "year_number": 8,
+      "grade_label": "Grade 8 (Ages 13-14)",
+      "band": "Band C: Middle School Foundations",
+      "title_en": "Year 8 (Grade 8): Pythagorean Theorem, Genetics & Waves, Debate & Q-Learning vs. SARSA",
+      "file": "year_08.json",
+      "subjects": [
+        "math",
+        "science",
+        "ela",
+        "history",
+        "ai_cs"
+      ],
+      "lesson_ids": [
+        "y08_math",
+        "y08_science",
+        "y08_ela",
+        "y08_history",
+        "y08_ai_cs"
+      ]
+    },
+    {
+      "pack_id": "year_09",
+      "school_year": 9,
+      "year_number": 9,
+      "grade_label": "Grade 9 / Freshman (Ages 14-15)",
+      "band": "Band C: High School Foundations",
+      "title_en": "Year 9 (Grade 9): Algebra I (Quadratics & Exponentials), Kinematics Physics & Spiral MLP",
+      "file": "year_09.json",
+      "subjects": [
+        "math",
+        "science",
+        "ela",
+        "history",
+        "ai_cs"
+      ],
+      "lesson_ids": [
+        "y09_math",
+        "y09_science",
+        "y09_ela",
+        "y09_history",
+        "y09_ai_cs"
+      ]
+    },
+    {
+      "pack_id": "year_10",
+      "school_year": 10,
+      "year_number": 10,
+      "grade_label": "Grade 10 / Sophomore (Ages 15-16)",
+      "band": "Band D: High School Advanced AI & STEM",
+      "title_en": "Year 10 (Grade 10): Trigonometry & Graph Theory, Chemistry, Rhetoric & NEAT Speciation",
+      "file": "year_10.json",
+      "subjects": [
+        "math",
+        "science",
+        "ela",
+        "history",
+        "ai_cs"
+      ],
+      "lesson_ids": [
+        "y10_math",
+        "y10_science",
+        "y10_ela",
+        "y10_history",
+        "y10_ai_cs"
+      ]
+    },
+    {
+      "pack_id": "year_11",
+      "school_year": 11,
+      "year_number": 11,
+      "grade_label": "Grade 11 / Junior (Ages 16-17)",
+      "band": "Band D: High School Advanced AI & STEM",
+      "title_en": "Year 11 (Grade 11): Pre-Calculus, Matrices & Taylor Series, Neuroscience, Ethics & PRIME O(1) Attention",
+      "file": "year_11.json",
+      "subjects": [
+        "math",
+        "science",
+        "ela",
+        "history",
+        "ai_cs"
+      ],
+      "lesson_ids": [
+        "y11_math",
+        "y11_science",
+        "y11_ela",
+        "y11_history",
+        "y11_ai_cs"
+      ]
+    },
+    {
+      "pack_id": "year_12",
+      "school_year": 12,
+      "year_number": 12,
+      "grade_label": "Grade 12 / Senior Capstone (Ages 17-18)",
+      "band": "Band D: High School Advanced AI & STEM",
+      "title_en": "Year 12 (Grade 12): Calculus & Chain Rule Backprop, Euler-Lagrange Physics & Full-Stack C99/Python Capstone",
+      "file": "year_12.json",
+      "subjects": [
+        "math",
+        "science",
+        "ela",
+        "history",
+        "ai_cs"
+      ],
+      "lesson_ids": [
+        "y12_math",
+        "y12_science",
+        "y12_ela",
+        "y12_history",
+        "y12_ai_cs"
+      ]
+    }
+  ]
+}

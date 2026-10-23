@@ -1,0 +1,468 @@
+{
+  "pack_id": "year_10",
+  "pack_number": 10,
+  "school_year": 10,
+  "year_number": 10,
+  "grade_label": "Grade 10 / Sophomore (Ages 15-16)",
+  "band": "Band D: High School Advanced AI & STEM",
+  "grade_band": "Band D: High School Advanced AI & STEM",
+  "title_en": "Year 10 (Grade 10): Trigonometry & Graph Theory, Chemistry, Rhetoric & NEAT Speciation",
+  "title_fr": "Année 10 (2nde) : Trigonométrie & Graphes, Chimie, Rhétorique & Spéciation NEAT",
+  "short_en": "Year 10 (Grade 10)",
+  "short_fr": "Année 10 (2nde)",
+  "subjects": [
+    "math",
+    "science",
+    "ela",
+    "history",
+    "ai_cs"
+  ],
+  "subject_lessons": [
+    {
+      "id": "y10_math",
+      "year": 10,
+      "year_number": 10,
+      "subject": "math",
+      "subject_key": "math",
+      "subject_icon": "📐",
+      "subject_name": "Mathematics",
+      "track": "Year 10 (Grade 10 / Sophomore (Ages 15-16)) — 📐 Mathematics",
+      "title": "Y10 Math (Geometry & Trig): Unit Circle (sin, cos, atan2) & Directed Graphs",
+      "grade_level": "Grade 10 / Sophomore (Ages 15-16)",
+      "lab_id": "raycast_car",
+      "badge": "🏅 Y10 Math Scholar",
+      "story": "TRADITIONAL GEOMETRY & TRIGONOMETRY LESSON (GRADE 10):\n• Unit Circle Trigonometry: A ray at angle `θ` (in radians) has direction vector `(cos θ, sin θ)`.\n• Inverse Tangent `atan2(dy, dx)` recovers the exact angle `θ ∈ [-π, π]` from any `(dx, dy)` displacement.\n• Graph Theory: A feed-forward neural network is a Directed Acyclic Graph `G = (V, E)` with vertices (neurons) and weighted edges (synapses).",
+      "steps": [
+        "1. Read the Year 10 (Grade 10 / Sophomore (Ages 15-16)) 📐 Mathematics lesson above.",
+        "2. Click '▸ 1. Load Preset' to configure the interactive simulation for this subject.",
+        "3. Click '⚡ Turbo +25 Gens' (or open '✎ 3. Python Challenge' and click '▶ Run Code') to complete the assignment.",
+        "4. Click '✓ 2. Check Goal' to record your grade on your Year-by-Year Report Card!"
+      ],
+      "preset_params": {
+        "sensor_range": 180.0,
+        "max_speed": 6.2,
+        "track_width": 32.0
+      },
+      "goal_metric": "best_ever",
+      "goal_op": ">=",
+      "goal_target": 140.0,
+      "goal_desc": "Complete the Y10 Math (Geometry & Trig): Unit Circle (sin, cos, atan2) & Directed Graphs lab & code check (best_ever >= 140.0)",
+      "coding_challenge": "# 📐 YEAR 10 TRIGONOMETRY LAB: Unit Circle Ray Projection\nimport math\ncar_x, car_y, heading = 320.0, 210.0, math.pi / 4.0  # 45 degrees\ndist = 100.0\nend_x = car_x + dist * math.cos(heading)\nend_y = car_y + dist * math.sin(heading)\nrecovered_angle = math.atan2(end_y - car_y, end_x - car_x)\nprint(f'Ray Endpoint: ({end_x:.1f}, {end_y:.1f}) | Angle: { math.degrees(recovered_angle):.1f} deg')\n"
+    },
+    {
+      "id": "y10_science",
+      "year": 10,
+      "year_number": 10,
+      "subject": "science",
+      "subject_key": "science",
+      "subject_icon": "🔬",
+      "subject_name": "Science",
+      "track": "Year 10 (Grade 10 / Sophomore (Ages 15-16)) — 🔬 Science",
+      "title": "Y10 Chemistry: Stoichiometry, Activation Energy Barriers & Reaction Kinetics",
+      "grade_level": "Grade 10 / Sophomore (Ages 15-16)",
+      "lab_id": "moon_lander",
+      "badge": "🏅 Y10 Science Explorer",
+      "story": "TRADITIONAL CHEMISTRY LESSON (GRADE 10):\n• Conservation of Mass (Stoichiometry): In a balanced chemical reaction (like rocket propellant `2H₂ + O₂ -> 2H₂O`), the number of atoms of each element is conserved.\n• Activation Energy (`E_a`): A reaction requires an energy threshold to fire—analogous to a neuron's activation threshold!",
+      "steps": [
+        "1. Read the Year 10 (Grade 10 / Sophomore (Ages 15-16)) 🔬 Science lesson above.",
+        "2. Click '▸ 1. Load Preset' to configure the interactive simulation for this subject.",
+        "3. Click '⚡ Turbo +25 Gens' (or open '✎ 3. Python Challenge' and click '▶ Run Code') to complete the assignment.",
+        "4. Click '✓ 2. Check Goal' to record your grade on your Year-by-Year Report Card!"
+      ],
+      "preset_params": {
+        "gravity": 2.2,
+        "thruster_power": 1.9,
+        "fuel_capacity": 200.0,
+        "landing_bonus": 340.0
+      },
+      "goal_metric": "best_ever",
+      "goal_op": ">=",
+      "goal_target": 120.0,
+      "goal_desc": "Complete the Y10 Chemistry: Stoichiometry, Activation Energy Barriers & Reaction Kinetics lab & code check (best_ever >= 120.0)",
+      "coding_challenge": "# 🔬 YEAR 10 CHEMISTRY LAB: Rocket Propellant Stoichiometry (2 H2 + O2 -> 2 H2O)\nmoles_H2 = 4.0\nmoles_O2 = 2.0\nmoles_H2O_produced = min(moles_H2, 2.0 * moles_O2)\nprint(f'{moles_H2} mol H2 + {moles_O2} mol O2 -> {moles_H2O_produced} mol H2O + Thrust Energy!')\nassert moles_H2O_produced == 4.0\n"
+    },
+    {
+      "id": "y10_ela",
+      "year": 10,
+      "year_number": 10,
+      "subject": "ela",
+      "subject_key": "ela",
+      "subject_icon": "📖",
+      "subject_name": "Reading & Language Arts",
+      "track": "Year 10 (Grade 10 / Sophomore (Ages 15-16)) — 📖 Reading & Language Arts",
+      "title": "Y10 ELA: Formal Logic, Deductive/Inductive Reasoning & Synthesis Essays",
+      "grade_level": "Grade 10 / Sophomore (Ages 15-16)",
+      "lab_id": "raycast_car",
+      "badge": "🏅 Y10 Literary Thinker",
+      "story": "TRADITIONAL LANGUAGE ARTS LESSON (GRADE 10):\n• Deductive Reasoning moves from general axioms/theorems to specific guaranteed conclusions (like geometric proofs and Safety Shield rules).\n• Inductive Reasoning generalizes patterns from empirical observations (which is how Machine Learning trains from examples!).",
+      "steps": [
+        "1. Read the Year 10 (Grade 10 / Sophomore (Ages 15-16)) 📖 Reading & Language Arts lesson above.",
+        "2. Click '▸ 1. Load Preset' to configure the interactive simulation for this subject.",
+        "3. Click '⚡ Turbo +25 Gens' (or open '✎ 3. Python Challenge' and click '▶ Run Code') to complete the assignment.",
+        "4. Click '✓ 2. Check Goal' to record your grade on your Year-by-Year Report Card!"
+      ],
+      "preset_params": {
+        "sensor_range": 180.0,
+        "max_speed": 6.0
+      },
+      "goal_metric": "best_ever",
+      "goal_op": ">=",
+      "goal_target": 140.0,
+      "goal_desc": "Complete the Y10 ELA: Formal Logic, Deductive/Inductive Reasoning & Synthesis Essays lab & code check (best_ever >= 140.0)",
+      "coding_challenge": "# 📖 YEAR 10 FORMAL LOGIC CHECK: Deductive vs. Inductive\ndeductive_rule = lambda cmd: 'BLOCKED' if 'rm -rf /' in cmd else 'SAFE'\nprint('Deductive Safety Check:', deductive_rule('rm -rf /'))\nassert deductive_rule('rm -rf /') == 'BLOCKED'\n"
+    },
+    {
+      "id": "y10_history",
+      "year": 10,
+      "year_number": 10,
+      "subject": "history",
+      "subject_key": "history",
+      "subject_icon": "🌍",
+      "subject_name": "Social Studies & History",
+      "track": "Year 10 (Grade 10 / Sophomore (Ages 15-16)) — 🌍 Social Studies & History",
+      "title": "Y10 World History II & Comparative Systems: 20th Century Science & Open Standards",
+      "grade_level": "Grade 10 / Sophomore (Ages 15-16)",
+      "lab_id": "moon_lander",
+      "badge": "🏅 Y10 Historian & Citizen",
+      "story": "TRADITIONAL WORLD HISTORY LESSON (GRADE 10):\nThe 20th century saw the rise of international scientific collaboration, Apollo lunar guidance computers (with only 4 KB of RAM!), POSIX/Linux open operating systems, and the World Wide Web.",
+      "steps": [
+        "1. Read the Year 10 (Grade 10 / Sophomore (Ages 15-16)) 🌍 Social Studies & History lesson above.",
+        "2. Click '▸ 1. Load Preset' to configure the interactive simulation for this subject.",
+        "3. Click '⚡ Turbo +25 Gens' (or open '✎ 3. Python Challenge' and click '▶ Run Code') to complete the assignment.",
+        "4. Click '✓ 2. Check Goal' to record your grade on your Year-by-Year Report Card!"
+      ],
+      "preset_params": {
+        "gravity": 1.62,
+        "fuel_capacity": 160.0,
+        "thruster_power": 2.15,
+        "landing_bonus": 340.0
+      },
+      "goal_metric": "best_ever",
+      "goal_op": ">=",
+      "goal_target": 120.0,
+      "goal_desc": "Complete the Y10 World History II & Comparative Systems: 20th Century Science & Open Standards lab & code check (best_ever >= 120.0)",
+      "coding_challenge": "# 🛰️ YEAR 10 HISTORY LAB: Apollo Guidance Computer vs. SynapseOS Memory\napollo_agc_ram_kb = 4.0\nprime_vault_kb = 67.03\nprint(f'Apollo 11 RAM: {apollo_agc_ram_kb} KB | PRIME Attention Vault: {prime_vault_kb} KB')\n"
+    },
+    {
+      "id": "y10_ai_cs",
+      "year": 10,
+      "year_number": 10,
+      "subject": "ai_cs",
+      "subject_key": "ai_cs",
+      "subject_icon": "🤖",
+      "subject_name": "AI & Coding Assignment",
+      "track": "Year 10 (Grade 10 / Sophomore (Ages 15-16)) — 🤖 AI & Coding Assignment",
+      "title": "Y10 AI Assignment: NEAT Speciation Distance & Topological Crossover in Python",
+      "grade_level": "Grade 10 / Sophomore (Ages 15-16)",
+      "lab_id": "raycast_car",
+      "badge": "🏆 Y10 AI Graduate",
+      "story": "YEAR 10 BUILT-IN AI ASSIGNMENT:\nCompute the NEAT Compatibility Distance `δ = (c₁·D / N) + c₃·W̄` between two evolving neural genomes and perform crossover!",
+      "steps": [
+        "1. Read the Year 10 (Grade 10 / Sophomore (Ages 15-16)) 🤖 AI & Coding Assignment lesson above.",
+        "2. Click '▸ 1. Load Preset' to configure the interactive simulation for this subject.",
+        "3. Click '⚡ Turbo +25 Gens' (or open '✎ 3. Python Challenge' and click '▶ Run Code') to complete the assignment.",
+        "4. Click '✓ 2. Check Goal' to record your grade on your Year-by-Year Report Card!"
+      ],
+      "preset_params": {
+        "sensor_range": 180.0,
+        "max_speed": 6.2,
+        "node_add_prob": 0.12
+      },
+      "goal_metric": "best_ever",
+      "goal_op": ">=",
+      "goal_target": 140.0,
+      "goal_desc": "Complete the Y10 AI Assignment: NEAT Speciation Distance & Topological Crossover in Python lab & code check (best_ever >= 140.0)",
+      "coding_challenge": "# 🤖 YEAR 10 AI CAPSTONE: NEAT Speciation & Crossover\nfrom workbench.labs.neat_core import NEATPopulation, NEATGenome\n\npop = NEATPopulation(num_inputs=6, num_outputs=2, pop_size=20)\ng1, g2 = pop.genomes[0], pop.genomes[1]\ng1.mutate_add_node(pop.tracker)\ndist = NEATGenome.compatibility_distance(g1, g2)\nchild = NEATGenome.crossover(g1, g2)\nprint(f'Speciation Compatibility Distance: {dist:.3f} | Child Nodes: {len(child.nodes)}')\n"
+    }
+  ],
+  "kid_levels": [
+    {
+      "level": 1,
+      "lab_id": "moon_lander",
+      "title_en": "Y10 L1: Year 10 (Grade 10) Space Lander (Physics & Math)",
+      "title_fr": "A10 N1 : Fusée Spatiale (Année 10 (2nde))",
+      "speech_en": "Welcome to Year 10 (Grade 10)! Apply your Math & Science forces (Gravity=3.38) to land softly!",
+      "speech_fr": "Bienvenue en Année 10 (2nde) ! Utilise les forces physiques (Gravité=3.38) pour atterrir !",
+      "obj1_en": "Apply Force Balance",
+      "obj1_fr": "Équilibrer les forces",
+      "obj2_en": "Soft Touchdown",
+      "obj2_fr": "Atterrissage doux",
+      "btn1_en": [
+        "Train AI",
+        "Pilot"
+      ],
+      "btn1_fr": [
+        "Entraîner",
+        "Pilote"
+      ],
+      "btn2_en": [
+        "Boost",
+        "Fuel"
+      ],
+      "btn2_fr": [
+        "Plus de",
+        "Carburant"
+      ],
+      "btn3_en": [
+        "Tune",
+        "Gravity"
+      ],
+      "btn3_fr": [
+        "Ajuster",
+        "Gravité"
+      ],
+      "preset": {
+        "gravity": 3.38,
+        "wind": 0.45,
+        "fuel_capacity": 154.0
+      }
+    },
+    {
+      "level": 2,
+      "lab_id": "raycast_car",
+      "title_en": "Y10 L2: Year 10 (Grade 10) Lidar Geometry & Waves",
+      "title_fr": "A10 N2 : Géométrie Laser Lidar (Année 10 (2nde))",
+      "speech_en": "Year 10 (Grade 10) Geometry Lab: Use 5 laser angle beams (179px) to steer cleanly!",
+      "speech_fr": "Labo Géométrie Année 10 (2nde) : Utilise les 5 rayons laser (179px) !",
+      "obj1_en": "Zero Wall Hits",
+      "obj1_fr": "Zéro collision",
+      "obj2_en": "Complete Circuit",
+      "obj2_fr": "Circuit complet",
+      "btn1_en": [
+        "Evolve",
+        "Brain"
+      ],
+      "btn1_fr": [
+        "Évoluer",
+        "Cerveau"
+      ],
+      "btn2_en": [
+        "Extend",
+        "Lasers"
+      ],
+      "btn2_fr": [
+        "Allonger",
+        "Lasers"
+      ],
+      "btn3_en": [
+        "Adjust",
+        "Speed"
+      ],
+      "btn3_fr": [
+        "Régler",
+        "Vitesse"
+      ],
+      "preset": {
+        "sensor_range": 179.0,
+        "max_speed": 6.2,
+        "track_width": 33.2
+      }
+    },
+    {
+      "level": 3,
+      "lab_id": "rl_gridworld",
+      "title_en": "Y10 L3: Year 10 (Grade 10) Compass Map & Probability Maze",
+      "title_fr": "A10 N3 : Carte & Labyrinthe (Année 10 (2nde))",
+      "speech_en": "Year 10 (Grade 10) Geography & Math: Navigate N/S/E/W around hazards to reach the goal!",
+      "speech_fr": "Géographie Année 10 (2nde) : Navigue N/S/E/O autour de la lave vers le trésor !",
+      "obj1_en": "Dodge Lava Cliffs",
+      "obj1_fr": "Éviter la lave",
+      "obj2_en": "Optimal Map Path",
+      "obj2_fr": "Chemin optimal",
+      "btn1_en": [
+        "Learn",
+        "Map"
+      ],
+      "btn1_fr": [
+        "Apprendre",
+        "Carte"
+      ],
+      "btn2_en": [
+        "High",
+        "Foresight"
+      ],
+      "btn2_fr": [
+        "Grande",
+        "Vision"
+      ],
+      "btn3_en": [
+        "Low",
+        "Risk"
+      ],
+      "btn3_fr": [
+        "Moins de",
+        "Risque"
+      ],
+      "preset": {
+        "alpha": 0.35,
+        "gamma": 0.96,
+        "epsilon": 0.1,
+        "use_sarsa": 1.0
+      }
+    },
+    {
+      "level": 4,
+      "lab_id": "cartpole_rl",
+      "title_en": "Y10 L4: Year 10 (Grade 10) Pendulum Forces & Balance",
+      "title_fr": "A10 N4 : Pendule & Équilibre (Année 10 (2nde))",
+      "speech_en": "Year 10 (Grade 10) Physics: Balance torque, inertia, and gravity on the moving cart!",
+      "speech_fr": "Physique Année 10 (2nde) : Équilibre l'inertie et la gravité sur le chariot !",
+      "obj1_en": "Keep Upright",
+      "obj1_fr": "Rester droit",
+      "obj2_en": "300+ Steps",
+      "obj2_fr": "300+ Pas",
+      "btn1_en": [
+        "Train",
+        "Policy"
+      ],
+      "btn1_fr": [
+        "Entraîner",
+        "IA"
+      ],
+      "btn2_en": [
+        "Motor",
+        "Force"
+      ],
+      "btn2_fr": [
+        "Force",
+        "Moteur"
+      ],
+      "btn3_en": [
+        "Calm",
+        "Wind"
+      ],
+      "btn3_fr": [
+        "Calmer",
+        "Vent"
+      ],
+      "preset": {
+        "gravity": 9.8,
+        "force_mag": 13.0,
+        "wind_gust": 0.3
+      }
+    },
+    {
+      "level": 5,
+      "lab_id": "nn_playground",
+      "title_en": "Y10 L5: Year 10 (Grade 10) (x,y) Coordinates & Neural Graph",
+      "title_fr": "A10 N5 : Coordonnées (x,y) & Neurones (Année 10 (2nde))",
+      "speech_en": "Year 10 (Grade 10) Algebra & Biology: Use 16 hidden neurons to separate 2D points!",
+      "speech_fr": "Algèbre Année 10 (2nde) : Utilise 16 neurones cachés pour séparer les points !",
+      "obj1_en": "Curve Boundary",
+      "obj1_fr": "Courber frontière",
+      "obj2_en": "90% Accuracy",
+      "obj2_fr": "Précision 90%",
+      "btn1_en": [
+        "Add",
+        "Neurons"
+      ],
+      "btn1_fr": [
+        "Ajouter",
+        "Neurones"
+      ],
+      "btn2_en": [
+        "Switch",
+        "Dataset"
+      ],
+      "btn2_fr": [
+        "Changer",
+        "Forme"
+      ],
+      "btn3_en": [
+        "Scramble",
+        "Points"
+      ],
+      "btn3_fr": [
+        "Mélanger",
+        "Points"
+      ],
+      "preset": {
+        "dataset_id": 1.0,
+        "hidden_neurons": 16.0,
+        "learning_rate": 0.24
+      }
+    },
+    {
+      "level": 6,
+      "lab_id": "swarm_ecosystem",
+      "title_en": "Y10 L6: Year 10 (Grade 10) Ecosystem Food Web & Genetics",
+      "title_fr": "A10 N6 : Écosystème & Génétique (Année 10 (2nde))",
+      "speech_en": "Year 10 (Grade 10) Life Science: Balance producers (food orbs), prey fish, and predators!",
+      "speech_fr": "Biologie Année 10 (2nde) : Équilibre la chaîne alimentaire et l'essaim !",
+      "obj1_en": "Flock Cohesion",
+      "obj1_fr": "Cohésion groupe",
+      "obj2_en": "Ecosystem Balance",
+      "obj2_fr": "Équilibre vivant",
+      "btn1_en": [
+        "Evolve",
+        "Genes"
+      ],
+      "btn1_fr": [
+        "Évoluer",
+        "Gènes"
+      ],
+      "btn2_en": [
+        "More",
+        "Producers"
+      ],
+      "btn2_fr": [
+        "Plus de",
+        "Plantes"
+      ],
+      "btn3_en": [
+        "Speed",
+        "Adaptation"
+      ],
+      "btn3_fr": [
+        "Vitesse",
+        "Agile"
+      ],
+      "preset": {
+        "num_prey": 40.0,
+        "num_predators": 4.0,
+        "food_count": 32.0
+      }
+    },
+    {
+      "level": 7,
+      "lab_id": "prime_attention",
+      "title_en": "Y10 L7: Year 10 (Grade 10) Reading Context & Memory Vault",
+      "title_fr": "A10 N7 : Lecture & Coffre Mémoire (Année 10 (2nde))",
+      "speech_en": "Year 10 (Grade 10) Reading & CS: Preserve key story clues in the 67 KB PRIME Memory Vault!",
+      "speech_fr": "Lecture & IA Année 10 (2nde) : Garde les indices clés dans le Coffre Mémoire !",
+      "obj1_en": "O(1) RAM Budget",
+      "obj1_fr": "Mémoire O(1)",
+      "obj2_en": "High Recall",
+      "obj2_fr": "Rappel élevé",
+      "btn1_en": [
+        "Add",
+        "Clues"
+      ],
+      "btn1_fr": [
+        "Ajouter",
+        "Indices"
+      ],
+      "btn2_en": [
+        "Expand",
+        "Window"
+      ],
+      "btn2_fr": [
+        "Grande",
+        "Fenêtre"
+      ],
+      "btn3_en": [
+        "Stabilize",
+        "Norm"
+      ],
+      "btn3_fr": [
+        "Stabiliser",
+        "Norme"
+      ],
+      "preset": {
+        "window_size": 64.0,
+        "distractor_gap": 256.0,
+        "use_qk_norm": 1.0
+      }
+    }
+  ]
+}

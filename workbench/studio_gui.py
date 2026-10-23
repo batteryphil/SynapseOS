@@ -537,14 +537,11 @@ class SynapseStudioWindow(Gtk.Window):
 
         self.lesson_lbl = Gtk.Label()
         self.lesson_lbl.set_xalign(0.0)
-        self.lesson_lbl.set_markup("<b><span foreground='#facc15'>★ Pick Your AI Mission:</span></b>")
+        self.lesson_lbl.set_markup("<b><span foreground='#facc15'>★ Pick Your School Subject or AI Mission:</span></b>")
         school_vbox.pack_start(self.lesson_lbl, False, False, 0)
 
         self.lesson_combo = SynapseDropdown()
-        for les in SCHOOL_CURRICULUM:
-            short_title = les["title"] if len(les["title"]) <= 34 else les["title"][:31] + "..."
-            self.lesson_combo.append(les["id"], short_title)
-        self.lesson_combo.set_active_id(self.active_lesson_id)
+        self._populate_lesson_dropdown()
         self.lesson_combo.connect("changed", self._on_lesson_changed)
         school_vbox.pack_start(self.lesson_combo, False, False, 0)
 
@@ -653,7 +650,12 @@ class SynapseStudioWindow(Gtk.Window):
         self.btn_toggle_pin.connect("clicked", self._on_toggle_pin_lock)
         dash_btn_row.pack_start(self.btn_toggle_pin, True, True, 0)
 
-        self.btn_refresh_dash = Gtk.Button(label="↻ Refresh")
+        self.btn_advance_year = Gtk.Button(label="★ Next Year ↻")
+        self.btn_advance_year.set_tooltip_text("Graduate to the next K-12 School Year (wipes old year's pack & keeps transcript scores)")
+        self.btn_advance_year.connect("clicked", lambda _b: self.advance_k12_school_year())
+        dash_btn_row.pack_start(self.btn_advance_year, False, False, 0)
+
+        self.btn_refresh_dash = Gtk.Button(label="↻")
         self.btn_refresh_dash.connect("clicked", lambda _b: self._refresh_teacher_dashboard())
         dash_btn_row.pack_start(self.btn_refresh_dash, False, False, 0)
 
@@ -886,6 +888,57 @@ class SynapseStudioWindow(Gtk.Window):
         self._update_badge_header()
         return was_new
 
+    def _populate_lesson_dropdown(self) -> None:
+        if not hasattr(self, "lesson_combo"):
+            return
+        self.lesson_combo.clear()
+        subj_lessons = self.pack_mgr.get_active_subject_lessons() if hasattr(self, "pack_mgr") else []
+        for les in subj_lessons:
+            raw_title = self._clean_bmp(f"★ {les.get('subject_name', 'Subject').split()[0]}: {les['title']}")
+            short_title = raw_title if len(raw_title) <= 36 else raw_title[:33] + "..."
+            self.lesson_combo.append(les["id"], short_title)
+        for les in SCHOOL_CURRICULUM:
+            short_title = les["title"] if len(les["title"]) <= 34 else les["title"][:31] + "..."
+            self.lesson_combo.append(les["id"], short_title)
+        valid_ids = {iid for iid, _ in self.lesson_combo._items}
+        if self.active_lesson_id not in valid_ids and subj_lessons:
+            self.active_lesson_id = subj_lessons[0]["id"]
+        self.lesson_combo.set_active_id(self.active_lesson_id)
+
+    def advance_k12_school_year(self, target_year: Optional[int] = None) -> Dict[str, Any]:
+        """
+        Graduate to the next K-12 School Year (or set a specific year 1..12):
+          1. Saves the student's Multi-Subject Report Card & Trophies in student_profile.json.
+          2. Wipes the old school year's curriculum pack & scratch files to free potato disk space.
+          3. Installs the new year's 5 Core Subjects (Math, Science, ELA, History, AI) + 7 Visual Labs.
+        """
+        if target_year is not None:
+            res = self.pack_mgr.set_school_year(target_year)
+        else:
+            res = self.pack_mgr.advance_school_year()
+
+        self.earned_badges = set(self.pack_mgr.profile.get("earned_badges", []))
+        self._sync_active_pack_to_levels()
+        self._populate_lesson_dropdown()
+        subj_lessons = self.pack_mgr.get_active_subject_lessons()
+        if subj_lessons:
+            self.active_lesson_id = subj_lessons[0]["id"]
+            self.lesson_combo.set_active_id(self.active_lesson_id)
+            self._refresh_lesson_view()
+            self._load_lesson_coding_challenge()
+        self._update_badge_header()
+        self._refresh_teacher_dashboard()
+        self.kids_view._switch_to_level(0)
+
+        freed_kb = res.get("freed_kb", 0.0)
+        yr_num = res.get("year_number", self.pack_mgr.get_current_school_year())
+        self._set_cortex_message(
+            f"★ GRADUATED TO SCHOOL YEAR {yr_num}: {res.get('new_pack_title')}!\n"
+            f"   • 1-Year-at-a-Time Wiper: Deleted old year files ({freed_kb} KB freed); permanent transcript saved!\n"
+            f"   • Loaded 5 New Core Subjects: Mathematics, Science, Reading/ELA, Social Studies/History & AI Capstone."
+        )
+        return res
+
     def upgrade_learning_pack(self, target_source: Optional[str] = None) -> Dict[str, Any]:
         """
         Upgrade to the next Learning Package (or a specified pack/file/URL):
@@ -900,7 +953,9 @@ class SynapseStudioWindow(Gtk.Window):
 
         self.earned_badges = set(self.pack_mgr.profile.get("earned_badges", []))
         self._sync_active_pack_to_levels()
+        self._populate_lesson_dropdown()
         self._update_badge_header()
+        self._refresh_teacher_dashboard()
 
         # Switch Kid Mode to the first level of the newly installed pack so its presets & title apply immediately
         self.kids_view._switch_to_level(0)
@@ -1185,13 +1240,16 @@ class SynapseStudioWindow(Gtk.Window):
         passed, msg = verify_lesson_goal(lesson, telem)
         if passed:
             was_new = self.pack_mgr.award_badge(lesson["id"], points=150, stars=3)
+            if lesson["id"].startswith("y"):
+                self.pack_mgr.record_subject_grade(lesson["id"], score=100)
             self.earned_badges = set(self.pack_mgr.profile.get("earned_badges", []))
             self._update_badge_header()
             self._refresh_lesson_view()
+            self._refresh_teacher_dashboard()
             if was_new and self.kid_mode:
                 self._populate_sliders()
                 msg += "\n★ BONUS: You unlocked 2 new AI Control Sliders on the left!"
-        self._set_cortex_message(msg)
+        self._set_cortex_message(self._clean_bmp(msg))
 
     def _on_open_lesson_coding(self, _btn: Gtk.Button) -> None:
         self._load_lesson_coding_challenge()
@@ -1211,6 +1269,8 @@ class SynapseStudioWindow(Gtk.Window):
             passed = bool(res.get("ok", True))
             out_txt = res.get("output", "")
             self.pack_mgr.record_sandbox_run(passed=passed, error_snippet="" if passed else out_txt)
+            if passed and self.active_lesson_id.startswith("y"):
+                self.pack_mgr.record_subject_grade(self.active_lesson_id, score=100)
             if hasattr(self, "kids_view"):
                 self.kids_view.set_pet_mood("cheering" if passed else "dizzy", 4.5)
             GLib.idle_add(self.sandbox_out_view.get_buffer().set_text, self._clean_bmp(out_txt))
@@ -1235,6 +1295,10 @@ class SynapseStudioWindow(Gtk.Window):
             self.btn_toggle_pin.set_label(
                 f"◈ PIN Gate: {'ON' if pin_on else 'OFF'} (PIN: {prof.get('teacher_pin', '1234')})"
             )
+
+        cur_yr = self.pack_mgr.get_current_school_year()
+        if hasattr(self, "btn_advance_year"):
+            self.btn_advance_year.set_label(f"★ Yr {cur_yr} ↻")
 
         t_map = prof.get("lab_time_seconds", {})
         r_map = prof.get("lab_runs_count", {})
@@ -1264,6 +1328,22 @@ class SynapseStudioWindow(Gtk.Window):
         missions = prof.get("daily_missions", [])
         done_m = sum(1 for m in missions if m.get("completed"))
 
+        # Build K-12 Multi-Subject Report Card & Rolling Transcript
+        yr_pack = self.pack_mgr.get_active_year_pack()
+        transcript = prof.get("yearly_transcript", {})
+        cur_yr_id = f"year_{cur_yr:02d}"
+        cur_rec = transcript.get(cur_yr_id, {})
+        subj_lines = []
+        for les in yr_pack.get("subject_lessons", []):
+            s_key = les.get("subject_key", "ai_cs")
+            score = int(cur_rec.get(s_key, 100 if les["id"] in self.earned_badges else 0))
+            status_mark = f"{score:3d}% ✓" if score > 0 else "In Progress"
+            s_name = self._clean_bmp(les.get("subject_name", s_key))[:20]
+            subj_lines.append(f"  • {s_name:<20}: {status_mark} ({self._clean_bmp(les['title'])[:26]})")
+
+        grad_years = [yid for yid, rec in sorted(transcript.items()) if rec.get("graduated")]
+        grad_summary = ", ".join(grad_years) if grad_years else "Year 1 in progress (click '★ Yr 1 ↻' to graduate & advance!)"
+
         audit_entries = self.cortex.get_command_audit_log(limit=6) if hasattr(self, "cortex") else []
         if audit_entries:
             audit_lines = [
@@ -1274,14 +1354,17 @@ class SynapseStudioWindow(Gtk.Window):
             audit_lines = ["  • No Linux commands executed in this session yet."]
 
         report = (
-            f"★ PARENT & TEACHER ANALYTICS REPORT\n"
+            f"★ PARENT & TEACHER K-12 REPORT CARD\n"
             f"--------------------------------------------------\n"
             f"▸ Student Cadet:   {prof.get('player_name', 'Cadet Nova')}\n"
-            f"▸ Active Pack:     {prof.get('current_pack_id', 'pack_1_core')}\n"
-            f"▸ Graduated Packs: {len(prof.get('completed_packs', []))} completed\n"
+            f"▸ Active School Yr:Year {cur_yr} (Grade {cur_yr}) — {self._clean_bmp(yr_pack.get('title_en', ''))}\n"
+            f"▸ Active Pack Slot:{prof.get('current_pack_id', 'pack_1_core')} (1-Year-at-a-Time Wiper Active)\n"
+            f"▸ Graduated Years: {grad_summary}\n"
             f"▸ Trophies & Coins:{len(prof.get('earned_badges', []))} Trophies | {prof.get('coins', 250)} Coins | {prof.get('lifetime_points', 300)} pts\n"
             f"▸ Daily Missions:  {done_m}/{len(missions)} completed today\n\n"
-            f"▸ TIME & RUNS PER AI LAB:\n"
+            f"▸ ACTIVE YEAR {cur_yr} MULTI-SUBJECT REPORT CARD:\n"
+            + "\n".join(subj_lines)
+            + f"\n\n▸ TIME & RUNS PER AI LAB:\n"
             + "\n".join(lab_lines)
             + f"\n\n▸ PYTHON CODING SANDBOX ANALYTICS:\n"
             f"  • Code Executions: {total_runs} ({passes} passed, {errors} errors -> {pass_rate}% pass rate)\n"

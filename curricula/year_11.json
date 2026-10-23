@@ -1,0 +1,466 @@
+{
+  "pack_id": "year_11",
+  "pack_number": 11,
+  "school_year": 11,
+  "year_number": 11,
+  "grade_label": "Grade 11 / Junior (Ages 16-17)",
+  "band": "Band D: High School Advanced AI & STEM",
+  "grade_band": "Band D: High School Advanced AI & STEM",
+  "title_en": "Year 11 (Grade 11): Pre-Calculus, Matrices & Taylor Series, Neuroscience, Ethics & PRIME O(1) Attention",
+  "title_fr": "Année 11 (1re) : Matrices & Séries de Taylor, Neurosciences, Éthique & Attention PRIME O(1)",
+  "short_en": "Year 11 (Grade 11)",
+  "short_fr": "Année 11 (1re)",
+  "subjects": [
+    "math",
+    "science",
+    "ela",
+    "history",
+    "ai_cs"
+  ],
+  "subject_lessons": [
+    {
+      "id": "y11_math",
+      "year": 11,
+      "year_number": 11,
+      "subject": "math",
+      "subject_key": "math",
+      "subject_icon": "📐",
+      "subject_name": "Mathematics",
+      "track": "Year 11 (Grade 11 / Junior (Ages 16-17)) — 📐 Mathematics",
+      "title": "Y11 Math (Pre-Calculus & Linear Algebra): Matrices, Dot Products & Taylor Polynomials",
+      "grade_level": "Grade 11 / Junior (Ages 16-17)",
+      "lab_id": "prime_attention",
+      "badge": "🏅 Y11 Math Scholar",
+      "story": "TRADITIONAL PRE-CALCULUS & LINEAR ALGEBRA LESSON (GRADE 11):\n• Dot Product: `q · k = Σ q_i * k_i` measures similarity between two vectors.\n• Second-Order Taylor Series of `e^s` around `s = 0`:\n    `exp(s) ≈ 1 + s + 0.5 * s²`\n  By replacing `exp(q·k / √d)` with its 2nd-order Taylor polynomial, PRIME Moment Attention factors the sum into fixed-size moment tensors `(S₀, S₁, S₂)` that require O(1) memory (`67 KB`) regardless of sequence length!",
+      "steps": [
+        "1. Read the Year 11 (Grade 11 / Junior (Ages 16-17)) 📐 Mathematics lesson above.",
+        "2. Click '▸ 1. Load Preset' to configure the interactive simulation for this subject.",
+        "3. Click '⚡ Turbo +25 Gens' (or open '✎ 3. Python Challenge' and click '▶ Run Code') to complete the assignment.",
+        "4. Click '✓ 2. Check Goal' to record your grade on your Year-by-Year Report Card!"
+      ],
+      "preset_params": {
+        "window_size": 64.0,
+        "distractor_gap": 320.0,
+        "use_qk_norm": 1.0,
+        "lyapunov_bound": 25.0
+      },
+      "goal_metric": "best_ever",
+      "goal_op": ">=",
+      "goal_target": 88.0,
+      "goal_desc": "Complete the Y11 Math (Pre-Calculus & Linear Algebra): Matrices, Dot Products & Taylor Polynomials lab & code check (best_ever >= 88.0)",
+      "coding_challenge": "# 📐 YEAR 11 PRE-CALCULUS LAB: 2nd-Order Taylor Approximation of exp(s)\nimport math\nfor s in [-0.5, -0.2, 0.0, 0.2, 0.5]:\n    exact = math.exp(s)\n    taylor2 = 1.0 + s + 0.5 * (s ** 2)\n    err = abs(exact - taylor2)\n    print(f's={s:5.2f} -> exp(s)={exact:.4f} | Taylor2={taylor2:.4f} | Error={err:.4f}')\n"
+    },
+    {
+      "id": "y11_science",
+      "year": 11,
+      "year_number": 11,
+      "subject": "science",
+      "subject_key": "science",
+      "subject_icon": "🔬",
+      "subject_name": "Science",
+      "track": "Year 11 (Grade 11 / Junior (Ages 16-17)) — 🔬 Science",
+      "title": "Y11 Biology & Neuroscience: Hebbian Synaptic Plasticity, Homeostasis & Lotka-Volterra",
+      "grade_level": "Grade 11 / Junior (Ages 16-17)",
+      "lab_id": "prime_attention",
+      "badge": "🏅 Y11 Science Explorer",
+      "story": "TRADITIONAL NEUROSCIENCE & SYSTEMS BIOLOGY LESSON (GRADE 11):\n• Hebbian Plasticity (\"Neurons that fire together, wire together\"): Outer-product covariance updates `ΔS₁ = k_t v_t^T` store associative memories in synaptic matrices.\n• Homeostatic Regulation: Biological brains prevent runaway seizure excitation using inhibitory normalization—just like QK-Norm and Lyapunov norm projection in PRIME Attention!",
+      "steps": [
+        "1. Read the Year 11 (Grade 11 / Junior (Ages 16-17)) 🔬 Science lesson above.",
+        "2. Click '▸ 1. Load Preset' to configure the interactive simulation for this subject.",
+        "3. Click '⚡ Turbo +25 Gens' (or open '✎ 3. Python Challenge' and click '▶ Run Code') to complete the assignment.",
+        "4. Click '✓ 2. Check Goal' to record your grade on your Year-by-Year Report Card!"
+      ],
+      "preset_params": {
+        "window_size": 64.0,
+        "use_qk_norm": 1.0,
+        "lyapunov_bound": 25.0
+      },
+      "goal_metric": "best_ever",
+      "goal_op": ">=",
+      "goal_target": 88.0,
+      "goal_desc": "Complete the Y11 Biology & Neuroscience: Hebbian Synaptic Plasticity, Homeostasis & Lotka-Volterra lab & code check (best_ever >= 88.0)",
+      "coding_challenge": "# 🔬 YEAR 11 NEUROSCIENCE LAB: Homeostatic Norm Projection (Lyapunov Stability)\nimport math\nstate_vec = [12.0, 16.0, 20.0]\nfrob_norm = math.sqrt(sum(x*x for x in state_vec))\nc_max = 15.0\nscale = min(1.0, c_max / frob_norm)\nprojected = [round(x * scale, 2) for x in state_vec]\nprint(f'Raw Norm: {frob_norm:.2f} -> Projected to C_max={c_max}: {projected}')\n"
+    },
+    {
+      "id": "y11_ela",
+      "year": 11,
+      "year_number": 11,
+      "subject": "ela",
+      "subject_key": "ela",
+      "subject_icon": "📖",
+      "subject_name": "Reading & Language Arts",
+      "track": "Year 11 (Grade 11 / Junior (Ages 16-17)) — 📖 Reading & Language Arts",
+      "title": "Y11 ELA: Reading Scientific Papers, Abstract Writing & Technical Seminars",
+      "grade_level": "Grade 11 / Junior (Ages 16-17)",
+      "lab_id": "prime_attention",
+      "badge": "🏅 Y11 Literary Thinker",
+      "story": "TRADITIONAL LANGUAGE ARTS LESSON (GRADE 11):\nEvery peer-reviewed computer science or physics paper begins with a 4-part Abstract:\n  1. Context & Problem (e.g., Standard Transformer KV-cache grows as O(L), exhausting RAM on edge devices).\n  2. Proposed Method (Hybrid Sliding-Window + 2nd-Order PRIME Moment Attention).\n  3. Quantitative Results (Constant 67.03 KB state, 180,000+ tok/s in C99).\n  4. Conclusion & Impact.",
+      "steps": [
+        "1. Read the Year 11 (Grade 11 / Junior (Ages 16-17)) 📖 Reading & Language Arts lesson above.",
+        "2. Click '▸ 1. Load Preset' to configure the interactive simulation for this subject.",
+        "3. Click '⚡ Turbo +25 Gens' (or open '✎ 3. Python Challenge' and click '▶ Run Code') to complete the assignment.",
+        "4. Click '✓ 2. Check Goal' to record your grade on your Year-by-Year Report Card!"
+      ],
+      "preset_params": {
+        "window_size": 64.0,
+        "use_qk_norm": 1.0
+      },
+      "goal_metric": "best_ever",
+      "goal_op": ">=",
+      "goal_target": 88.0,
+      "goal_desc": "Complete the Y11 ELA: Reading Scientific Papers, Abstract Writing & Technical Seminars lab & code check (best_ever >= 88.0)",
+      "coding_challenge": "# 📖 YEAR 11 SCIENTIFIC ABSTRACT VERIFIER\nabstract_sections = ['Problem: O(L) KV-Cache', 'Method: Taylor2 Moment State', 'Result: 67.03 KB O(1)', 'Impact: Edge AI']\nfor i, sec in enumerate(abstract_sections, 1):\n    print(f'[{i}/4] {sec}')\n"
+    },
+    {
+      "id": "y11_history",
+      "year": 11,
+      "year_number": 11,
+      "subject": "history",
+      "subject_key": "history",
+      "subject_icon": "🌍",
+      "subject_name": "Social Studies & History",
+      "track": "Year 11 (Grade 11 / Junior (Ages 16-17)) — 🌍 Social Studies & History",
+      "title": "Y11 Civics, Law & AI Ethics: Student Privacy (FERPA/COPPA) & Open-Source Licensing",
+      "grade_level": "Grade 11 / Junior (Ages 16-17)",
+      "lab_id": "prime_attention",
+      "badge": "🏅 Y11 Historian & Citizen",
+      "story": "TRADITIONAL PUBLIC POLICY & ETHICS LESSON (GRADE 11):\n• Privacy Laws (FERPA & COPPA) protect student records from unauthorized cloud collection.\n• Software Licensing: Open-source licenses (MIT, ISC, GPL) allow inspection and modification, whereas proprietary EULAs forbid copying or reverse-engineering code— while general mathematical and architectural ideas remain free for clean-room implementation.",
+      "steps": [
+        "1. Read the Year 11 (Grade 11 / Junior (Ages 16-17)) 🌍 Social Studies & History lesson above.",
+        "2. Click '▸ 1. Load Preset' to configure the interactive simulation for this subject.",
+        "3. Click '⚡ Turbo +25 Gens' (or open '✎ 3. Python Challenge' and click '▶ Run Code') to complete the assignment.",
+        "4. Click '✓ 2. Check Goal' to record your grade on your Year-by-Year Report Card!"
+      ],
+      "preset_params": {
+        "window_size": 64.0,
+        "use_qk_norm": 1.0
+      },
+      "goal_metric": "best_ever",
+      "goal_op": ">=",
+      "goal_target": 88.0,
+      "goal_desc": "Complete the Y11 Civics, Law & AI Ethics: Student Privacy (FERPA/COPPA) & Open-Source Licensing lab & code check (best_ever >= 88.0)",
+      "coding_challenge": "# ⚖️ YEAR 11 AI ETHICS & PRIVACY AUDIT\naudit = {'cloud_telemetry_sent_bytes': 0, 'local_ram_mb': 57.5, 'clean_room_open_source': True}\nprint('Classroom Privacy & License Audit:', audit)\nassert audit['cloud_telemetry_sent_bytes'] == 0\n"
+    },
+    {
+      "id": "y11_ai_cs",
+      "year": 11,
+      "year_number": 11,
+      "subject": "ai_cs",
+      "subject_key": "ai_cs",
+      "subject_icon": "🤖",
+      "subject_name": "AI & Coding Assignment",
+      "track": "Year 11 (Grade 11 / Junior (Ages 16-17)) — 🤖 AI & Coding Assignment",
+      "title": "Y11 AI Assignment: Benchmarking PRIME O(1) Moment Attention vs. Sliding Window",
+      "grade_level": "Grade 11 / Junior (Ages 16-17)",
+      "lab_id": "prime_attention",
+      "badge": "🏆 Y11 AI Graduate",
+      "story": "YEAR 11 BUILT-IN AI ASSIGNMENT:\nRun the PRIME Moment Sliding-Window Lab in Python, comparing recall with QK-Norm enabled vs. disabled across long distractor gaps!",
+      "steps": [
+        "1. Read the Year 11 (Grade 11 / Junior (Ages 16-17)) 🤖 AI & Coding Assignment lesson above.",
+        "2. Click '▸ 1. Load Preset' to configure the interactive simulation for this subject.",
+        "3. Click '⚡ Turbo +25 Gens' (or open '✎ 3. Python Challenge' and click '▶ Run Code') to complete the assignment.",
+        "4. Click '✓ 2. Check Goal' to record your grade on your Year-by-Year Report Card!"
+      ],
+      "preset_params": {
+        "window_size": 64.0,
+        "distractor_gap": 256.0,
+        "use_qk_norm": 1.0
+      },
+      "goal_metric": "best_ever",
+      "goal_op": ">=",
+      "goal_target": 88.0,
+      "goal_desc": "Complete the Y11 AI Assignment: Benchmarking PRIME O(1) Moment Attention vs. Sliding Window lab & code check (best_ever >= 88.0)",
+      "coding_challenge": "# 🤖 YEAR 11 AI CAPSTONE: PRIME O(1) Memory Vault Benchmark\nfrom workbench.labs.prime_attention_lab import PrimeAttentionLab\n\nlab = PrimeAttentionLab()\nlab.update_param('use_qk_norm', 1.0)\nt = lab.fast_forward_generations(15)\nprint(f\"PRIME Recall Score: {t['best_ever']}% | C99 Kernel Speed: {lab.c_bench['tokens_per_sec']:,.0f} tok/s\")\n"
+    }
+  ],
+  "kid_levels": [
+    {
+      "level": 1,
+      "lab_id": "moon_lander",
+      "title_en": "Y11 L1: Year 11 (Grade 11) Space Lander (Physics & Math)",
+      "title_fr": "A11 N1 : Fusée Spatiale (Année 11 (1re))",
+      "speech_en": "Welcome to Year 11 (Grade 11)! Apply your Math & Science forces (Gravity=3.6) to land softly!",
+      "speech_fr": "Bienvenue en Année 11 (1re) ! Utilise les forces physiques (Gravité=3.6) pour atterrir !",
+      "obj1_en": "Apply Force Balance",
+      "obj1_fr": "Équilibrer les forces",
+      "obj2_en": "Soft Touchdown",
+      "obj2_fr": "Atterrissage doux",
+      "btn1_en": [
+        "Train AI",
+        "Pilot"
+      ],
+      "btn1_fr": [
+        "Entraîner",
+        "Pilote"
+      ],
+      "btn2_en": [
+        "Boost",
+        "Fuel"
+      ],
+      "btn2_fr": [
+        "Plus de",
+        "Carburant"
+      ],
+      "btn3_en": [
+        "Tune",
+        "Gravity"
+      ],
+      "btn3_fr": [
+        "Ajuster",
+        "Gravité"
+      ],
+      "preset": {
+        "gravity": 3.6,
+        "wind": 0.5,
+        "fuel_capacity": 150.0
+      }
+    },
+    {
+      "level": 2,
+      "lab_id": "raycast_car",
+      "title_en": "Y11 L2: Year 11 (Grade 11) Lidar Geometry & Waves",
+      "title_fr": "A11 N2 : Géométrie Laser Lidar (Année 11 (1re))",
+      "speech_en": "Year 11 (Grade 11) Geometry Lab: Use 5 laser angle beams (185px) to steer cleanly!",
+      "speech_fr": "Labo Géométrie Année 11 (1re) : Utilise les 5 rayons laser (185px) !",
+      "obj1_en": "Zero Wall Hits",
+      "obj1_fr": "Zéro collision",
+      "obj2_en": "Complete Circuit",
+      "obj2_fr": "Circuit complet",
+      "btn1_en": [
+        "Evolve",
+        "Brain"
+      ],
+      "btn1_fr": [
+        "Évoluer",
+        "Cerveau"
+      ],
+      "btn2_en": [
+        "Extend",
+        "Lasers"
+      ],
+      "btn2_fr": [
+        "Allonger",
+        "Lasers"
+      ],
+      "btn3_en": [
+        "Adjust",
+        "Speed"
+      ],
+      "btn3_fr": [
+        "Régler",
+        "Vitesse"
+      ],
+      "preset": {
+        "sensor_range": 185.0,
+        "max_speed": 6.4,
+        "track_width": 32.0
+      }
+    },
+    {
+      "level": 3,
+      "lab_id": "rl_gridworld",
+      "title_en": "Y11 L3: Year 11 (Grade 11) Compass Map & Probability Maze",
+      "title_fr": "A11 N3 : Carte & Labyrinthe (Année 11 (1re))",
+      "speech_en": "Year 11 (Grade 11) Geography & Math: Navigate N/S/E/W around hazards to reach the goal!",
+      "speech_fr": "Géographie Année 11 (1re) : Navigue N/S/E/O autour de la lave vers le trésor !",
+      "obj1_en": "Dodge Lava Cliffs",
+      "obj1_fr": "Éviter la lave",
+      "obj2_en": "Optimal Map Path",
+      "obj2_fr": "Chemin optimal",
+      "btn1_en": [
+        "Learn",
+        "Map"
+      ],
+      "btn1_fr": [
+        "Apprendre",
+        "Carte"
+      ],
+      "btn2_en": [
+        "High",
+        "Foresight"
+      ],
+      "btn2_fr": [
+        "Grande",
+        "Vision"
+      ],
+      "btn3_en": [
+        "Low",
+        "Risk"
+      ],
+      "btn3_fr": [
+        "Moins de",
+        "Risque"
+      ],
+      "preset": {
+        "alpha": 0.35,
+        "gamma": 0.96,
+        "epsilon": 0.1,
+        "use_sarsa": 1.0
+      }
+    },
+    {
+      "level": 4,
+      "lab_id": "cartpole_rl",
+      "title_en": "Y11 L4: Year 11 (Grade 11) Pendulum Forces & Balance",
+      "title_fr": "A11 N4 : Pendule & Équilibre (Année 11 (1re))",
+      "speech_en": "Year 11 (Grade 11) Physics: Balance torque, inertia, and gravity on the moving cart!",
+      "speech_fr": "Physique Année 11 (1re) : Équilibre l'inertie et la gravité sur le chariot !",
+      "obj1_en": "Keep Upright",
+      "obj1_fr": "Rester droit",
+      "obj2_en": "300+ Steps",
+      "obj2_fr": "300+ Pas",
+      "btn1_en": [
+        "Train",
+        "Policy"
+      ],
+      "btn1_fr": [
+        "Entraîner",
+        "IA"
+      ],
+      "btn2_en": [
+        "Motor",
+        "Force"
+      ],
+      "btn2_fr": [
+        "Force",
+        "Moteur"
+      ],
+      "btn3_en": [
+        "Calm",
+        "Wind"
+      ],
+      "btn3_fr": [
+        "Calmer",
+        "Vent"
+      ],
+      "preset": {
+        "gravity": 9.8,
+        "force_mag": 13.0,
+        "wind_gust": 0.32
+      }
+    },
+    {
+      "level": 5,
+      "lab_id": "nn_playground",
+      "title_en": "Y11 L5: Year 11 (Grade 11) (x,y) Coordinates & Neural Graph",
+      "title_fr": "A11 N5 : Coordonnées (x,y) & Neurones (Année 11 (1re))",
+      "speech_en": "Year 11 (Grade 11) Algebra & Biology: Use 17 hidden neurons to separate 2D points!",
+      "speech_fr": "Algèbre Année 11 (1re) : Utilise 17 neurones cachés pour séparer les points !",
+      "obj1_en": "Curve Boundary",
+      "obj1_fr": "Courber frontière",
+      "obj2_en": "90% Accuracy",
+      "obj2_fr": "Précision 90%",
+      "btn1_en": [
+        "Add",
+        "Neurons"
+      ],
+      "btn1_fr": [
+        "Ajouter",
+        "Neurones"
+      ],
+      "btn2_en": [
+        "Switch",
+        "Dataset"
+      ],
+      "btn2_fr": [
+        "Changer",
+        "Forme"
+      ],
+      "btn3_en": [
+        "Scramble",
+        "Points"
+      ],
+      "btn3_fr": [
+        "Mélanger",
+        "Points"
+      ],
+      "preset": {
+        "dataset_id": 2.0,
+        "hidden_neurons": 17.0,
+        "learning_rate": 0.24
+      }
+    },
+    {
+      "level": 6,
+      "lab_id": "swarm_ecosystem",
+      "title_en": "Y11 L6: Year 11 (Grade 11) Ecosystem Food Web & Genetics",
+      "title_fr": "A11 N6 : Écosystème & Génétique (Année 11 (1re))",
+      "speech_en": "Year 11 (Grade 11) Life Science: Balance producers (food orbs), prey fish, and predators!",
+      "speech_fr": "Biologie Année 11 (1re) : Équilibre la chaîne alimentaire et l'essaim !",
+      "obj1_en": "Flock Cohesion",
+      "obj1_fr": "Cohésion groupe",
+      "obj2_en": "Ecosystem Balance",
+      "obj2_fr": "Équilibre vivant",
+      "btn1_en": [
+        "Evolve",
+        "Genes"
+      ],
+      "btn1_fr": [
+        "Évoluer",
+        "Gènes"
+      ],
+      "btn2_en": [
+        "More",
+        "Producers"
+      ],
+      "btn2_fr": [
+        "Plus de",
+        "Plantes"
+      ],
+      "btn3_en": [
+        "Speed",
+        "Adaptation"
+      ],
+      "btn3_fr": [
+        "Vitesse",
+        "Agile"
+      ],
+      "preset": {
+        "num_prey": 40.0,
+        "num_predators": 4.0,
+        "food_count": 32.0
+      }
+    },
+    {
+      "level": 7,
+      "lab_id": "prime_attention",
+      "title_en": "Y11 L7: Year 11 (Grade 11) Reading Context & Memory Vault",
+      "title_fr": "A11 N7 : Lecture & Coffre Mémoire (Année 11 (1re))",
+      "speech_en": "Year 11 (Grade 11) Reading & CS: Preserve key story clues in the 67 KB PRIME Memory Vault!",
+      "speech_fr": "Lecture & IA Année 11 (1re) : Garde les indices clés dans le Coffre Mémoire !",
+      "obj1_en": "O(1) RAM Budget",
+      "obj1_fr": "Mémoire O(1)",
+      "obj2_en": "High Recall",
+      "obj2_fr": "Rappel élevé",
+      "btn1_en": [
+        "Add",
+        "Clues"
+      ],
+      "btn1_fr": [
+        "Ajouter",
+        "Indices"
+      ],
+      "btn2_en": [
+        "Expand",
+        "Window"
+      ],
+      "btn2_fr": [
+        "Grande",
+        "Fenêtre"
+      ],
+      "btn3_en": [
+        "Stabilize",
+        "Norm"
+      ],
+      "btn3_fr": [
+        "Stabiliser",
+        "Norme"
+      ],
+      "preset": {
+        "window_size": 64.0,
+        "distractor_gap": 256.0,
+        "use_qk_norm": 1.0
+      }
+    }
+  ]
+}

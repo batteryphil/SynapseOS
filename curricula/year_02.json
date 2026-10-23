@@ -1,0 +1,471 @@
+{
+  "pack_id": "year_02",
+  "pack_number": 2,
+  "school_year": 2,
+  "year_number": 2,
+  "grade_label": "Grade 2 (Ages 7-8)",
+  "band": "Band A: Elementary Discovery",
+  "grade_band": "Band A: Elementary Discovery",
+  "title_en": "Year 2 (Grade 2): Place Value, Habitats & Food Chains, Nouns/Verbs & Continents",
+  "title_fr": "Année 2 (CE1) : Unités/Dizaines, Chaînes Alimentaires, Grammaire & Continents",
+  "short_en": "Year 2 (Grade 2)",
+  "short_fr": "Année 2 (CE1)",
+  "subjects": [
+    "math",
+    "science",
+    "ela",
+    "history",
+    "ai_cs"
+  ],
+  "subject_lessons": [
+    {
+      "id": "y02_math",
+      "year": 2,
+      "year_number": 2,
+      "subject": "math",
+      "subject_key": "math",
+      "subject_icon": "📐",
+      "subject_name": "Mathematics",
+      "track": "Year 2 (Grade 2 (Ages 7-8)) — 📐 Mathematics",
+      "title": "Y2 Math: Place Value (Hundreds, Tens, Ones) & 2-Digit Addition",
+      "grade_level": "Grade 2 (Ages 7-8)",
+      "lab_id": "swarm_ecosystem",
+      "badge": "🏅 Y2 Math Scholar",
+      "story": "TRADITIONAL MATH LESSON (GRADE 2):\nIn a 3-digit number like 245:\n  • 2 is in the Hundreds place (200)\n  • 4 is in the Tens place (40)\n  • 5 is in the Ones place (5)\nWe also classify numbers as Even (0, 2, 4, 6, 8) or Odd (1, 3, 5, 7, 9).",
+      "steps": [
+        "1. Read the Year 2 (Grade 2 (Ages 7-8)) 📐 Mathematics lesson above.",
+        "2. Click '▸ 1. Load Preset' to configure the interactive simulation for this subject.",
+        "3. Click '⚡ Turbo +25 Gens' (or open '✎ 3. Python Challenge' and click '▶ Run Code') to complete the assignment.",
+        "4. Click '✓ 2. Check Goal' to record your grade on your Year-by-Year Report Card!"
+      ],
+      "preset_params": {
+        "num_prey": 40.0,
+        "num_predators": 3.0,
+        "food_count": 35.0
+      },
+      "goal_metric": "best_ever",
+      "goal_op": ">=",
+      "goal_target": 120.0,
+      "goal_desc": "Complete the Y2 Math: Place Value (Hundreds, Tens, Ones) & 2-Digit Addition lab & code check (best_ever >= 120.0)",
+      "coding_challenge": "# 📐 YEAR 2 MATH ASSIGNMENT: Place Value Breakdown\nscore = 245\nhundreds = score // 100\ntens = (score % 100) // 10\nones = score % 10\nprint(f'{score} = {hundreds} hundreds + {tens} tens + {ones} ones')\nassert hundreds * 100 + tens * 10 + ones == score\n"
+    },
+    {
+      "id": "y02_science",
+      "year": 2,
+      "year_number": 2,
+      "subject": "science",
+      "subject_key": "science",
+      "subject_icon": "🔬",
+      "subject_name": "Science",
+      "track": "Year 2 (Grade 2 (Ages 7-8)) — 🔬 Science",
+      "title": "Y2 Science: States of Matter (Solid, Liquid, Gas) & Ocean Food Chains",
+      "grade_level": "Grade 2 (Ages 7-8)",
+      "lab_id": "swarm_ecosystem",
+      "badge": "🏅 Y2 Science Explorer",
+      "story": "TRADITIONAL SCIENCE LESSON (GRADE 2):\n1. States of Matter: Ice is a Solid, ocean water is a Liquid, and air/steam is a Gas.\n2. Ocean Habitat Food Chain:\n   Sunlight & Kelp (Producers) -> Green Fish (Prey Herbivores) -> Red Sharks (Predators).\n   Every living thing needs energy from food to survive and grow!",
+      "steps": [
+        "1. Read the Year 2 (Grade 2 (Ages 7-8)) 🔬 Science lesson above.",
+        "2. Click '▸ 1. Load Preset' to configure the interactive simulation for this subject.",
+        "3. Click '⚡ Turbo +25 Gens' (or open '✎ 3. Python Challenge' and click '▶ Run Code') to complete the assignment.",
+        "4. Click '✓ 2. Check Goal' to record your grade on your Year-by-Year Report Card!"
+      ],
+      "preset_params": {
+        "num_prey": 40.0,
+        "num_predators": 3.0,
+        "food_count": 35.0
+      },
+      "goal_metric": "best_ever",
+      "goal_op": ">=",
+      "goal_target": 120.0,
+      "goal_desc": "Complete the Y2 Science: States of Matter (Solid, Liquid, Gas) & Ocean Food Chains lab & code check (best_ever >= 120.0)",
+      "coding_challenge": "# 🔬 YEAR 2 SCIENCE LAB: Ocean Food Chain Energy\nkelp_orbs = 35\ngreen_fish = 40\nred_sharks = 3\nprint(f'Food Chain: {kelp_orbs} Kelp -> {green_fish} Fish -> {red_sharks} Sharks')\nassert green_fish > red_sharks, 'A healthy habitat has more prey than predators!'\n"
+    },
+    {
+      "id": "y02_ela",
+      "year": 2,
+      "year_number": 2,
+      "subject": "ela",
+      "subject_key": "ela",
+      "subject_icon": "📖",
+      "subject_name": "Reading & Language Arts",
+      "track": "Year 2 (Grade 2 (Ages 7-8)) — 📖 Reading & Language Arts",
+      "title": "Y2 Reading & Grammar: Nouns, Action Verbs & Finding the Main Idea",
+      "grade_level": "Grade 2 (Ages 7-8)",
+      "lab_id": "swarm_ecosystem",
+      "badge": "🏅 Y2 Literary Thinker",
+      "story": "TRADITIONAL LANGUAGE ARTS LESSON (GRADE 2):\n• A NOUN is a person, place, or thing (like `rocket`, `ocean`, `fish`, `star`).\n• A VERB is an action word that tells what a noun does (like `swim`, `dodge`, `steer`, `land`).\n• Main Idea: The most important point an author wants you to learn in a paragraph.",
+      "steps": [
+        "1. Read the Year 2 (Grade 2 (Ages 7-8)) 📖 Reading & Language Arts lesson above.",
+        "2. Click '▸ 1. Load Preset' to configure the interactive simulation for this subject.",
+        "3. Click '⚡ Turbo +25 Gens' (or open '✎ 3. Python Challenge' and click '▶ Run Code') to complete the assignment.",
+        "4. Click '✓ 2. Check Goal' to record your grade on your Year-by-Year Report Card!"
+      ],
+      "preset_params": {
+        "num_prey": 38.0,
+        "num_predators": 3.0,
+        "food_count": 32.0
+      },
+      "goal_metric": "best_ever",
+      "goal_op": ">=",
+      "goal_target": 110.0,
+      "goal_desc": "Complete the Y2 Reading & Grammar: Nouns, Action Verbs & Finding the Main Idea lab & code check (best_ever >= 110.0)",
+      "coding_challenge": "# 📖 YEAR 2 GRAMMAR LAB: Sorting Nouns and Action Verbs\nnouns = ['fish', 'shark', 'ocean', 'kelp']\nverbs = ['swim', 'dodge', 'gather', 'learn']\nfor n, v in zip(nouns, verbs):\n    print(f'The {n} (NOUN) can {v} (VERB)!')\nassert len(nouns) == 4 and len(verbs) == 4\n"
+    },
+    {
+      "id": "y02_history",
+      "year": 2,
+      "year_number": 2,
+      "subject": "history",
+      "subject_key": "history",
+      "subject_icon": "🌍",
+      "subject_name": "Social Studies & History",
+      "track": "Year 2 (Grade 2 (Ages 7-8)) — 🌍 Social Studies & History",
+      "title": "Y2 Social Studies: The 7 Continents, 5 Oceans & Timelines",
+      "grade_level": "Grade 2 (Ages 7-8)",
+      "lab_id": "rl_gridworld",
+      "badge": "🏅 Y2 Historian & Citizen",
+      "story": "TRADITIONAL SOCIAL STUDIES LESSON (GRADE 2):\nEarth has 7 Continents (North America, South America, Europe, Africa, Asia, Australia, Antarctica) and 5 Oceans (Pacific, Atlantic, Indian, Southern, Arctic).\nHistorians use a Timeline to order events from Past -> Present -> Future!",
+      "steps": [
+        "1. Read the Year 2 (Grade 2 (Ages 7-8)) 🌍 Social Studies & History lesson above.",
+        "2. Click '▸ 1. Load Preset' to configure the interactive simulation for this subject.",
+        "3. Click '⚡ Turbo +25 Gens' (or open '✎ 3. Python Challenge' and click '▶ Run Code') to complete the assignment.",
+        "4. Click '✓ 2. Check Goal' to record your grade on your Year-by-Year Report Card!"
+      ],
+      "preset_params": {
+        "goal_reward": 140.0,
+        "lava_penalty": -100.0,
+        "alpha": 0.45,
+        "epsilon": 0.08,
+        "max_ep_steps": 120.0
+      },
+      "goal_metric": "generation",
+      "goal_op": ">=",
+      "goal_target": 15.0,
+      "goal_desc": "Complete the Y2 Social Studies: The 7 Continents, 5 Oceans & Timelines lab & code check (generation >= 15.0)",
+      "coding_challenge": "# 🌍 YEAR 2 GEOGRAPHY CHECK: 7 Continents & 5 Oceans\ncontinents = ['North America', 'South America', 'Europe', 'Africa', 'Asia', 'Australia', 'Antarctica']\noceans = ['Pacific', 'Atlantic', 'Indian', 'Southern', 'Arctic']\nprint(f'Earth has {len(continents)} Continents and {len(oceans)} Oceans!')\nassert len(continents) == 7 and len(oceans) == 5\n"
+    },
+    {
+      "id": "y02_ai_cs",
+      "year": 2,
+      "year_number": 2,
+      "subject": "ai_cs",
+      "subject_key": "ai_cs",
+      "subject_icon": "🤖",
+      "subject_name": "AI & Coding Assignment",
+      "track": "Year 2 (Grade 2 (Ages 7-8)) — 🤖 AI & Coding Assignment",
+      "title": "Y2 AI Assignment: Rewards vs. Penalties in the Maze & Ocean",
+      "grade_level": "Grade 2 (Ages 7-8)",
+      "lab_id": "rl_gridworld",
+      "badge": "🏆 Y2 AI Graduate",
+      "story": "YEAR 2 BUILT-IN AI ASSIGNMENT:\nHow does an AI know what is good or bad? We give it a Positive Number (+150) for finding treasure and a Negative Number (-100) for stepping in lava!",
+      "steps": [
+        "1. Read the Year 2 (Grade 2 (Ages 7-8)) 🤖 AI & Coding Assignment lesson above.",
+        "2. Click '▸ 1. Load Preset' to configure the interactive simulation for this subject.",
+        "3. Click '⚡ Turbo +25 Gens' (or open '✎ 3. Python Challenge' and click '▶ Run Code') to complete the assignment.",
+        "4. Click '✓ 2. Check Goal' to record your grade on your Year-by-Year Report Card!"
+      ],
+      "preset_params": {
+        "goal_reward": 150.0,
+        "lava_penalty": -100.0,
+        "alpha": 0.45,
+        "epsilon": 0.08,
+        "max_ep_steps": 120.0
+      },
+      "goal_metric": "generation",
+      "goal_op": ">=",
+      "goal_target": 15.0,
+      "goal_desc": "Complete the Y2 AI Assignment: Rewards vs. Penalties in the Maze & Ocean lab & code check (generation >= 15.0)",
+      "coding_challenge": "# 🤖 YEAR 2 AI CAPSTONE: Tuning Rewards & Penalties\nfrom workbench.labs.rl_gridworld import RLGridWorldLab\n\nlab = RLGridWorldLab()\nlab.update_param('goal_reward', 150.0)\nlab.update_param('lava_penalty', -100.0)\nstats = lab.fast_forward_generations(35)\nprint(f\"Year 2 Maze AI Wins: {stats['species']} | Best Return: {stats['best_ever']}\")\n"
+    }
+  ],
+  "kid_levels": [
+    {
+      "level": 1,
+      "lab_id": "moon_lander",
+      "title_en": "Y2 L1: Year 2 (Grade 2) Space Lander (Physics & Math)",
+      "title_fr": "A2 N1 : Fusée Spatiale (Année 2 (CE1))",
+      "speech_en": "Welcome to Year 2 (Grade 2)! Apply your Math & Science forces (Gravity=1.62) to land softly!",
+      "speech_fr": "Bienvenue en Année 2 (CE1) ! Utilise les forces physiques (Gravité=1.62) pour atterrir !",
+      "obj1_en": "Apply Force Balance",
+      "obj1_fr": "Équilibrer les forces",
+      "obj2_en": "Soft Touchdown",
+      "obj2_fr": "Atterrissage doux",
+      "btn1_en": [
+        "Train AI",
+        "Pilot"
+      ],
+      "btn1_fr": [
+        "Entraîner",
+        "Pilote"
+      ],
+      "btn2_en": [
+        "Boost",
+        "Fuel"
+      ],
+      "btn2_fr": [
+        "Plus de",
+        "Carburant"
+      ],
+      "btn3_en": [
+        "Tune",
+        "Gravity"
+      ],
+      "btn3_fr": [
+        "Ajuster",
+        "Gravité"
+      ],
+      "preset": {
+        "gravity": 1.62,
+        "wind": 0.05,
+        "fuel_capacity": 186.0
+      }
+    },
+    {
+      "level": 2,
+      "lab_id": "raycast_car",
+      "title_en": "Y2 L2: Year 2 (Grade 2) Lidar Geometry & Waves",
+      "title_fr": "A2 N2 : Géométrie Laser Lidar (Année 2 (CE1))",
+      "speech_en": "Year 2 (Grade 2) Geometry Lab: Use 5 laser angle beams (131px) to steer cleanly!",
+      "speech_fr": "Labo Géométrie Année 2 (CE1) : Utilise les 5 rayons laser (131px) !",
+      "obj1_en": "Zero Wall Hits",
+      "obj1_fr": "Zéro collision",
+      "obj2_en": "Complete Circuit",
+      "obj2_fr": "Circuit complet",
+      "btn1_en": [
+        "Evolve",
+        "Brain"
+      ],
+      "btn1_fr": [
+        "Évoluer",
+        "Cerveau"
+      ],
+      "btn2_en": [
+        "Extend",
+        "Lasers"
+      ],
+      "btn2_fr": [
+        "Allonger",
+        "Lasers"
+      ],
+      "btn3_en": [
+        "Adjust",
+        "Speed"
+      ],
+      "btn3_fr": [
+        "Régler",
+        "Vitesse"
+      ],
+      "preset": {
+        "sensor_range": 131.0,
+        "max_speed": 4.4,
+        "track_width": 42.8
+      }
+    },
+    {
+      "level": 3,
+      "lab_id": "rl_gridworld",
+      "title_en": "Y2 L3: Year 2 (Grade 2) Compass Map & Probability Maze",
+      "title_fr": "A2 N3 : Carte & Labyrinthe (Année 2 (CE1))",
+      "speech_en": "Year 2 (Grade 2) Geography & Math: Navigate N/S/E/W around hazards to reach the goal!",
+      "speech_fr": "Géographie Année 2 (CE1) : Navigue N/S/E/O autour de la lave vers le trésor !",
+      "obj1_en": "Dodge Lava Cliffs",
+      "obj1_fr": "Éviter la lave",
+      "obj2_en": "Optimal Map Path",
+      "obj2_fr": "Chemin optimal",
+      "btn1_en": [
+        "Learn",
+        "Map"
+      ],
+      "btn1_fr": [
+        "Apprendre",
+        "Carte"
+      ],
+      "btn2_en": [
+        "High",
+        "Foresight"
+      ],
+      "btn2_fr": [
+        "Grande",
+        "Vision"
+      ],
+      "btn3_en": [
+        "Low",
+        "Risk"
+      ],
+      "btn3_fr": [
+        "Moins de",
+        "Risque"
+      ],
+      "preset": {
+        "alpha": 0.35,
+        "gamma": 0.96,
+        "epsilon": 0.1,
+        "use_sarsa": 0.0
+      }
+    },
+    {
+      "level": 4,
+      "lab_id": "cartpole_rl",
+      "title_en": "Y2 L4: Year 2 (Grade 2) Pendulum Forces & Balance",
+      "title_fr": "A2 N4 : Pendule & Équilibre (Année 2 (CE1))",
+      "speech_en": "Year 2 (Grade 2) Physics: Balance torque, inertia, and gravity on the moving cart!",
+      "speech_fr": "Physique Année 2 (CE1) : Équilibre l'inertie et la gravité sur le chariot !",
+      "obj1_en": "Keep Upright",
+      "obj1_fr": "Rester droit",
+      "obj2_en": "300+ Steps",
+      "obj2_fr": "300+ Pas",
+      "btn1_en": [
+        "Train",
+        "Policy"
+      ],
+      "btn1_fr": [
+        "Entraîner",
+        "IA"
+      ],
+      "btn2_en": [
+        "Motor",
+        "Force"
+      ],
+      "btn2_fr": [
+        "Force",
+        "Moteur"
+      ],
+      "btn3_en": [
+        "Calm",
+        "Wind"
+      ],
+      "btn3_fr": [
+        "Calmer",
+        "Vent"
+      ],
+      "preset": {
+        "gravity": 9.8,
+        "force_mag": 13.0,
+        "wind_gust": 0.14
+      }
+    },
+    {
+      "level": 5,
+      "lab_id": "nn_playground",
+      "title_en": "Y2 L5: Year 2 (Grade 2) (x,y) Coordinates & Neural Graph",
+      "title_fr": "A2 N5 : Coordonnées (x,y) & Neurones (Année 2 (CE1))",
+      "speech_en": "Year 2 (Grade 2) Algebra & Biology: Use 8 hidden neurons to separate 2D points!",
+      "speech_fr": "Algèbre Année 2 (CE1) : Utilise 8 neurones cachés pour séparer les points !",
+      "obj1_en": "Curve Boundary",
+      "obj1_fr": "Courber frontière",
+      "obj2_en": "90% Accuracy",
+      "obj2_fr": "Précision 90%",
+      "btn1_en": [
+        "Add",
+        "Neurons"
+      ],
+      "btn1_fr": [
+        "Ajouter",
+        "Neurones"
+      ],
+      "btn2_en": [
+        "Switch",
+        "Dataset"
+      ],
+      "btn2_fr": [
+        "Changer",
+        "Forme"
+      ],
+      "btn3_en": [
+        "Scramble",
+        "Points"
+      ],
+      "btn3_fr": [
+        "Mélanger",
+        "Points"
+      ],
+      "preset": {
+        "dataset_id": 1.0,
+        "hidden_neurons": 8.0,
+        "learning_rate": 0.24
+      }
+    },
+    {
+      "level": 6,
+      "lab_id": "swarm_ecosystem",
+      "title_en": "Y2 L6: Year 2 (Grade 2) Ecosystem Food Web & Genetics",
+      "title_fr": "A2 N6 : Écosystème & Génétique (Année 2 (CE1))",
+      "speech_en": "Year 2 (Grade 2) Life Science: Balance producers (food orbs), prey fish, and predators!",
+      "speech_fr": "Biologie Année 2 (CE1) : Équilibre la chaîne alimentaire et l'essaim !",
+      "obj1_en": "Flock Cohesion",
+      "obj1_fr": "Cohésion groupe",
+      "obj2_en": "Ecosystem Balance",
+      "obj2_fr": "Équilibre vivant",
+      "btn1_en": [
+        "Evolve",
+        "Genes"
+      ],
+      "btn1_fr": [
+        "Évoluer",
+        "Gènes"
+      ],
+      "btn2_en": [
+        "More",
+        "Producers"
+      ],
+      "btn2_fr": [
+        "Plus de",
+        "Plantes"
+      ],
+      "btn3_en": [
+        "Speed",
+        "Adaptation"
+      ],
+      "btn3_fr": [
+        "Vitesse",
+        "Agile"
+      ],
+      "preset": {
+        "num_prey": 40.0,
+        "num_predators": 4.0,
+        "food_count": 32.0
+      }
+    },
+    {
+      "level": 7,
+      "lab_id": "prime_attention",
+      "title_en": "Y2 L7: Year 2 (Grade 2) Reading Context & Memory Vault",
+      "title_fr": "A2 N7 : Lecture & Coffre Mémoire (Année 2 (CE1))",
+      "speech_en": "Year 2 (Grade 2) Reading & CS: Preserve key story clues in the 67 KB PRIME Memory Vault!",
+      "speech_fr": "Lecture & IA Année 2 (CE1) : Garde les indices clés dans le Coffre Mémoire !",
+      "obj1_en": "O(1) RAM Budget",
+      "obj1_fr": "Mémoire O(1)",
+      "obj2_en": "High Recall",
+      "obj2_fr": "Rappel élevé",
+      "btn1_en": [
+        "Add",
+        "Clues"
+      ],
+      "btn1_fr": [
+        "Ajouter",
+        "Indices"
+      ],
+      "btn2_en": [
+        "Expand",
+        "Window"
+      ],
+      "btn2_fr": [
+        "Grande",
+        "Fenêtre"
+      ],
+      "btn3_en": [
+        "Stabilize",
+        "Norm"
+      ],
+      "btn3_fr": [
+        "Stabiliser",
+        "Norme"
+      ],
+      "preset": {
+        "window_size": 64.0,
+        "distractor_gap": 256.0,
+        "use_qk_norm": 1.0
+      }
+    }
+  ]
+}

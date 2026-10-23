@@ -1,0 +1,464 @@
+{
+  "pack_id": "year_04",
+  "pack_number": 4,
+  "school_year": 4,
+  "year_number": 4,
+  "grade_label": "Grade 4 (Ages 9-10)",
+  "band": "Band B: Upper Elementary & Intro Python",
+  "grade_band": "Band B: Upper Elementary & Intro Python",
+  "title_en": "Year 4 (Grade 4): Angles & Decimals, Light/Laser Waves, Summaries & Explorers",
+  "title_fr": "Année 4 (CM1) : Angles & Décimaux, Ondes Laser, Résumés & Explorateurs",
+  "short_en": "Year 4 (Grade 4)",
+  "short_fr": "Année 4 (CM1)",
+  "subjects": [
+    "math",
+    "science",
+    "ela",
+    "history",
+    "ai_cs"
+  ],
+  "subject_lessons": [
+    {
+      "id": "y04_math",
+      "year": 4,
+      "year_number": 4,
+      "subject": "math",
+      "subject_key": "math",
+      "subject_icon": "📐",
+      "subject_name": "Mathematics",
+      "track": "Year 4 (Grade 4 (Ages 9-10)) — 📐 Mathematics",
+      "title": "Y4 Math: Angles (Acute, Right, Obtuse) & Decimal Tenths/Hundredths",
+      "grade_level": "Grade 4 (Ages 9-10)",
+      "lab_id": "raycast_car",
+      "badge": "🏅 Y4 Math Scholar",
+      "story": "TRADITIONAL MATH LESSON (GRADE 4):\n• Angles measure how much a line turns in degrees (°):\n  - Acute Angle: smaller than 90° (like our Lidar beams at 30° and 60°!)\n  - Right Angle: a square corner of exactly 90°\n  - Obtuse Angle: between 90° and 180°\n• Decimals: 0.25 is 2 tenths + 5 hundredths (25/100 or 1/4).",
+      "steps": [
+        "1. Read the Year 4 (Grade 4 (Ages 9-10)) 📐 Mathematics lesson above.",
+        "2. Click '▸ 1. Load Preset' to configure the interactive simulation for this subject.",
+        "3. Click '⚡ Turbo +25 Gens' (or open '✎ 3. Python Challenge' and click '▶ Run Code') to complete the assignment.",
+        "4. Click '✓ 2. Check Goal' to record your grade on your Year-by-Year Report Card!"
+      ],
+      "preset_params": {
+        "sensor_range": 140.0,
+        "max_speed": 4.5,
+        "track_width": 42.0
+      },
+      "goal_metric": "best_ever",
+      "goal_op": ">=",
+      "goal_target": 140.0,
+      "goal_desc": "Complete the Y4 Math: Angles (Acute, Right, Obtuse) & Decimal Tenths/Hundredths lab & code check (best_ever >= 140.0)",
+      "coding_challenge": "# 📐 YEAR 4 MATH ASSIGNMENT: Classifying Lidar Beam Angles\nangles_deg = [30, 60, 90, 120]\nfor a in angles_deg:\n    kind = 'Acute' if a < 90 else ('Right' if a == 90 else 'Obtuse')\n    print(f'{a:3d} degrees -> {kind} Angle')\n"
+    },
+    {
+      "id": "y04_science",
+      "year": 4,
+      "year_number": 4,
+      "subject": "science",
+      "subject_key": "science",
+      "subject_icon": "🔬",
+      "subject_name": "Science",
+      "track": "Year 4 (Grade 4 (Ages 9-10)) — 🔬 Science",
+      "title": "Y4 Science: Light Waves, Laser Reflection & Kinetic vs. Potential Energy",
+      "grade_level": "Grade 4 (Ages 9-10)",
+      "lab_id": "raycast_car",
+      "badge": "🏅 Y4 Science Explorer",
+      "story": "TRADITIONAL SCIENCE LESSON (GRADE 4):\n• Light & Lasers travel in straight waves until they bounce off an obstacle (Reflection). Lidar (Light Detection and Ranging) measures how far away a wall is using 5 laser beams!\n• Potential Energy is stored energy (a rocket high in the sky); Kinetic Energy is energy of motion (a fast racecar).",
+      "steps": [
+        "1. Read the Year 4 (Grade 4 (Ages 9-10)) 🔬 Science lesson above.",
+        "2. Click '▸ 1. Load Preset' to configure the interactive simulation for this subject.",
+        "3. Click '⚡ Turbo +25 Gens' (or open '✎ 3. Python Challenge' and click '▶ Run Code') to complete the assignment.",
+        "4. Click '✓ 2. Check Goal' to record your grade on your Year-by-Year Report Card!"
+      ],
+      "preset_params": {
+        "sensor_range": 150.0,
+        "max_speed": 5.0,
+        "track_width": 40.0
+      },
+      "goal_metric": "best_ever",
+      "goal_op": ">=",
+      "goal_target": 140.0,
+      "goal_desc": "Complete the Y4 Science: Light Waves, Laser Reflection & Kinetic vs. Potential Energy lab & code check (best_ever >= 140.0)",
+      "coding_challenge": "# 🔬 YEAR 4 SCIENCE LAB: Lidar Distance & Kinetic Motion\nfrom workbench.labs.raycast_car import NEATRaycastCarLab\nlab = NEATRaycastCarLab()\ncar = lab.cars[0]\nrays = lab._cast_rays(car)\nprint('5 Laser Beam Normalized Readings:', [round(r, 2) for r in rays])\n"
+    },
+    {
+      "id": "y04_ela",
+      "year": 4,
+      "year_number": 4,
+      "subject": "ela",
+      "subject_key": "ela",
+      "subject_icon": "📖",
+      "subject_name": "Reading & Language Arts",
+      "track": "Year 4 (Grade 4 (Ages 9-10)) — 📖 Reading & Language Arts",
+      "title": "Y4 Reading & Writing: Nonfiction Summaries, Similes & Metaphors",
+      "grade_level": "Grade 4 (Ages 9-10)",
+      "lab_id": "raycast_car",
+      "badge": "🏅 Y4 Literary Thinker",
+      "story": "TRADITIONAL LANGUAGE ARTS LESSON (GRADE 4):\n• A Simile compares two things using 'like' or 'as': \"The Lidar beams swept the road like a lighthouse.\"\n• A Metaphor compares directly: \"The neural network is the driver's brain.\"\n• Writing a Summary: State the main idea + 2 key supporting facts in your own words.",
+      "steps": [
+        "1. Read the Year 4 (Grade 4 (Ages 9-10)) 📖 Reading & Language Arts lesson above.",
+        "2. Click '▸ 1. Load Preset' to configure the interactive simulation for this subject.",
+        "3. Click '⚡ Turbo +25 Gens' (or open '✎ 3. Python Challenge' and click '▶ Run Code') to complete the assignment.",
+        "4. Click '✓ 2. Check Goal' to record your grade on your Year-by-Year Report Card!"
+      ],
+      "preset_params": {
+        "sensor_range": 140.0,
+        "max_speed": 4.8
+      },
+      "goal_metric": "best_ever",
+      "goal_op": ">=",
+      "goal_target": 140.0,
+      "goal_desc": "Complete the Y4 Reading & Writing: Nonfiction Summaries, Similes & Metaphors lab & code check (best_ever >= 140.0)",
+      "coding_challenge": "# 📖 YEAR 4 ELA LAB: Identifying Similes vs. Metaphors\ns1 = 'The laser car corners like a cheetah.'\nis_simile = 'like' in s1 or ' as ' in s1\nprint(f'Sentence: {s1} -> Simile: {is_simile}')\nassert is_simile is True\n"
+    },
+    {
+      "id": "y04_history",
+      "year": 4,
+      "year_number": 4,
+      "subject": "history",
+      "subject_key": "history",
+      "subject_icon": "🌍",
+      "subject_name": "Social Studies & History",
+      "track": "Year 4 (Grade 4 (Ages 9-10)) — 🌍 Social Studies & History",
+      "title": "Y4 Social Studies: Age of Exploration, Navigation Instruments & Maps",
+      "grade_level": "Grade 4 (Ages 9-10)",
+      "lab_id": "raycast_car",
+      "badge": "🏅 Y4 Historian & Citizen",
+      "story": "TRADITIONAL SOCIAL STUDIES LESSON (GRADE 4):\nFor centuries, explorers used magnetic compasses, astrolabes, and star charts to navigate across unknown oceans without hitting reefs. Today, autonomous vehicles use Lidar, radar, and digital waypoint maps!",
+      "steps": [
+        "1. Read the Year 4 (Grade 4 (Ages 9-10)) 🌍 Social Studies & History lesson above.",
+        "2. Click '▸ 1. Load Preset' to configure the interactive simulation for this subject.",
+        "3. Click '⚡ Turbo +25 Gens' (or open '✎ 3. Python Challenge' and click '▶ Run Code') to complete the assignment.",
+        "4. Click '✓ 2. Check Goal' to record your grade on your Year-by-Year Report Card!"
+      ],
+      "preset_params": {
+        "sensor_range": 150.0,
+        "track_width": 42.0
+      },
+      "goal_metric": "best_ever",
+      "goal_op": ">=",
+      "goal_target": 140.0,
+      "goal_desc": "Complete the Y4 Social Studies: Age of Exploration, Navigation Instruments & Maps lab & code check (best_ever >= 140.0)",
+      "coding_challenge": "# 🧭 YEAR 4 HISTORY & NAVIGATION LAB: Counting Track Waypoints\nfrom workbench.labs.raycast_car import NEATRaycastCarLab\nlab = NEATRaycastCarLab()\nprint(f'Circuit has {len(lab.waypoints)} navigation waypoints around the track!')\nassert len(lab.waypoints) == 24\n"
+    },
+    {
+      "id": "y04_ai_cs",
+      "year": 4,
+      "year_number": 4,
+      "subject": "ai_cs",
+      "subject_key": "ai_cs",
+      "subject_icon": "🤖",
+      "subject_name": "AI & Coding Assignment",
+      "track": "Year 4 (Grade 4 (Ages 9-10)) — 🤖 AI & Coding Assignment",
+      "title": "Y4 AI Assignment: Python For-Loops Testing 3 Lidar Sensor Ranges",
+      "grade_level": "Grade 4 (Ages 9-10)",
+      "lab_id": "raycast_car",
+      "badge": "🏆 Y4 AI Graduate",
+      "story": "YEAR 4 BUILT-IN AI ASSIGNMENT:\nWrite a Python `for` loop that tests 3 different Lidar `sensor_range` distances (60, 120, and 180 pixels) and compares how far the self-driving car travels!",
+      "steps": [
+        "1. Read the Year 4 (Grade 4 (Ages 9-10)) 🤖 AI & Coding Assignment lesson above.",
+        "2. Click '▸ 1. Load Preset' to configure the interactive simulation for this subject.",
+        "3. Click '⚡ Turbo +25 Gens' (or open '✎ 3. Python Challenge' and click '▶ Run Code') to complete the assignment.",
+        "4. Click '✓ 2. Check Goal' to record your grade on your Year-by-Year Report Card!"
+      ],
+      "preset_params": {
+        "sensor_range": 160.0,
+        "max_speed": 5.0
+      },
+      "goal_metric": "best_ever",
+      "goal_op": ">=",
+      "goal_target": 140.0,
+      "goal_desc": "Complete the Y4 AI Assignment: Python For-Loops Testing 3 Lidar Sensor Ranges lab & code check (best_ever >= 140.0)",
+      "coding_challenge": "# 🤖 YEAR 4 AI CAPSTONE: Lidar Sensor Sweep in Python\nfrom workbench.labs.raycast_car import NEATRaycastCarLab\n\nfor rng in [60.0, 120.0, 180.0]:\n    lab = NEATRaycastCarLab()\n    lab.update_param('sensor_range', rng)\n    t = lab.fast_forward_generations(5)\n    print(f\"Lidar Range {rng:5.1f}px -> Best Score: {t['best_ever']:6.1f}\")\n"
+    }
+  ],
+  "kid_levels": [
+    {
+      "level": 1,
+      "lab_id": "moon_lander",
+      "title_en": "Y4 L1: Year 4 (Grade 4) Space Lander (Physics & Math)",
+      "title_fr": "A4 N1 : Fusée Spatiale (Année 4 (CM1))",
+      "speech_en": "Welcome to Year 4 (Grade 4)! Apply your Math & Science forces (Gravity=2.06) to land softly!",
+      "speech_fr": "Bienvenue en Année 4 (CM1) ! Utilise les forces physiques (Gravité=2.06) pour atterrir !",
+      "obj1_en": "Apply Force Balance",
+      "obj1_fr": "Équilibrer les forces",
+      "obj2_en": "Soft Touchdown",
+      "obj2_fr": "Atterrissage doux",
+      "btn1_en": [
+        "Train AI",
+        "Pilot"
+      ],
+      "btn1_fr": [
+        "Entraîner",
+        "Pilote"
+      ],
+      "btn2_en": [
+        "Boost",
+        "Fuel"
+      ],
+      "btn2_fr": [
+        "Plus de",
+        "Carburant"
+      ],
+      "btn3_en": [
+        "Tune",
+        "Gravity"
+      ],
+      "btn3_fr": [
+        "Ajuster",
+        "Gravité"
+      ],
+      "preset": {
+        "gravity": 2.06,
+        "wind": 0.15,
+        "fuel_capacity": 178.0
+      }
+    },
+    {
+      "level": 2,
+      "lab_id": "raycast_car",
+      "title_en": "Y4 L2: Year 4 (Grade 4) Lidar Geometry & Waves",
+      "title_fr": "A4 N2 : Géométrie Laser Lidar (Année 4 (CM1))",
+      "speech_en": "Year 4 (Grade 4) Geometry Lab: Use 5 laser angle beams (143px) to steer cleanly!",
+      "speech_fr": "Labo Géométrie Année 4 (CM1) : Utilise les 5 rayons laser (143px) !",
+      "obj1_en": "Zero Wall Hits",
+      "obj1_fr": "Zéro collision",
+      "obj2_en": "Complete Circuit",
+      "obj2_fr": "Circuit complet",
+      "btn1_en": [
+        "Evolve",
+        "Brain"
+      ],
+      "btn1_fr": [
+        "Évoluer",
+        "Cerveau"
+      ],
+      "btn2_en": [
+        "Extend",
+        "Lasers"
+      ],
+      "btn2_fr": [
+        "Allonger",
+        "Lasers"
+      ],
+      "btn3_en": [
+        "Adjust",
+        "Speed"
+      ],
+      "btn3_fr": [
+        "Régler",
+        "Vitesse"
+      ],
+      "preset": {
+        "sensor_range": 143.0,
+        "max_speed": 4.9,
+        "track_width": 40.4
+      }
+    },
+    {
+      "level": 3,
+      "lab_id": "rl_gridworld",
+      "title_en": "Y4 L3: Year 4 (Grade 4) Compass Map & Probability Maze",
+      "title_fr": "A4 N3 : Carte & Labyrinthe (Année 4 (CM1))",
+      "speech_en": "Year 4 (Grade 4) Geography & Math: Navigate N/S/E/W around hazards to reach the goal!",
+      "speech_fr": "Géographie Année 4 (CM1) : Navigue N/S/E/O autour de la lave vers le trésor !",
+      "obj1_en": "Dodge Lava Cliffs",
+      "obj1_fr": "Éviter la lave",
+      "obj2_en": "Optimal Map Path",
+      "obj2_fr": "Chemin optimal",
+      "btn1_en": [
+        "Learn",
+        "Map"
+      ],
+      "btn1_fr": [
+        "Apprendre",
+        "Carte"
+      ],
+      "btn2_en": [
+        "High",
+        "Foresight"
+      ],
+      "btn2_fr": [
+        "Grande",
+        "Vision"
+      ],
+      "btn3_en": [
+        "Low",
+        "Risk"
+      ],
+      "btn3_fr": [
+        "Moins de",
+        "Risque"
+      ],
+      "preset": {
+        "alpha": 0.35,
+        "gamma": 0.96,
+        "epsilon": 0.1,
+        "use_sarsa": 0.0
+      }
+    },
+    {
+      "level": 4,
+      "lab_id": "cartpole_rl",
+      "title_en": "Y4 L4: Year 4 (Grade 4) Pendulum Forces & Balance",
+      "title_fr": "A4 N4 : Pendule & Équilibre (Année 4 (CM1))",
+      "speech_en": "Year 4 (Grade 4) Physics: Balance torque, inertia, and gravity on the moving cart!",
+      "speech_fr": "Physique Année 4 (CM1) : Équilibre l'inertie et la gravité sur le chariot !",
+      "obj1_en": "Keep Upright",
+      "obj1_fr": "Rester droit",
+      "obj2_en": "300+ Steps",
+      "obj2_fr": "300+ Pas",
+      "btn1_en": [
+        "Train",
+        "Policy"
+      ],
+      "btn1_fr": [
+        "Entraîner",
+        "IA"
+      ],
+      "btn2_en": [
+        "Motor",
+        "Force"
+      ],
+      "btn2_fr": [
+        "Force",
+        "Moteur"
+      ],
+      "btn3_en": [
+        "Calm",
+        "Wind"
+      ],
+      "btn3_fr": [
+        "Calmer",
+        "Vent"
+      ],
+      "preset": {
+        "gravity": 9.8,
+        "force_mag": 13.0,
+        "wind_gust": 0.18
+      }
+    },
+    {
+      "level": 5,
+      "lab_id": "nn_playground",
+      "title_en": "Y4 L5: Year 4 (Grade 4) (x,y) Coordinates & Neural Graph",
+      "title_fr": "A4 N5 : Coordonnées (x,y) & Neurones (Année 4 (CM1))",
+      "speech_en": "Year 4 (Grade 4) Algebra & Biology: Use 10 hidden neurons to separate 2D points!",
+      "speech_fr": "Algèbre Année 4 (CM1) : Utilise 10 neurones cachés pour séparer les points !",
+      "obj1_en": "Curve Boundary",
+      "obj1_fr": "Courber frontière",
+      "obj2_en": "90% Accuracy",
+      "obj2_fr": "Précision 90%",
+      "btn1_en": [
+        "Add",
+        "Neurons"
+      ],
+      "btn1_fr": [
+        "Ajouter",
+        "Neurones"
+      ],
+      "btn2_en": [
+        "Switch",
+        "Dataset"
+      ],
+      "btn2_fr": [
+        "Changer",
+        "Forme"
+      ],
+      "btn3_en": [
+        "Scramble",
+        "Points"
+      ],
+      "btn3_fr": [
+        "Mélanger",
+        "Points"
+      ],
+      "preset": {
+        "dataset_id": 3.0,
+        "hidden_neurons": 10.0,
+        "learning_rate": 0.24
+      }
+    },
+    {
+      "level": 6,
+      "lab_id": "swarm_ecosystem",
+      "title_en": "Y4 L6: Year 4 (Grade 4) Ecosystem Food Web & Genetics",
+      "title_fr": "A4 N6 : Écosystème & Génétique (Année 4 (CM1))",
+      "speech_en": "Year 4 (Grade 4) Life Science: Balance producers (food orbs), prey fish, and predators!",
+      "speech_fr": "Biologie Année 4 (CM1) : Équilibre la chaîne alimentaire et l'essaim !",
+      "obj1_en": "Flock Cohesion",
+      "obj1_fr": "Cohésion groupe",
+      "obj2_en": "Ecosystem Balance",
+      "obj2_fr": "Équilibre vivant",
+      "btn1_en": [
+        "Evolve",
+        "Genes"
+      ],
+      "btn1_fr": [
+        "Évoluer",
+        "Gènes"
+      ],
+      "btn2_en": [
+        "More",
+        "Producers"
+      ],
+      "btn2_fr": [
+        "Plus de",
+        "Plantes"
+      ],
+      "btn3_en": [
+        "Speed",
+        "Adaptation"
+      ],
+      "btn3_fr": [
+        "Vitesse",
+        "Agile"
+      ],
+      "preset": {
+        "num_prey": 40.0,
+        "num_predators": 4.0,
+        "food_count": 32.0
+      }
+    },
+    {
+      "level": 7,
+      "lab_id": "prime_attention",
+      "title_en": "Y4 L7: Year 4 (Grade 4) Reading Context & Memory Vault",
+      "title_fr": "A4 N7 : Lecture & Coffre Mémoire (Année 4 (CM1))",
+      "speech_en": "Year 4 (Grade 4) Reading & CS: Preserve key story clues in the 67 KB PRIME Memory Vault!",
+      "speech_fr": "Lecture & IA Année 4 (CM1) : Garde les indices clés dans le Coffre Mémoire !",
+      "obj1_en": "O(1) RAM Budget",
+      "obj1_fr": "Mémoire O(1)",
+      "obj2_en": "High Recall",
+      "obj2_fr": "Rappel élevé",
+      "btn1_en": [
+        "Add",
+        "Clues"
+      ],
+      "btn1_fr": [
+        "Ajouter",
+        "Indices"
+      ],
+      "btn2_en": [
+        "Expand",
+        "Window"
+      ],
+      "btn2_fr": [
+        "Grande",
+        "Fenêtre"
+      ],
+      "btn3_en": [
+        "Stabilize",
+        "Norm"
+      ],
+      "btn3_fr": [
+        "Stabiliser",
+        "Norme"
+      ],
+      "preset": {
+        "window_size": 64.0,
+        "distractor_gap": 256.0,
+        "use_qk_norm": 1.0
+      }
+    }
+  ]
+}

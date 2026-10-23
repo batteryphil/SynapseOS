@@ -1,0 +1,472 @@
+{
+  "pack_id": "year_07",
+  "pack_number": 7,
+  "school_year": 7,
+  "year_number": 7,
+  "grade_label": "Grade 7 (Ages 12-13)",
+  "band": "Band C: Middle School Foundations",
+  "grade_band": "Band C: Middle School Foundations",
+  "title_en": "Year 7 (Grade 7): Linear Equations & Probability, Newton's Laws, Natural Selection & Reward Shaping",
+  "title_fr": "Année 7 (5e) : Équations Linéaires & Probabilités, Lois de Newton & Sélection Naturelle",
+  "short_en": "Year 7 (Grade 7)",
+  "short_fr": "Année 7 (5e)",
+  "subjects": [
+    "math",
+    "science",
+    "ela",
+    "history",
+    "ai_cs"
+  ],
+  "subject_lessons": [
+    {
+      "id": "y07_math",
+      "year": 7,
+      "year_number": 7,
+      "subject": "math",
+      "subject_key": "math",
+      "subject_icon": "📐",
+      "subject_name": "Mathematics",
+      "track": "Year 7 (Grade 7 (Ages 12-13)) — 📐 Mathematics",
+      "title": "Y7 Math: Linear Equations (y = mx + b) & Probability (0.0 to 1.0)",
+      "grade_level": "Grade 7 (Ages 12-13)",
+      "lab_id": "nn_playground",
+      "badge": "🏅 Y7 Math Scholar",
+      "story": "TRADITIONAL MATH LESSON (GRADE 7):\n• A Linear Equation `y = m * x + b` has a Slope `m` (rate of change) and a y-intercept `b` (bias!).\n  Notice that a single neuron computes `z = w * x + b`—the weight `w` IS the slope `m`, and the bias `b` IS the intercept!\n• Probability ranges from `0.0` (impossible) to `1.0` (certain). In RL, `epsilon = 0.15` means a 15% chance of exploring!",
+      "steps": [
+        "1. Read the Year 7 (Grade 7 (Ages 12-13)) 📐 Mathematics lesson above.",
+        "2. Click '▸ 1. Load Preset' to configure the interactive simulation for this subject.",
+        "3. Click '⚡ Turbo +25 Gens' (or open '✎ 3. Python Challenge' and click '▶ Run Code') to complete the assignment.",
+        "4. Click '✓ 2. Check Goal' to record your grade on your Year-by-Year Report Card!"
+      ],
+      "preset_params": {
+        "dataset_id": 2.0,
+        "hidden_neurons": 10.0,
+        "learning_rate": 0.25,
+        "steps_per_frame": 15.0
+      },
+      "goal_metric": "best_ever",
+      "goal_op": ">=",
+      "goal_target": 82.0,
+      "goal_desc": "Complete the Y7 Math: Linear Equations (y = mx + b) & Probability (0.0 to 1.0) lab & code check (best_ever >= 82.0)",
+      "coding_challenge": "# 📐 YEAR 7 MATH ASSIGNMENT: y = mx + b as a Single Neuron\nw_slope = 2.5\nb_intercept = -0.4\nfor x in [-1.0, 0.0, 1.0, 2.0]:\n    y = w_slope * x + b_intercept\n    print(f'x = {x:4.1f} -> y = {w_slope}*{x} + ({b_intercept}) = {y:5.2f}')\n"
+    },
+    {
+      "id": "y07_science",
+      "year": 7,
+      "year_number": 7,
+      "subject": "science",
+      "subject_key": "science",
+      "subject_icon": "🔬",
+      "subject_name": "Science",
+      "track": "Year 7 (Grade 7 (Ages 12-13)) — 🔬 Science",
+      "title": "Y7 Science: Newton's Three Laws of Motion (F = ma) & Natural Selection",
+      "grade_level": "Grade 7 (Ages 12-13)",
+      "lab_id": "cartpole_rl",
+      "badge": "🏅 Y7 Science Explorer",
+      "story": "TRADITIONAL SCIENCE LESSON (GRADE 7):\n• Newton's 1st Law (Inertia): An object in motion stays in motion unless acted on by a net force.\n• Newton's 2nd Law: Force = Mass × Acceleration (`F = m * a`, so `a = F / m`).\n• Newton's 3rd Law: Every action has an equal and opposite reaction (rocket exhaust pushes down; rocket accelerates up!).\n• Darwin's Natural Selection: Organisms with beneficial genetic traits survive and pass their genes to offspring.",
+      "steps": [
+        "1. Read the Year 7 (Grade 7 (Ages 12-13)) 🔬 Science lesson above.",
+        "2. Click '▸ 1. Load Preset' to configure the interactive simulation for this subject.",
+        "3. Click '⚡ Turbo +25 Gens' (or open '✎ 3. Python Challenge' and click '▶ Run Code') to complete the assignment.",
+        "4. Click '✓ 2. Check Goal' to record your grade on your Year-by-Year Report Card!"
+      ],
+      "preset_params": {
+        "gravity": 9.8,
+        "force_mag": 14.0,
+        "wind_gust": 0.25
+      },
+      "goal_metric": "best_ever",
+      "goal_op": ">=",
+      "goal_target": 280.0,
+      "goal_desc": "Complete the Y7 Science: Newton's Three Laws of Motion (F = ma) & Natural Selection lab & code check (best_ever >= 280.0)",
+      "coding_challenge": "# 🔬 YEAR 7 PHYSICS LAB: Newton's 2nd Law (a = F / m)\nforce_newtons = 15.0\nmass_kg = 1.1\nacceleration = force_newtons / mass_kg\nprint(f'Force={force_newtons}N, Mass={mass_kg}kg -> Acceleration a = {acceleration:.2f} m/s^2')\nassert round(acceleration, 2) == 13.64\n"
+    },
+    {
+      "id": "y07_ela",
+      "year": 7,
+      "year_number": 7,
+      "subject": "ela",
+      "subject_key": "ela",
+      "subject_icon": "📖",
+      "subject_name": "Reading & Language Arts",
+      "track": "Year 7 (Grade 7 (Ages 12-13)) — 📖 Reading & Language Arts",
+      "title": "Y7 ELA: Cause vs. Correlation, Logical Fallacies & Structured Lab Reports",
+      "grade_level": "Grade 7 (Ages 12-13)",
+      "lab_id": "swarm_ecosystem",
+      "badge": "🏅 Y7 Literary Thinker",
+      "story": "TRADITIONAL LANGUAGE ARTS LESSON (GRADE 7):\nIn persuasive and scientific writing, avoid Logical Fallacies:\n• False Cause (Correlation vs. Causation): Just because two events happen together doesn't mean one caused the other! To prove causation in science and AI, change ONE variable at a time (a Controlled Experiment).",
+      "steps": [
+        "1. Read the Year 7 (Grade 7 (Ages 12-13)) 📖 Reading & Language Arts lesson above.",
+        "2. Click '▸ 1. Load Preset' to configure the interactive simulation for this subject.",
+        "3. Click '⚡ Turbo +25 Gens' (or open '✎ 3. Python Challenge' and click '▶ Run Code') to complete the assignment.",
+        "4. Click '✓ 2. Check Goal' to record your grade on your Year-by-Year Report Card!"
+      ],
+      "preset_params": {
+        "num_prey": 40.0,
+        "num_predators": 4.0,
+        "mutation_sigma": 0.22
+      },
+      "goal_metric": "best_ever",
+      "goal_op": ">=",
+      "goal_target": 135.0,
+      "goal_desc": "Complete the Y7 ELA: Cause vs. Correlation, Logical Fallacies & Structured Lab Reports lab & code check (best_ever >= 135.0)",
+      "coding_challenge": "# 📖 YEAR 7 SCIENTIFIC WRITING CHECK: Controlled Experiment Variables\nindependent_variable = 'mutation_sigma'\ndependent_variable = 'best_prey_score'\ncontrolled_variables = ['num_prey', 'num_predators', 'food_count']\nprint(f'Testing {independent_variable} -> Measuring {dependent_variable} (Holding {controlled_variables} constant)')\n"
+    },
+    {
+      "id": "y07_history",
+      "year": 7,
+      "year_number": 7,
+      "subject": "history",
+      "subject_key": "history",
+      "subject_icon": "🌍",
+      "subject_name": "Social Studies & History",
+      "track": "Year 7 (Grade 7 (Ages 12-13)) — 🌍 Social Studies & History",
+      "title": "Y7 World History: The Scientific Revolution, Printing Press & Global Exchange",
+      "grade_level": "Grade 7 (Ages 12-13)",
+      "lab_id": "moon_lander",
+      "badge": "🏅 Y7 Historian & Citizen",
+      "story": "TRADITIONAL WORLD HISTORY LESSON (GRADE 7):\nDuring the Renaissance and Scientific Revolution (1450–1700), Gutenberg's printing press spread knowledge rapidly, while Galileo, Kepler, and Isaac Newton replaced guesswork with mathematical laws of motion and empirical experiments.",
+      "steps": [
+        "1. Read the Year 7 (Grade 7 (Ages 12-13)) 🌍 Social Studies & History lesson above.",
+        "2. Click '▸ 1. Load Preset' to configure the interactive simulation for this subject.",
+        "3. Click '⚡ Turbo +25 Gens' (or open '✎ 3. Python Challenge' and click '▶ Run Code') to complete the assignment.",
+        "4. Click '✓ 2. Check Goal' to record your grade on your Year-by-Year Report Card!"
+      ],
+      "preset_params": {
+        "gravity": 2.2,
+        "wind": 0.4,
+        "landing_bonus": 280.0,
+        "thruster_power": 2.15,
+        "fuel_capacity": 200.0
+      },
+      "goal_metric": "best_ever",
+      "goal_op": ">=",
+      "goal_target": 120.0,
+      "goal_desc": "Complete the Y7 World History: The Scientific Revolution, Printing Press & Global Exchange lab & code check (best_ever >= 120.0)",
+      "coding_challenge": "# 📜 YEAR 7 HISTORY TIMELINE: Milestones of the Scientific Revolution\nmilestones = [(1440, 'Gutenberg Printing Press'), (1609, 'Galileo Telescope & Motion'), (1687, 'Newton Principia Mathematica')]\nfor year, event in milestones:\n    print(f'{year}: {event}')\n"
+    },
+    {
+      "id": "y07_ai_cs",
+      "year": 7,
+      "year_number": 7,
+      "subject": "ai_cs",
+      "subject_key": "ai_cs",
+      "subject_icon": "🤖",
+      "subject_name": "AI & Coding Assignment",
+      "track": "Year 7 (Grade 7 (Ages 12-13)) — 🤖 AI & Coding Assignment",
+      "title": "Y7 AI Assignment: Stopping Reward Hacking with Potential-Based Shaping",
+      "grade_level": "Grade 7 (Ages 12-13)",
+      "lab_id": "moon_lander",
+      "badge": "🏆 Y7 AI Graduate",
+      "story": "YEAR 7 BUILT-IN AI ASSIGNMENT:\nDesign a custom Python reward shaping function that prevents rockets from hovering forever and rewards soft touchdowns!",
+      "steps": [
+        "1. Read the Year 7 (Grade 7 (Ages 12-13)) 🤖 AI & Coding Assignment lesson above.",
+        "2. Click '▸ 1. Load Preset' to configure the interactive simulation for this subject.",
+        "3. Click '⚡ Turbo +25 Gens' (or open '✎ 3. Python Challenge' and click '▶ Run Code') to complete the assignment.",
+        "4. Click '✓ 2. Check Goal' to record your grade on your Year-by-Year Report Card!"
+      ],
+      "preset_params": {
+        "gravity": 2.2,
+        "wind": 0.45,
+        "landing_bonus": 280.0,
+        "thruster_power": 2.15,
+        "fuel_capacity": 200.0
+      },
+      "goal_metric": "best_ever",
+      "goal_op": ">=",
+      "goal_target": 120.0,
+      "goal_desc": "Complete the Y7 AI Assignment: Stopping Reward Hacking with Potential-Based Shaping lab & code check (best_ever >= 120.0)",
+      "coding_challenge": "# 🤖 YEAR 7 AI CAPSTONE: Anti-Hover Reward Shaping\ndef compute_reward(dist_to_pad: float, speed: float, landed: bool) -> float:\n    shaping = -110.0 * dist_to_pad - 45.0 * speed - 0.06\n    return shaping + (260.0 if landed else 0.0)\n\nprint('Hovering high:', round(compute_reward(0.8, 0.1, False), 1))\nprint('Soft landing: ', round(compute_reward(0.0, 0.05, True), 1))\nassert compute_reward(0.0, 0.05, True) > compute_reward(0.8, 0.1, False)\n"
+    }
+  ],
+  "kid_levels": [
+    {
+      "level": 1,
+      "lab_id": "moon_lander",
+      "title_en": "Y7 L1: Year 7 (Grade 7) Space Lander (Physics & Math)",
+      "title_fr": "A7 N1 : Fusée Spatiale (Année 7 (5e))",
+      "speech_en": "Welcome to Year 7 (Grade 7)! Apply your Math & Science forces (Gravity=2.72) to land softly!",
+      "speech_fr": "Bienvenue en Année 7 (5e) ! Utilise les forces physiques (Gravité=2.72) pour atterrir !",
+      "obj1_en": "Apply Force Balance",
+      "obj1_fr": "Équilibrer les forces",
+      "obj2_en": "Soft Touchdown",
+      "obj2_fr": "Atterrissage doux",
+      "btn1_en": [
+        "Train AI",
+        "Pilot"
+      ],
+      "btn1_fr": [
+        "Entraîner",
+        "Pilote"
+      ],
+      "btn2_en": [
+        "Boost",
+        "Fuel"
+      ],
+      "btn2_fr": [
+        "Plus de",
+        "Carburant"
+      ],
+      "btn3_en": [
+        "Tune",
+        "Gravity"
+      ],
+      "btn3_fr": [
+        "Ajuster",
+        "Gravité"
+      ],
+      "preset": {
+        "gravity": 2.72,
+        "wind": 0.3,
+        "fuel_capacity": 166.0
+      }
+    },
+    {
+      "level": 2,
+      "lab_id": "raycast_car",
+      "title_en": "Y7 L2: Year 7 (Grade 7) Lidar Geometry & Waves",
+      "title_fr": "A7 N2 : Géométrie Laser Lidar (Année 7 (5e))",
+      "speech_en": "Year 7 (Grade 7) Geometry Lab: Use 5 laser angle beams (161px) to steer cleanly!",
+      "speech_fr": "Labo Géométrie Année 7 (5e) : Utilise les 5 rayons laser (161px) !",
+      "obj1_en": "Zero Wall Hits",
+      "obj1_fr": "Zéro collision",
+      "obj2_en": "Complete Circuit",
+      "obj2_fr": "Circuit complet",
+      "btn1_en": [
+        "Evolve",
+        "Brain"
+      ],
+      "btn1_fr": [
+        "Évoluer",
+        "Cerveau"
+      ],
+      "btn2_en": [
+        "Extend",
+        "Lasers"
+      ],
+      "btn2_fr": [
+        "Allonger",
+        "Lasers"
+      ],
+      "btn3_en": [
+        "Adjust",
+        "Speed"
+      ],
+      "btn3_fr": [
+        "Régler",
+        "Vitesse"
+      ],
+      "preset": {
+        "sensor_range": 161.0,
+        "max_speed": 5.5,
+        "track_width": 36.8
+      }
+    },
+    {
+      "level": 3,
+      "lab_id": "rl_gridworld",
+      "title_en": "Y7 L3: Year 7 (Grade 7) Compass Map & Probability Maze",
+      "title_fr": "A7 N3 : Carte & Labyrinthe (Année 7 (5e))",
+      "speech_en": "Year 7 (Grade 7) Geography & Math: Navigate N/S/E/W around hazards to reach the goal!",
+      "speech_fr": "Géographie Année 7 (5e) : Navigue N/S/E/O autour de la lave vers le trésor !",
+      "obj1_en": "Dodge Lava Cliffs",
+      "obj1_fr": "Éviter la lave",
+      "obj2_en": "Optimal Map Path",
+      "obj2_fr": "Chemin optimal",
+      "btn1_en": [
+        "Learn",
+        "Map"
+      ],
+      "btn1_fr": [
+        "Apprendre",
+        "Carte"
+      ],
+      "btn2_en": [
+        "High",
+        "Foresight"
+      ],
+      "btn2_fr": [
+        "Grande",
+        "Vision"
+      ],
+      "btn3_en": [
+        "Low",
+        "Risk"
+      ],
+      "btn3_fr": [
+        "Moins de",
+        "Risque"
+      ],
+      "preset": {
+        "alpha": 0.35,
+        "gamma": 0.96,
+        "epsilon": 0.1,
+        "use_sarsa": 0.0
+      }
+    },
+    {
+      "level": 4,
+      "lab_id": "cartpole_rl",
+      "title_en": "Y7 L4: Year 7 (Grade 7) Pendulum Forces & Balance",
+      "title_fr": "A7 N4 : Pendule & Équilibre (Année 7 (5e))",
+      "speech_en": "Year 7 (Grade 7) Physics: Balance torque, inertia, and gravity on the moving cart!",
+      "speech_fr": "Physique Année 7 (5e) : Équilibre l'inertie et la gravité sur le chariot !",
+      "obj1_en": "Keep Upright",
+      "obj1_fr": "Rester droit",
+      "obj2_en": "300+ Steps",
+      "obj2_fr": "300+ Pas",
+      "btn1_en": [
+        "Train",
+        "Policy"
+      ],
+      "btn1_fr": [
+        "Entraîner",
+        "IA"
+      ],
+      "btn2_en": [
+        "Motor",
+        "Force"
+      ],
+      "btn2_fr": [
+        "Force",
+        "Moteur"
+      ],
+      "btn3_en": [
+        "Calm",
+        "Wind"
+      ],
+      "btn3_fr": [
+        "Calmer",
+        "Vent"
+      ],
+      "preset": {
+        "gravity": 9.8,
+        "force_mag": 13.0,
+        "wind_gust": 0.24
+      }
+    },
+    {
+      "level": 5,
+      "lab_id": "nn_playground",
+      "title_en": "Y7 L5: Year 7 (Grade 7) (x,y) Coordinates & Neural Graph",
+      "title_fr": "A7 N5 : Coordonnées (x,y) & Neurones (Année 7 (5e))",
+      "speech_en": "Year 7 (Grade 7) Algebra & Biology: Use 13 hidden neurons to separate 2D points!",
+      "speech_fr": "Algèbre Année 7 (5e) : Utilise 13 neurones cachés pour séparer les points !",
+      "obj1_en": "Curve Boundary",
+      "obj1_fr": "Courber frontière",
+      "obj2_en": "90% Accuracy",
+      "obj2_fr": "Précision 90%",
+      "btn1_en": [
+        "Add",
+        "Neurons"
+      ],
+      "btn1_fr": [
+        "Ajouter",
+        "Neurones"
+      ],
+      "btn2_en": [
+        "Switch",
+        "Dataset"
+      ],
+      "btn2_fr": [
+        "Changer",
+        "Forme"
+      ],
+      "btn3_en": [
+        "Scramble",
+        "Points"
+      ],
+      "btn3_fr": [
+        "Mélanger",
+        "Points"
+      ],
+      "preset": {
+        "dataset_id": 2.0,
+        "hidden_neurons": 13.0,
+        "learning_rate": 0.24
+      }
+    },
+    {
+      "level": 6,
+      "lab_id": "swarm_ecosystem",
+      "title_en": "Y7 L6: Year 7 (Grade 7) Ecosystem Food Web & Genetics",
+      "title_fr": "A7 N6 : Écosystème & Génétique (Année 7 (5e))",
+      "speech_en": "Year 7 (Grade 7) Life Science: Balance producers (food orbs), prey fish, and predators!",
+      "speech_fr": "Biologie Année 7 (5e) : Équilibre la chaîne alimentaire et l'essaim !",
+      "obj1_en": "Flock Cohesion",
+      "obj1_fr": "Cohésion groupe",
+      "obj2_en": "Ecosystem Balance",
+      "obj2_fr": "Équilibre vivant",
+      "btn1_en": [
+        "Evolve",
+        "Genes"
+      ],
+      "btn1_fr": [
+        "Évoluer",
+        "Gènes"
+      ],
+      "btn2_en": [
+        "More",
+        "Producers"
+      ],
+      "btn2_fr": [
+        "Plus de",
+        "Plantes"
+      ],
+      "btn3_en": [
+        "Speed",
+        "Adaptation"
+      ],
+      "btn3_fr": [
+        "Vitesse",
+        "Agile"
+      ],
+      "preset": {
+        "num_prey": 40.0,
+        "num_predators": 4.0,
+        "food_count": 32.0
+      }
+    },
+    {
+      "level": 7,
+      "lab_id": "prime_attention",
+      "title_en": "Y7 L7: Year 7 (Grade 7) Reading Context & Memory Vault",
+      "title_fr": "A7 N7 : Lecture & Coffre Mémoire (Année 7 (5e))",
+      "speech_en": "Year 7 (Grade 7) Reading & CS: Preserve key story clues in the 67 KB PRIME Memory Vault!",
+      "speech_fr": "Lecture & IA Année 7 (5e) : Garde les indices clés dans le Coffre Mémoire !",
+      "obj1_en": "O(1) RAM Budget",
+      "obj1_fr": "Mémoire O(1)",
+      "obj2_en": "High Recall",
+      "obj2_fr": "Rappel élevé",
+      "btn1_en": [
+        "Add",
+        "Clues"
+      ],
+      "btn1_fr": [
+        "Ajouter",
+        "Indices"
+      ],
+      "btn2_en": [
+        "Expand",
+        "Window"
+      ],
+      "btn2_fr": [
+        "Grande",
+        "Fenêtre"
+      ],
+      "btn3_en": [
+        "Stabilize",
+        "Norm"
+      ],
+      "btn3_fr": [
+        "Stabiliser",
+        "Norme"
+      ],
+      "preset": {
+        "window_size": 64.0,
+        "distractor_gap": 256.0,
+        "use_qk_norm": 1.0
+      }
+    }
+  ]
+}
