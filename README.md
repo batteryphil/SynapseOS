@@ -11,38 +11,81 @@
 
 ---
 
-## 1. Download & Boot SynapseOS (Full LLM ISO or Fast Lite ISO)
+## 1. Complete Tester Instructions: Download & Boot SynapseOS (`Full 2.6 GB LLM ISO` or `437 MB Lite ISO`)
 
-### Option A: Full Bootable ISO With Fine-Tuned `cortex-phi3` LLM Built In (`2.6 GB`)
+Public Release Page: **[`https://github.com/batteryphil/SynapseOS/releases/tag/v1.0-k12`](https://github.com/batteryphil/SynapseOS/releases/tag/v1.0-k12)**
+
+### Option A: Linux / macOS — 1-Command Full LLM ISO Download & Boot (`2.6 GB`)
 Includes **everything 100% offline**: Debian 12 + Openbox + the fine-tuned **`cortex-phi3:latest` LLM (`2.2 GB` GGUF)** + Ollama daemon + C99 `prime-moment` engine + 7 AI Labs + all **325 K–12 lessons** + offline `espeak-ng` Read-Aloud TTS.
 
 ```bash
-# 1. Clone repo
+# 1. Clone the repository
 git clone https://github.com/batteryphil/SynapseOS.git
 cd SynapseOS
 
-# 2. Download, reassemble, SHA256-verify, and boot the Full 2.6 GB LLM ISO in QEMU (1 command):
+# 2. Download, reassemble, verify SHA256, and boot in QEMU (4 GB RAM, 2 CPU Cores):
 ./scripts/download_and_boot_full_iso.sh
 
-# Or download & verify the .iso file only (to flash to a USB stick or attach in VirtualBox/VMware):
+# Or download & verify the .iso file only (for VirtualBox, VMware, or flashing to USB):
 ./scripts/download_and_boot_full_iso.sh --download
+# Output file: output/SynapseOS-Debian12-Potato-x86_64.iso
 ```
 
-### Option B: Boot the Compressed Lite ISO Directly From This Git Repo (`~400 MB`, No LLM)
-The repository also tracks the **Lite Experimentation ISO** (`SynapseOS-Lite-x86_64.iso`, excluding the `2.2 GB` LLM weights) inside [`iso/`](file:///home/phil/.gemini/antigravity/scratch/synapse-os/iso) so every file stays under GitHub's `100 MB` per-file `git push` limit.
+### Option B: Windows (PowerShell) — Download & Combine the Full 2.6 GB LLM ISO
+Because GitHub Releases caps individual files at `2.0 GB`, the `2.6 GB` Full ISO is split into `part-aa` (`1.85 GB`) and `part-ab` (`706 MB`). Run this in **PowerShell** to download and join them into `SynapseOS-Debian12-Potato-x86_64.iso`:
 
-```bash
-# Recombine, decompress, and SHA256-verify SynapseOS-Lite-x86_64.iso
-./iso/decompress_iso.sh
+```powershell
+# 1. Download both parts and checksum from GitHub Releases
+curl.exe -L -O https://github.com/batteryphil/SynapseOS/releases/download/v1.0-k12/SynapseOS-Debian12-Potato-x86_64.iso.part-aa
+curl.exe -L -O https://github.com/batteryphil/SynapseOS/releases/download/v1.0-k12/SynapseOS-Debian12-Potato-x86_64.iso.part-ab
+curl.exe -L -O https://github.com/batteryphil/SynapseOS/releases/download/v1.0-k12/SynapseOS-Debian12-Potato-x86_64.iso.sha256
 
-# Boot in QEMU/KVM
-qemu-system-x86_64 -enable-kvm -m 2048 -smp 2 -cdrom iso/SynapseOS-Lite-x86_64.iso
+# 2. Combine into a single bootable .iso file (binary copy)
+cmd /c "copy /b SynapseOS-Debian12-Potato-x86_64.iso.part-aa + SynapseOS-Debian12-Potato-x86_64.iso.part-ab SynapseOS-Debian12-Potato-x86_64.iso"
+
+# 3. Verify SHA256 hash matches SynapseOS-Debian12-Potato-x86_64.iso.sha256
+Get-FileHash .\SynapseOS-Debian12-Potato-x86_64.iso -Algorithm SHA256
+Get-Content .\SynapseOS-Debian12-Potato-x86_64.iso.sha256
 ```
 
-| ISO Artifact | Uncompressed Rootfs | SquashFS | Bootable `.iso` Size | How to Run | Contents |
+### Option C: Boot in VirtualBox, VMware, or from a Physical USB Stick
+1. **VirtualBox / VMware / Proxmox**:
+   - Create a new Linux (`Debian 64-bit`) VM with **`4096 MB` (4 GB) RAM** and **`2` CPU Cores** (works down to `1` CPU core). No virtual hard disk is required.
+   - Attach `SynapseOS-Debian12-Potato-x86_64.iso` as the Optical CD/DVD drive and boot.
+2. **Flash to a Physical USB Drive (Boot on Any PC/Laptop)**:
+   - **Windows / macOS**: Use [BalenaEtcher](https://etcher.balena.io/) or [Rufus](https://rufus.ie/) (select *DD Image mode* if prompted) and flash `SynapseOS-Debian12-Potato-x86_64.iso`.
+   - **Linux**:
+     ```bash
+     sudo dd if=output/SynapseOS-Debian12-Potato-x86_64.iso of=/dev/sdX bs=4M status=progress oflag=sync
+     ```
+
+### Option D: Fast Lite ISO (`437 MB`, No LLM — Single File or In-Repo)
+If you want a fast `437 MB` download without the `2.2 GB` LLM weights (still includes the C99 `prime-moment` engine, `cortex_kb.sqlite`, 7 AI Labs, and all 325 K–12 lessons):
+- **Direct Single-File Download**: [`SynapseOS-Lite-x86_64.iso` (437 MB on GitHub Releases)](https://github.com/batteryphil/SynapseOS/releases/download/v1.0-k12/SynapseOS-Lite-x86_64.iso)
+- **Or Decompress From Git Repo**:
+  ```bash
+  ./iso/decompress_iso.sh
+  qemu-system-x86_64 -enable-kvm -m 2048 -smp 2 -cdrom iso/SynapseOS-Lite-x86_64.iso
+  ```
+
+### What Happens on Boot & Tester Checklist
+- **Auto-Login**: Boots directly into X11 + Openbox (`~148 MB` idle OS RAM) as user `synapse` (password: `synapse`, passwordless `sudo`) and launches **Synapse Studio** automatically.
+- **Synapse Kids Mode (Default View)**:
+  - Click **`L1`–`L7`** level pills at the top to play the 7 interactive AI simulations (`Moon Lander`, `Lidar Car`, `GridWorld`, `CartPole`, `Neural Net`, `Predator-Prey Swarm`, `PRIME Attention`).
+  - Click **`♪ Read`** (or click **Lumi the Robot**) to hear offline speech synthesis read the mission aloud.
+  - Click **`EN ▸ FR`** to toggle everything between English and French, or **`❖ Student ↻`** to switch student profiles.
+- **Teacher / Pro Workstation & Full K–12 School Curriculum**:
+  - Click **`⚙ Teacher`** in the top-right corner to switch to the 3-column Pro/School Workstation.
+  - Open the **`🎓 School`** tab on the right: pick any grade from **Kindergarten (`Yr K`) to Grade 12 (`Yr 12`)** (`325` complete textbook lessons across Math, Science, ELA, History, and AI).
+  - Answer the multiple-choice check using the **`Quiz: [A] [B] [C] [D]`** bar at the bottom of the textbook reader, or click **`▶ Load Lab & Code`** to run and auto-grade the Python worksheet.
+  - Open the **`📋 Report`** tab and click **`✎ Export`** to generate a printable HTML + TXT K–12 Report Card & Honors Certificate.
+- **Built-In Fine-Tuned `cortex-phi3` LLM + C99 `PRIME` Copilot**:
+  - Type any question into the **AI Copilot Chat** bar at the bottom of the window (or open a terminal and run `ollama run cortex-phi3` or `cortex ai "explain neuroevolution"`).
+
+| ISO Artifact | Uncompressed Rootfs | SquashFS | Bootable `.iso` Size | How to Get It | Contents |
 | :--- | :--- | :--- | :--- | :--- | :--- |
-| **`SynapseOS-Debian12-Potato-x86_64.iso`** (**Full LLM**) | `3,998.0 MB` | `2,546.1 MB` (`zstd`) | **`2.6 GB`** | `./scripts/download_and_boot_full_iso.sh` (GitHub Release `v1.0-k12`) | Everything in Lite + pre-baked `2.2 GB` `cortex-phi3:latest` GGUF + Ollama runtime + `espeak-ng` TTS |
-| **`SynapseOS-Lite-x86_64.iso`** (In Repo `iso/`) | `1,420.0 MB` | `345.0 MB` (`xz -Xbcj x86`) | **`~405 MB`** | `./iso/decompress_iso.sh` (In-Repo) | Debian 12 + Openbox + 7 AI Labs + 325 K–12 Lessons + `cortex_kb.sqlite` + C99 `prime-moment` (`libprime.so`) |
+| **`SynapseOS-Debian12-Potato-x86_64.iso`** (**Full LLM**) | `3,998.0 MB` | `2,546.1 MB` (`zstd`) | **`2.6 GB`** | `./scripts/download_and_boot_full_iso.sh` or [Release `v1.0-k12`](https://github.com/batteryphil/SynapseOS/releases/tag/v1.0-k12) | Everything in Lite + pre-baked `2.2 GB` `cortex-phi3:latest` GGUF + Ollama runtime + `espeak-ng` TTS |
+| **`SynapseOS-Lite-x86_64.iso`** (**Lite**) | `1,561.8 MB` | `376.5 MB` (`xz -Xbcj x86`) | **`437 MB`** | [Direct Download](https://github.com/batteryphil/SynapseOS/releases/download/v1.0-k12/SynapseOS-Lite-x86_64.iso) or `./iso/decompress_iso.sh` | Debian 12 + Openbox + 7 AI Labs + 325 K–12 Lessons + `cortex_kb.sqlite` + C99 `prime-moment` (`libprime.so`) |
 
 ---
 
