@@ -13,7 +13,10 @@
 
 ## 1. Complete Tester Instructions: Download & Boot SynapseOS (`Full 2.6 GB LLM ISO` or `437 MB Lite ISO`)
 
-Public Release Page: **[`https://github.com/batteryphil/SynapseOS/releases/tag/v1.0-k12`](https://github.com/batteryphil/SynapseOS/releases/tag/v1.0-k12)**
+- **1-Click Single-File Full 2.6 GB LLM `.iso` Download (Hugging Face — No Reassembly Needed)**:
+  👉 **[`SynapseOS-Debian12-Potato-x86_64.iso` (2.6 GB Direct Download)](https://huggingface.co/datasets/batteryphil/SynapseOS/resolve/main/SynapseOS-Debian12-Potato-x86_64.iso)** | **[`Browse Hugging Face Repo`](https://huggingface.co/datasets/batteryphil/SynapseOS/tree/main)** | **[`SHA256 Checksum`](https://huggingface.co/datasets/batteryphil/SynapseOS/resolve/main/SynapseOS-Debian12-Potato-x86_64.iso.sha256)**
+- **GitHub Release Page (`v1.0-k12`)**:
+  👉 **[`https://github.com/batteryphil/SynapseOS/releases/tag/v1.0-k12`](https://github.com/batteryphil/SynapseOS/releases/tag/v1.0-k12)**
 
 ### Option A: Linux / macOS — 1-Command Full LLM ISO Download & Boot (`2.6 GB`)
 Includes **everything 100% offline**: Debian 12 + Openbox + the fine-tuned **`cortex-phi3:latest` LLM (`2.2 GB` GGUF)** + Ollama daemon + C99 `prime-moment` engine + 7 AI Labs + all **325 K–12 lessons** + offline `espeak-ng` Read-Aloud TTS.

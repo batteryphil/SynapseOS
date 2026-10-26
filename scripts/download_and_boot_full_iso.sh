@@ -2,10 +2,14 @@
 # ==============================================================================
 # SynapseOS 1-Command Full LLM ISO Downloader, Verifier & QEMU Launcher
 # ==============================================================================
-# Downloads the Full 2.5 GB Bootable ISO (including the fine-tuned 2.2 GB
+# Downloads the Full 2.6 GB Bootable ISO (including the fine-tuned 2.2 GB
 # cortex-phi3:latest LLM, Ollama runtime, C99 PRIME-Moment engine, 7 AI Labs,
-# and all 325 K-12 lessons) from GitHub Releases, reassembles the split parts,
-# verifies the SHA256 checksum, and optionally boots it in QEMU/KVM.
+# and all 325 K-12 lessons) as a SINGLE unsplit file from Hugging Face
+# (with automatic fallback to GitHub Releases), verifies the SHA256 checksum,
+# and optionally boots it in QEMU/KVM.
+#
+# Direct 1-Click Browser Download (No Splitting Needed):
+#   https://huggingface.co/datasets/batteryphil/SynapseOS/resolve/main/SynapseOS-Debian12-Potato-x86_64.iso
 #
 # Usage:
 #   ./scripts/download_and_boot_full_iso.sh              # Download, verify & boot in QEMU
@@ -21,9 +25,10 @@ ISO_NAME="SynapseOS-Debian12-Potato-x86_64.iso"
 ISO_PATH="${OUT_DIR}/${ISO_NAME}"
 SHA_PATH="${OUT_DIR}/${ISO_NAME}.sha256"
 
+HF_URL="https://huggingface.co/datasets/batteryphil/SynapseOS/resolve/main"
 REPO="batteryphil/SynapseOS"
 RELEASE_TAG="${SYNAPSE_RELEASE_TAG:-v1.0-k12}"
-BASE_URL="https://github.com/${REPO}/releases/download/${RELEASE_TAG}"
+GH_BASE_URL="https://github.com/${REPO}/releases/download/${RELEASE_TAG}"
 
 mkdir -p "${OUT_DIR}"
 cd "${OUT_DIR}"
@@ -39,15 +44,19 @@ if [ -f "${ISO_PATH}" ] && [ -f "${SHA_PATH}" ]; then
 fi
 
 if [ ! -f "${ISO_PATH}" ]; then
-    echo "=== Downloading SynapseOS Full LLM Bootable ISO (${RELEASE_TAG}) ==="
+    echo "=== Downloading SynapseOS Full LLM Bootable ISO (Single 2.6 GB File) ==="
     echo "Includes: Debian 12 + Openbox + Fine-Tuned cortex-phi3 LLM (2.2 GB) + C99 PRIME + 325 K-12 Lessons"
-    curl -fL --progress-bar -O "${BASE_URL}/${ISO_NAME}.sha256"
-    curl -fL --progress-bar -O "${BASE_URL}/${ISO_NAME}.part-aa"
-    curl -fL --progress-bar -O "${BASE_URL}/${ISO_NAME}.part-ab"
+    curl -fL --progress-bar -O "${HF_URL}/${ISO_NAME}.sha256" || curl -fL --progress-bar -O "${GH_BASE_URL}/${ISO_NAME}.sha256"
 
-    echo "[*] Reassembling 2.5 GB ${ISO_NAME} from parts..."
-    cat "${ISO_NAME}.part-aa" "${ISO_NAME}.part-ab" > "${ISO_NAME}"
-    rm -f "${ISO_NAME}.part-aa" "${ISO_NAME}.part-ab"
+    if curl -fL --progress-bar -O "${HF_URL}/${ISO_NAME}"; then
+        echo "[✓] Downloaded single-file ISO from Hugging Face."
+    else
+        echo "[!] Falling back to GitHub Releases split parts..."
+        curl -fL --progress-bar -O "${GH_BASE_URL}/${ISO_NAME}.part-aa"
+        curl -fL --progress-bar -O "${GH_BASE_URL}/${ISO_NAME}.part-ab"
+        cat "${ISO_NAME}.part-aa" "${ISO_NAME}.part-ab" > "${ISO_NAME}"
+        rm -f "${ISO_NAME}.part-aa" "${ISO_NAME}.part-ab"
+    fi
 
     echo "[*] Verifying SHA256 checksum..."
     sha256sum -c "${ISO_NAME}.sha256"
