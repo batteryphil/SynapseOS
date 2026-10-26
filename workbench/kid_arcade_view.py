@@ -953,7 +953,7 @@ class SynapseKidsView(Gtk.DrawingArea):
         cr.move_to(bx + bw * 0.34, by + bh * 0.63)
         cr.show_text("Synapse")
 
-        # A2. [🧑‍🚀 Cadet Avatar & Profile] Pill (Clickable to cycle 6 Avatars)
+        # A2. [🧑‍🚀 Cadet Avatar & Student Roster] Pill (Clickable to switch Classroom Student Profile)
         avx, avy, avw, avh = W * 0.175, H * 0.042, W * 0.112, H * 0.082
         self.hitboxes["avatar_btn"] = (avx, avy, avw, avh)
         av_idx = 0
@@ -961,7 +961,7 @@ class SynapseKidsView(Gtk.DrawingArea):
         if hasattr(self.studio, "pack_mgr"):
             av_idx = int(self.studio.pack_mgr.profile.get("avatar_idx", 0)) % len(PLAYER_AVATARS)
             av = PLAYER_AVATARS[av_idx]
-            av_name = av["name_fr"] if is_fr else av["name_en"]
+            av_name = self.studio.pack_mgr.profile.get("player_name", av["name_fr"] if is_fr else av["name_en"])
         self._draw_pill(
             cr, avx, avy, avw, avh,
             (0.22, 0.30, 0.54), (0.12, 0.18, 0.36), (0.52, 0.72, 0.98),
@@ -975,7 +975,7 @@ class SynapseKidsView(Gtk.DrawingArea):
         cr.set_font_size(max(8.5, H * 0.013))
         cr.set_source_rgba(0.65, 0.88, 1.0, 0.92)
         cr.move_to(avx + avh * 0.88, avy + avh * 0.76)
-        cr.show_text("↻ Avatar" if not is_fr else "↻ Profil")
+        cr.show_text("↻ Student" if not is_fr else "↻ Élève")
 
         # B1. [◀ ⭐ Level 1: Space Moon Landing ▶] Orange Banner Pill (Center)
         lx, ly, lw, lh = W * 0.293, H * 0.042, W * 0.332, H * 0.082
@@ -1033,7 +1033,7 @@ class SynapseKidsView(Gtk.DrawingArea):
         )
         pin_locked = bool(self.studio.pack_mgr.profile.get("pin_lock_enabled", False)) if hasattr(self.studio, "pack_mgr") else False
         lock_ic = "[PIN] " if pin_locked else "⚙ "
-        t_label = f"{lock_ic}Mode Professeur" if is_fr else f"{lock_ic}Teacher Mode"
+        t_label = f"{lock_ic}Mode Professeur" if is_fr else f"{lock_ic}Teacher / School"
         cr.set_font_size(max(10.5, H * 0.017))
         cr.set_source_rgb(0.92, 0.96, 1.0)
         ext_t = cr.text_extents(t_label)
@@ -1055,7 +1055,7 @@ class SynapseKidsView(Gtk.DrawingArea):
         cr.move_to(lgx + (lgw - ext_lg.width) * 0.5, lgy + lgh * 0.67)
         cr.show_text(lang_txt)
 
-        # D1. [Trophies & Shop] Blue/Gold Pill + D2. [★ Pack N ↻] Emerald Upgrade Pill
+        # D1. [Trophies & Shop] Blue/Gold Pill + D2. [★ Year N ↻] Emerald School Year Pill
         bgx, bgy, bgw, bgh = W * 0.742, H * 0.073, W * 0.110, H * 0.064
         self.hitboxes["badges_btn"] = (bgx, bgy, bgw, bgh)
         is_tr = (self.view_mode == "trophies")
@@ -1075,7 +1075,7 @@ class SynapseKidsView(Gtk.DrawingArea):
         cr.show_text(b_txt)
         self._draw_trophy_icon(cr, bgx + bgw - 17, bgy + bgh * 0.52, min(W, H) / 880.0)
 
-        # D2. [★ Pack N ↻] Emerald-Gold Learning Package Update Pill
+        # D2. [★ Year K..12 ↻] Emerald-Gold K-12 Grade Advancement Pill
         upx, upy, upw, uph = W * 0.858, H * 0.073, W * 0.110, H * 0.064
         self.hitboxes["upgrade_pack"] = (upx, upy, upw, uph)
         self._draw_pill(
@@ -1084,15 +1084,12 @@ class SynapseKidsView(Gtk.DrawingArea):
             hover=(self.hovered_id == "upgrade_pack"),
             glow=True,
         )
-        pack_num = 1
+        yr_lbl = "1"
         if hasattr(self.studio, "pack_mgr"):
-            pid = self.studio.pack_mgr.profile.get("current_pack_id", "pack_1_core")
-            if "2" in pid:
-                pack_num = 2
-            elif "3" in pid:
-                pack_num = 3
-        up_txt = f"★ Pack {pack_num} ↻"
-        cr.set_font_size(max(12.0, H * 0.021))
+            cur_yr = self.studio.pack_mgr.get_current_school_year()
+            yr_lbl = "K" if cur_yr == 0 else str(cur_yr)
+        up_txt = f"★ An {yr_lbl} ↻" if is_fr else f"★ Year {yr_lbl} ↻"
+        cr.set_font_size(max(11.5, H * 0.020))
         cr.set_source_rgb(1.0, 0.98, 0.85)
         ext_up = cr.text_extents(up_txt)
         cr.move_to(upx + (upw - ext_up.width) * 0.5, upy + uph * 0.64)
@@ -1263,10 +1260,10 @@ class SynapseKidsView(Gtk.DrawingArea):
             cr.move_to(sb_x + 11, start_ty + i * line_h)
             cr.show_text(line)
 
-        # Small "[Click Lumi for a Socratic Hint!]" footer inside speech bubble
+        # Small "[Click Lumi for Read-Aloud & Socratic Hint!]" footer inside speech bubble
         cr.set_font_size(max(8.5, H * 0.013))
         cr.set_source_rgb(0.22, 0.48, 0.82)
-        hint_lumi = "★ Clique sur Lumi pour un indice IA !" if is_fr else "★ Click Lumi for an AI Hint (+Coins)!"
+        hint_lumi = "♪ Clique Lumi : Lecture vocale + Indice IA !" if is_fr else "♪ Click Lumi: Read Aloud + AI Hint (+Coins)!"
         cr.move_to(sb_x + 11, sb_y + sb_h - 6)
         cr.show_text(hint_lumi)
 
@@ -2531,14 +2528,16 @@ class SynapseKidsView(Gtk.DrawingArea):
             return True
 
         if clicked_id == "avatar_btn":
-            if hasattr(self.studio, "pack_mgr"):
-                av = self.studio.pack_mgr.cycle_avatar()
-                av_nm = av["name_fr"] if is_fr else av["name_en"]
+            if hasattr(self.studio, "switch_classroom_student"):
+                self.studio.switch_classroom_student()
+                s_nm = self.studio.pack_mgr.profile.get("player_name", "Cadet Nova")
+                yr = self.studio.pack_mgr.get_current_school_year()
+                yr_tag = "K" if yr == 0 else str(yr)
                 self.set_pet_mood("cheering", 3.5)
                 self.custom_speech = (
-                    f"Salut {av_nm} ! Ton nouvel avatar d'explorateur IA est prêt !"
+                    f"Salut {s_nm} (Année {yr_tag}) ! Ton profil d'élève et ton bulletin K-12 sont chargés !"
                     if is_fr
-                    else f"Hi {av_nm}! Your new AI Explorer Avatar is equipped and saved!"
+                    else f"Hi {s_nm} (Year {yr_tag})! Your personal K-12 Student Profile & Report Card are active!"
                 )
             self.queue_draw()
             return True
@@ -2631,7 +2630,17 @@ class SynapseKidsView(Gtk.DrawingArea):
             return True
 
         if clicked_id == "upgrade_pack":
-            if hasattr(self.studio, "upgrade_learning_pack"):
+            if hasattr(self.studio, "advance_school_year_in_gui"):
+                self.studio.advance_school_year_in_gui()
+                yr = self.studio.pack_mgr.get_current_school_year()
+                yr_tag = "K" if yr == 0 else str(yr)
+                self.custom_speech = (
+                    f"Passage à l'Année {yr_tag} réussi ! Ancienne année nettoyée, notes sauvegardées !"
+                    if is_fr
+                    else f"Graduated & advanced to School Year {yr_tag}! Old year wiped, Report Card saved!"
+                )
+                self.queue_draw()
+            elif hasattr(self.studio, "upgrade_learning_pack"):
                 self.studio.upgrade_learning_pack()
             return True
 
@@ -3012,14 +3021,22 @@ class SynapseKidsView(Gtk.DrawingArea):
             return True
 
         if clicked_id == "ask_robot" and not self.asking_ai:
+            # First read the current speech bubble aloud for early readers (K-2)
+            cur_bubble = self.custom_speech or (
+                self.cur_level["speech_fr"] if is_fr else self.cur_level["speech_en"]
+            )
+            if hasattr(self.studio, "read_aloud_lesson"):
+                self.studio.lang = self.lang
+                self.studio.read_aloud_lesson(text_override=cur_bubble)
+
             self.asking_ai = True
             self.set_pet_mood("thinking", 5.0)
             if hasattr(self.studio, "pack_mgr"):
                 self.studio.pack_mgr.record_daily_progress("dm_ask_lumi")
             self.custom_speech = (
-                "Lumi réfléchit à un indice Socratique avec Cortex-Phi3..."
+                "♪ Lumi lit à voix haute et réfléchit à un indice Socratique..."
                 if is_fr
-                else "Lumi is thinking up a Socratic hint with Cortex-Phi3..."
+                else "♪ Lumi is reading aloud & thinking up a Socratic hint..."
             )
             self.queue_draw()
 

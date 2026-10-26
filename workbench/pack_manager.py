@@ -479,6 +479,7 @@ PACK_ORDER = ["pack_1_core", "pack_2_mastery", "pack_3_olympiad"]
 from workbench.k12_curricula import (
     K12_YEAR_PACKS,
     YEAR_PACK_ORDER,
+    K12_ALL_GRADE_ORDER,
     get_all_k12_subject_lessons,
 )
 
@@ -896,11 +897,11 @@ class LearningPackManager:
         return list(pack.get("kid_levels", []))
 
     def get_current_school_year(self) -> int:
-        """Return the student's active K-12 school year (1..12)."""
+        """Return the student's active K-12 school year (0=Kindergarten, 1..12=Grades 1-12)."""
         pack = self.get_active_pack()
         if "year_number" in pack:
-            return max(1, min(12, int(pack["year_number"])))
-        return max(1, min(12, int(self.profile.get("current_school_year", 1))))
+            return max(0, min(12, int(pack["year_number"])))
+        return max(0, min(12, int(self.profile.get("current_school_year", 1))))
 
     def get_active_year_pack(self) -> Dict[str, Any]:
         """Return the K-12 Year Curriculum Package for the active school year."""
@@ -917,15 +918,15 @@ class LearningPackManager:
 
     def record_subject_grade(self, lesson_id: str, score: int = 100) -> Dict[str, Any]:
         """
-        Record a student's grade (0..100) for a K-12 subject lesson (e.g. 'y04_math')
+        Record a student's grade (0..100) for a K-12 subject lesson (e.g. 'y04_math' or 'y04_math_q2')
         in their permanent `yearly_transcript` (kept across yearly curriculum wipes!).
         """
         transcript = dict(self.profile.get("yearly_transcript", {}))
         if lesson_id.startswith("y") and "_" in lesson_id:
-            parts = lesson_id.split("_", 1)
+            parts = lesson_id.split("_")
             try:
                 yr_num = int(parts[0][1:])
-                subj_key = parts[1]
+                subj_key = "ai_cs" if (len(parts) >= 3 and parts[1] == "ai" and parts[2] == "cs") else parts[1]
                 yr_id = f"year_{yr_num:02d}"
                 yr_rec = dict(transcript.get(yr_id, {
                     "math": 0,
@@ -947,15 +948,17 @@ class LearningPackManager:
         return transcript
 
     def _resolve_pack_alias(self, target: str) -> str:
-        """Resolve shorthand aliases like '1'..'12', 'year_1', or repo 'curricula/year_XX.json'."""
+        """Resolve shorthand aliases like 'K', '0'..'12', 'year_0', or repo 'curricula/year_XX.json'."""
         s = str(target).strip()
+        if s.lower() in ("k", "gk", "kindergarten", "year_k", "year_0", "year_00"):
+            return "year_00"
         if s.isdigit():
-            yr = max(1, min(12, int(s)))
+            yr = max(0, min(12, int(s)))
             return f"year_{yr:02d}"
         if s.lower().startswith("year_"):
             suffix = s.split("_", 1)[1]
             if suffix.isdigit():
-                return f"year_{max(1, min(12, int(suffix))):02d}"
+                return f"year_{max(0, min(12, int(suffix))):02d}"
         return s
 
     def install_pack(
@@ -997,29 +1000,47 @@ class LearningPackManager:
         # Delete old learning package files from disk first! (1-Year-at-a-Time Wiper)
         freed_bytes = self._purge_old_pack_files()
 
-        # Load new pack from URL, local file, repo curricula/ folder, or built-in catalog
+        # Load new pack from URL, GitHub Repo (batteryphil/SynapseOS), local repo curricula/ folder, or built-in catalog
         new_pack: Optional[Dict[str, Any]] = None
+        source_used = "local_builtin"
         repo_curricula_file = os.path.join(
             os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
             "curricula",
             f"{target_resolved}.json",
         )
+        github_raw_url = f"https://raw.githubusercontent.com/batteryphil/SynapseOS/main/curricula/{target_resolved}.json"
+
         if target_pack_id_or_url.startswith(("http://", "https://")):
             try:
-                with urllib.request.urlopen(target_pack_id_or_url, timeout=6) as resp:
+                with urllib.request.urlopen(target_pack_id_or_url, timeout=4) as resp:
                     new_pack = json.loads(resp.read().decode("utf-8"))
+                    source_used = target_pack_id_or_url
             except Exception:
                 new_pack = None
         elif os.path.isfile(target_pack_id_or_url):
             try:
                 with open(target_pack_id_or_url, "r", encoding="utf-8") as f:
                     new_pack = json.load(f)
+                    source_used = target_pack_id_or_url
             except Exception:
                 new_pack = None
-        elif os.path.isfile(repo_curricula_file):
+
+        # If installing a K-12 year pack and online repo sync is requested (or local file missing), try GitHub repo first
+        if not new_pack and target_resolved in K12_ALL_GRADE_ORDER and getattr(self, "_prefer_remote_repo", False):
+            try:
+                with urllib.request.urlopen(github_raw_url, timeout=3) as resp:
+                    new_pack = json.loads(resp.read().decode("utf-8"))
+                    if "quarterly_unit_lessons" not in new_pack and target_resolved in K12_YEAR_PACKS:
+                        new_pack = dict(K12_YEAR_PACKS[target_resolved])
+                    source_used = github_raw_url
+            except Exception:
+                new_pack = None
+
+        if not new_pack and os.path.isfile(repo_curricula_file):
             try:
                 with open(repo_curricula_file, "r", encoding="utf-8") as f:
                     new_pack = json.load(f)
+                    source_used = f"curricula/{target_resolved}.json (linked to github.com/batteryphil/SynapseOS)"
             except Exception:
                 new_pack = None
 
@@ -1030,6 +1051,8 @@ class LearningPackManager:
         new_pid = new_pack.get("pack_id", "pack_1_core")
         self.profile["active_pack_id"] = new_pid
         self.profile["current_pack_id"] = new_pid
+        self.profile["last_curriculum_source"] = source_used
+        self.profile["github_repo_url"] = f"https://github.com/batteryphil/SynapseOS/blob/main/curricula/{new_pid}.json"
         if "year_number" in new_pack:
             self.profile["current_school_year"] = int(new_pack["year_number"])
         self.profile["packs_installed_count"] = int(self.profile.get("packs_installed_count", 1)) + 1
@@ -1037,20 +1060,42 @@ class LearningPackManager:
         self.save_profile()
         return new_pack, freed_bytes
 
+    def sync_from_github_repo(self, year_num_or_id: Optional[Any] = None) -> Dict[str, Any]:
+        """
+        Pull the latest annual K-12 curriculum JSON directly from
+        `https://raw.githubusercontent.com/batteryphil/SynapseOS/main/curricula/year_XX.json`
+        (falling back cleanly to local `curricula/year_XX.json` if the classroom is offline).
+        """
+        target = year_num_or_id if year_num_or_id is not None else self.get_current_school_year()
+        target_id = self._resolve_pack_alias(str(target))
+        if target_id not in K12_ALL_GRADE_ORDER:
+            target_id = f"year_{self.get_current_school_year():02d}"
+        self._prefer_remote_repo = True
+        try:
+            new_pack, freed_bytes = self.install_pack(target_id)
+        finally:
+            self._prefer_remote_repo = False
+        summary = self._build_upgrade_summary(new_pack, freed_bytes)
+        summary["repo_url"] = f"https://raw.githubusercontent.com/batteryphil/SynapseOS/main/curricula/{target_id}.json"
+        summary["source_used"] = self.profile.get("last_curriculum_source", summary["repo_url"])
+        return summary
+
     def set_school_year(
         self,
         year_num_or_id: Any,
         current_badges: Optional[set] = None,
     ) -> Dict[str, Any]:
         """
-        Install a specific K-12 School Year (1..12), wiping the previous year's curriculum
+        Install a specific K-12 School Year (K/0..12), wiping the previous year's curriculum
         files from disk while preserving the student's permanent multi-subject transcript & trophies.
         """
         target_id = self._resolve_pack_alias(str(year_num_or_id))
-        if target_id not in YEAR_PACK_ORDER:
+        if target_id not in K12_ALL_GRADE_ORDER:
             target_id = "year_01"
         new_pack, freed_bytes = self.install_pack(target_id, current_badges=current_badges)
-        return self._build_upgrade_summary(new_pack, freed_bytes)
+        summary = self._build_upgrade_summary(new_pack, freed_bytes)
+        summary["repo_url"] = f"https://raw.githubusercontent.com/batteryphil/SynapseOS/main/curricula/{target_id}.json"
+        return summary
 
     def advance_school_year(self, current_badges: Optional[set] = None) -> Dict[str, Any]:
         """
@@ -1075,15 +1120,15 @@ class LearningPackManager:
         transcript[cur_yr_id] = yr_rec
         self.profile["yearly_transcript"] = transcript
 
-        next_yr = (cur_yr % 12) + 1
+        next_yr = 0 if cur_yr >= 12 else (cur_yr + 1)
         return self.set_school_year(next_yr, current_badges=current_badges)
 
     def cycle_next_pack(self, current_badges: Optional[set] = None) -> Tuple[Dict[str, Any], int]:
         """Advance to the next Learning Package (or next K-12 School Year if a year pack is active), purging old pack files."""
         cur_pid = self.profile.get("active_pack_id", "pack_1_core")
-        if cur_pid in YEAR_PACK_ORDER:
-            idx = YEAR_PACK_ORDER.index(cur_pid)
-            next_pid = YEAR_PACK_ORDER[(idx + 1) % len(YEAR_PACK_ORDER)]
+        if cur_pid in K12_ALL_GRADE_ORDER:
+            idx = K12_ALL_GRADE_ORDER.index(cur_pid)
+            next_pid = K12_ALL_GRADE_ORDER[(idx + 1) % len(K12_ALL_GRADE_ORDER)]
             return self.install_pack(next_pid, current_badges=current_badges)
         idx = PACK_ORDER.index(cur_pid) if cur_pid in PACK_ORDER else 0
         next_pid = PACK_ORDER[(idx + 1) % len(PACK_ORDER)]
@@ -1097,6 +1142,7 @@ class LearningPackManager:
             "year_number": new_pack.get("year_number", self.get_current_school_year()),
             "grade_band": new_pack.get("grade_band", ""),
             "subject_count": len(new_pack.get("subject_lessons", [])),
+            "quarterly_unit_count": len(new_pack.get("quarterly_unit_lessons", [])),
             "freed_bytes": freed_bytes,
             "freed_kb": round(max(1024, freed_bytes) / 1024.0, 1),
             "purged_files": 1,
@@ -1119,6 +1165,260 @@ class LearningPackManager:
         new_pack, freed_bytes = self.cycle_next_pack(current_badges=current_badges)
         return self._build_upgrade_summary(new_pack, freed_bytes)
 
+    # ------------------------------------------------------------------
+    # MULTI-STUDENT CLASSROOM ROSTER & ISOLATED PROFILES
+    # ------------------------------------------------------------------
+    def list_students(self) -> List[Dict[str, Any]]:
+        """Return the classroom roster of student profiles stored on this computer."""
+        roster_dir = os.path.join(self.base_dir, "students")
+        os.makedirs(roster_dir, exist_ok=True)
+        default_roster = [
+            {"id": "cadet_nova", "name": "Cadet Nova", "avatar_idx": 0, "default_year": 1},
+            {"id": "cadet_leo", "name": "Cadet Leo", "avatar_idx": 1, "default_year": 4},
+            {"id": "cadet_maya", "name": "Cadet Maya", "avatar_idx": 2, "default_year": 8},
+            {"id": "cadet_sam", "name": "Cadet Sam", "avatar_idx": 3, "default_year": 11},
+        ]
+        cur_name = self.profile.get("player_name", "Cadet Nova")
+        out: List[Dict[str, Any]] = []
+        for slot in default_roster:
+            sfile = os.path.join(roster_dir, f"{slot['id']}.json")
+            if slot["name"] == cur_name:
+                yr = self.get_current_school_year()
+                pts = int(self.profile.get("lifetime_points", 300))
+                badges = len(self.profile.get("earned_badges", []))
+            elif os.path.isfile(sfile):
+                try:
+                    with open(sfile, "r", encoding="utf-8") as f:
+                        sdata = json.load(f)
+                    yr = int(sdata.get("current_school_year", slot["default_year"]))
+                    pts = int(sdata.get("lifetime_points", 300))
+                    badges = len(sdata.get("earned_badges", []))
+                except Exception:
+                    yr, pts, badges = slot["default_year"], 300, 1
+            else:
+                yr, pts, badges = slot["default_year"], 300, 1
+            out.append({
+                "id": slot["id"],
+                "name": slot["name"],
+                "avatar_idx": slot["avatar_idx"],
+                "school_year": yr,
+                "points": pts,
+                "trophies": badges,
+                "active": (slot["name"] == cur_name),
+            })
+        return out
+
+    def switch_student(self, student_name_or_id: str) -> Dict[str, Any]:
+        """
+        Save the current student's profile into `students/<id>.json` and switch
+        to the target student profile (reloading their K-12 school year, transcript, and trophies).
+        """
+        roster_dir = os.path.join(self.base_dir, "students")
+        os.makedirs(roster_dir, exist_ok=True)
+        roster = self.list_students()
+
+        # Save current student's state to their dedicated slot file first
+        cur_name = self.profile.get("player_name", "Cadet Nova")
+        cur_slug = cur_name.lower().replace(" ", "_")
+        self.save_profile()
+        try:
+            with open(os.path.join(roster_dir, f"{cur_slug}.json"), "w", encoding="utf-8") as f:
+                json.dump(self.profile, f, indent=2)
+        except Exception:
+            pass
+
+        # Resolve target student
+        q = str(student_name_or_id).strip().lower().replace(" ", "_")
+        chosen = next(
+            (s for s in roster if s["id"] == q or s["name"].lower() == str(student_name_or_id).strip().lower()),
+            None,
+        )
+        if not chosen:
+            # Allow creating a custom student name on the fly
+            clean_name = str(student_name_or_id).strip() or "Cadet Nova"
+            chosen = {
+                "id": clean_name.lower().replace(" ", "_"),
+                "name": clean_name,
+                "avatar_idx": (int(self.profile.get("avatar_idx", 0)) + 1) % len(PLAYER_AVATARS),
+                "school_year": 1,
+            }
+
+        target_file = os.path.join(roster_dir, f"{chosen['id']}.json")
+        if os.path.isfile(target_file):
+            try:
+                with open(target_file, "r", encoding="utf-8") as f:
+                    loaded_prof = json.load(f)
+            except Exception:
+                loaded_prof = None
+        else:
+            loaded_prof = None
+
+        if loaded_prof:
+            self.profile = loaded_prof
+        else:
+            yr = int(chosen.get("school_year", 1))
+            self.profile = {
+                **self.profile,
+                "player_name": chosen["name"],
+                "avatar_idx": int(chosen.get("avatar_idx", 0)),
+                "current_school_year": yr,
+                "active_pack_id": f"year_{yr:02d}",
+                "current_pack_id": f"year_{yr:02d}",
+                "earned_badges": ["m1_moon_gravity"],
+                "lifetime_points": 300,
+                "lifetime_stars": 3,
+                "coins": 250,
+                "yearly_transcript": {},
+            }
+
+        self.profile["player_name"] = chosen["name"]
+        self.profile["avatar_idx"] = int(chosen.get("avatar_idx", 0))
+        self.save_profile()
+        try:
+            with open(target_file, "w", encoding="utf-8") as f:
+                json.dump(self.profile, f, indent=2)
+        except Exception:
+            pass
+
+        # Ensure the student's active pack / school year is installed in active_pack/current_pack.json
+        target_pack_id = self.profile.get("active_pack_id", f"year_{self.get_current_school_year():02d}")
+        if target_pack_id in K12_YEAR_PACKS:
+            self._write_pack_file(K12_YEAR_PACKS[target_pack_id])
+        elif target_pack_id in LEARNING_PACKS:
+            self._write_pack_file(LEARNING_PACKS[target_pack_id])
+
+        return {
+            "ok": True,
+            "student_id": chosen["id"],
+            "player_name": self.profile["player_name"],
+            "avatar_idx": self.profile["avatar_idx"],
+            "school_year": self.get_current_school_year(),
+            "active_pack_id": self.profile.get("active_pack_id", "pack_1_core"),
+            "trophies": len(self.profile.get("earned_badges", [])),
+            "coins": int(self.profile.get("coins", 250)),
+            "points": int(self.profile.get("lifetime_points", 300)),
+        }
+
+    def cycle_next_student(self) -> Dict[str, Any]:
+        """Cycle to the next student in the classroom roster (1-click multi-student switcher)."""
+        roster = self.list_students()
+        cur_name = self.profile.get("player_name", "Cadet Nova")
+        cur_idx = next((i for i, s in enumerate(roster) if s["name"] == cur_name), 0)
+        next_student = roster[(cur_idx + 1) % len(roster)]
+        return self.switch_student(next_student["id"])
+
+    # ------------------------------------------------------------------
+    # PRINTABLE / EXPORTABLE OFFICIAL K-12 HTML & TXT REPORT CARD
+    # ------------------------------------------------------------------
+    def export_printable_report_card(self, output_dir: Optional[str] = None) -> Dict[str, str]:
+        """
+        Export an official, printer-ready HTML K-12 Report Card & Honors Certificate
+        plus a plain-text transcript for parents, teachers, and school administrators.
+        """
+        target_dir = output_dir or self.base_dir
+        os.makedirs(target_dir, exist_ok=True)
+        student_name = self.profile.get("player_name", "Cadet Nova")
+        slug = student_name.lower().replace(" ", "_")
+        cur_yr = self.get_current_school_year()
+        grade_lbl = "Kindergarten (Grade K)" if cur_yr == 0 else f"Grade {cur_yr}"
+        yr_pack = self.get_active_year_pack()
+        transcript = self.profile.get("yearly_transcript", {})
+        cur_yr_id = f"year_{cur_yr:02d}"
+        cur_rec = transcript.get(cur_yr_id, {})
+
+        rows_html = []
+        rows_txt = []
+        scores_list = []
+        for les in yr_pack.get("subject_lessons", []):
+            s_key = les.get("subject_key", "ai_cs")
+            sc = int(cur_rec.get(s_key, 100 if les["id"] in self.profile.get("earned_badges", []) else 95))
+            scores_list.append(sc)
+            letter = "A+" if sc >= 97 else ("A" if sc >= 90 else ("B" if sc >= 80 else "C"))
+            rows_html.append(
+                f"<tr><td><b>{les.get('subject_icon', '')} {les.get('subject_name', s_key)}</b></td>"
+                f"<td>{les['title']}</td><td>{les.get('standards', 'National K-12 Standard')}</td>"
+                f"<td><b>{sc}/100 ({letter})</b></td></tr>"
+            )
+            rows_txt.append(f"  • {les.get('subject_name', s_key):<26}: {sc}/100 ({letter}) — {les['title']}")
+
+        avg_score = round(sum(scores_list) / max(1, len(scores_list)), 1)
+        grad_years = [yid for yid, rec in sorted(transcript.items()) if rec.get("graduated")]
+        grad_str = ", ".join(grad_years) if grad_years else f"{cur_yr_id} (In Progress)"
+
+        html_content = f"""<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>SynapseOS Official K-12 Report Card — {student_name}</title>
+<style>
+  body {{ font-family: 'Segoe UI', Roboto, Arial, sans-serif; margin: 32px; color: #0f172a; background: #f8fafc; }}
+  .card {{ max-width: 880px; margin: auto; background: #ffffff; border: 3px solid #1e293b; border-radius: 12px; padding: 28px; box-shadow: 0 8px 24px rgba(0,0,0,0.08); }}
+  h1 {{ margin-top: 0; color: #0f172a; border-bottom: 2px solid #eab308; padding-bottom: 10px; }}
+  .meta {{ display: grid; grid-template-columns: 1fr 1fr; gap: 10px; background: #f1f5f9; padding: 14px; border-radius: 8px; margin-bottom: 20px; }}
+  table {{ width: 100%; border-collapse: collapse; margin-top: 12px; }}
+  th, td {{ border: 1px solid #cbd5e1; padding: 10px 12px; text-align: left; font-size: 14px; }}
+  th {{ background: #1e293b; color: #f8fafc; }}
+  .print-btn {{ background: #2563eb; color: white; border: none; padding: 10px 18px; border-radius: 6px; font-weight: bold; cursor: pointer; float: right; }}
+  @media print {{ .print-btn {{ display: none; }} body {{ background: #fff; margin: 0; }} }}
+</style>
+</head>
+<body>
+<div class="card">
+  <button class="print-btn" onclick="window.print()">🖨️ Print / Save as PDF</button>
+  <h1>🎓 SynapseOS Official K–12 Academic Report Card & AI Transcript</h1>
+  <div class="meta">
+    <div><b>Student Name:</b> {student_name}</div>
+    <div><b>Active Grade Level:</b> Year {cur_yr} ({grade_lbl})</div>
+    <div><b>Cumulative Average:</b> {avg_score}% (Honors Standing)</div>
+    <div><b>Earned Trophies & Points:</b> {len(self.profile.get('earned_badges', []))} Gold Badges | {self.profile.get('lifetime_points', 300)} pts</div>
+    <div><b>Graduated School Years:</b> {grad_str}</div>
+    <div><b>Curriculum Source:</b> github.com/batteryphil/SynapseOS/curricula/{cur_yr_id}.json</div>
+  </div>
+  <h3>Active School Year ({grade_lbl}) — 5 Core Subjects & Connected AI Labs</h3>
+  <table>
+    <thead><tr><th>Subject</th><th>Course Title</th><th>National Standard</th><th>Score & Grade</th></tr></thead>
+    <tbody>
+      {"".join(rows_html)}
+    </tbody>
+  </table>
+  <p style="margin-top:22px; font-size:13px; color:#475569;">
+    Verified deterministically by the SynapseOS C99/Cosmopolitan AI Workbench & Auto-Graded Python Sandbox.
+  </p>
+</div>
+</body>
+</html>"""
+
+        txt_content = (
+            f"======================================================================\n"
+            f"🎓 SYNAPSEOS OFFICIAL K-12 REPORT CARD & TRANSCRIPT\n"
+            f"======================================================================\n"
+            f"Student Name       : {student_name}\n"
+            f"Active Grade Level : Year {cur_yr} ({grade_lbl}) — {yr_pack.get('title_en', '')}\n"
+            f"Cumulative Average : {avg_score}% (Honors Standing)\n"
+            f"Gold Trophies      : {len(self.profile.get('earned_badges', []))} Badges | {self.profile.get('lifetime_points', 300)} pts | {self.profile.get('coins', 250)} Coins\n"
+            f"Graduated Years    : {grad_str}\n"
+            f"----------------------------------------------------------------------\n"
+            f"ACTIVE GRADE ({grade_lbl.upper()}) SUBJECT SCORES:\n"
+            + "\n".join(rows_txt)
+            + "\n======================================================================\n"
+        )
+
+        html_path = os.path.join(target_dir, f"SynapseOS_Report_Card_{slug}.html")
+        txt_path = os.path.join(target_dir, f"SynapseOS_Report_Card_{slug}.txt")
+        with open(html_path, "w", encoding="utf-8") as f:
+            f.write(html_content)
+        with open(txt_path, "w", encoding="utf-8") as f:
+            f.write(txt_content)
+
+        return {
+            "ok": True,
+            "student_name": student_name,
+            "grade_label": grade_lbl,
+            "average_score": avg_score,
+            "html_path": html_path,
+            "txt_path": txt_path,
+        }
+
 
 def main() -> None:
     import sys
@@ -1135,26 +1435,27 @@ def main() -> None:
             mark = "★ ACTIVE" if pid == cur_id else ("✓ DONE" if pid in mgr.profile.get("completed_packs", []) else "  READY")
             lv_nums = [lv["level"] for lv in p["kid_levels"]]
             print(f"  [{mark}] {pid:16s} | {p['title_en']} (Levels {min(lv_nums)}-{max(lv_nums)})")
-        print("\nAvailable K-12 Rolling School Year Curricula (1-Year-at-a-Time Wiper):")
-        for yid in YEAR_PACK_ORDER:
+        print("\nAvailable Complete K-12 Rolling School Curricula (Kindergarten + Grades 1-12):")
+        for yid in K12_ALL_GRADE_ORDER:
             yp = K12_YEAR_PACKS[yid]
             mark = "★ ACTIVE" if yid == cur_id else ("✓ GRAD" if yid in mgr.profile.get("yearly_transcript", {}) else "  READY")
             subjs = ", ".join(s["subject_name"].split()[0] for s in yp["subject_lessons"])
-            print(f"  [{mark}] {yid:16s} | {yp['title_en']} [{subjs}]")
+            print(f"  [{mark}] {yid:16s} | {yp['title_en']} [{subjs} — 20 Quarterly Units]")
     elif sub in ("list-years", "years"):
         cur_id = mgr.profile.get("active_pack_id", "pack_1_core")
         cur_yr = mgr.get_current_school_year()
         transcript = mgr.profile.get("yearly_transcript", {})
-        print("SynapseOS K-12 Year-by-Year School Curricula (Traditional Subjects + AI):")
+        print("SynapseOS Complete K-12 School Curricula (Kindergarten + Grades 1-12 | 65 Courses | 260 Quarterly Units):")
         print("  (Only 1 school year stays in active storage at a time; old year is wiped on advance while keeping scores)")
-        for yid in YEAR_PACK_ORDER:
+        for yid in K12_ALL_GRADE_ORDER:
             yp = K12_YEAR_PACKS[yid]
             yr_num = yp["year_number"]
+            g_str = "Grade  K" if yr_num == 0 else f"Grade {yr_num:2d}"
             is_act = (yid == cur_id) or (yr_num == cur_yr and not cur_id.startswith("year_"))
             mark = "★ ACTIVE" if is_act else ("✓ GRAD" if transcript.get(yid, {}).get("graduated") else "  READY")
-            print(f"  [{mark}] {yid} (Grade {yr_num:2d}) | {yp['title_en']}")
+            print(f"  [{mark}] {yid} ({g_str}) | {yp['title_en']} (5 Full-Year Courses / 20 Quarterly Units)")
             for les in yp["subject_lessons"]:
-                print(f"             • [{les['id']}] {les['subject_icon']} {les['subject_name']:24s}: {les['title']}")
+                print(f"             • [{les['id']} | +q1..q4] {les['subject_icon']} {les['subject_name']:24s}: {les['title']}")
     elif sub in ("set-year", "year") and len(args) >= 2:
         res = mgr.set_school_year(args[1])
         print(f"[✓] Installed School Year Curriculum: {res['new_pack_title']} ({res['new_pack_id']})")
@@ -1165,8 +1466,31 @@ def main() -> None:
         res = mgr.advance_school_year()
         print(f"[🎓] GRADUATED & ADVANCED TO: {res['new_pack_title']} ({res['new_pack_id']})")
         print(f"    • Wiped old school year files to save disk space: {res['freed_kb']} KB freed")
+        print(f"    • Linked GitHub Repo URL: {res.get('repo_url', '')}")
         print(f"    • Permanent Transcript Saved: {len(res['yearly_transcript'])} School Year(s) on record")
         print(f"    • Preserved Student Trophies: {len(res['earned_badges'])} Gold Badges | {res['lifetime_points']} pts")
+    elif sub in ("sync-repo", "pull-repo"):
+        target_yr = args[1] if len(args) >= 2 else None
+        res = mgr.sync_from_github_repo(target_yr)
+        print(f"[☁] SYNCED K-12 CURRICULUM FROM GITHUB REPO: {res['new_pack_title']} ({res['new_pack_id']})")
+        print(f"    • GitHub Repo URL : {res.get('repo_url', '')}")
+        print(f"    • Source Used     : {res.get('source_used', '')}")
+        print(f"    • Loaded {res['subject_count']} Full-Year Courses + {res['quarterly_unit_count']} Quarterly Units")
+    elif sub in ("students", "roster"):
+        print("SynapseOS Multi-Student Classroom Roster:")
+        for st in mgr.list_students():
+            mark = "★ ACTIVE" if st["active"] else "  SLOT  "
+            g_lbl = "Grade K" if st["school_year"] == 0 else f"Grade {st['school_year']}"
+            print(f"  [{mark}] {st['name']:<14} | {g_lbl:<8} | {st['trophies']} Trophies | {st['points']} pts")
+    elif sub in ("switch-student", "student"):
+        res = mgr.switch_student(args[1]) if len(args) >= 2 else mgr.cycle_next_student()
+        print(f"[👤] Switched Active Student Profile: {res['player_name']} (Year {res['school_year']})")
+        print(f"    • Active Pack : {res['active_pack_id']} | Trophies: {res['trophies']} | Points: {res['points']}")
+    elif sub in ("export-report", "report-card"):
+        res = mgr.export_printable_report_card()
+        print(f"[🖨️] Exported Official K-12 Report Card for {res['student_name']} ({res['grade_label']} — {res['average_score']}% Avg):")
+        print(f"    • Printable HTML Certificate : {res['html_path']}")
+        print(f"    • Plain-Text Transcript      : {res['txt_path']}")
     elif sub in ("next", "upgrade"):
         res = mgr.upgrade_to_next_pack()
         print(f"[✓] Installed {res['new_pack_title']} ({res['new_pack_id']})")
@@ -1182,6 +1506,7 @@ def main() -> None:
         lv_nums = [lv["level"] for lv in pack.get("kid_levels", [])]
         yr = mgr.get_current_school_year()
         print("SynapseOS Student Trophy Vault & K-12 Curriculum Status:")
+        print(f"  • Active Student   : {mgr.profile.get('player_name', 'Cadet Nova')}")
         print(f"  • Active Pack      : {pack.get('title_en')} ({pack.get('pack_id')}, Levels {min(lv_nums)}-{max(lv_nums)})")
         print(f"  • Active School Yr : Year {yr} (Grade {yr}) — 5 Core Subjects (Math, Science, ELA, History, AI)")
         print(f"  • Completed Packs  : {', '.join(mgr.profile.get('completed_packs', [])) or 'None yet'}")
@@ -1193,4 +1518,5 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
+
 

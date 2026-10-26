@@ -884,22 +884,24 @@ LAB_EXAMPLES: Dict[str, List[Dict[str, Any]]] = {
 from workbench.k12_curricula import (
     K12_YEAR_PACKS,
     get_all_k12_subject_lessons,
+    get_all_k12_lessons_with_quarters,
     get_subject_lessons_for_year,
 )
 
-ALL_CURRICULUM_LESSONS: List[Dict[str, Any]] = list(SCHOOL_CURRICULUM) + get_all_k12_subject_lessons()
+ALL_CURRICULUM_LESSONS: List[Dict[str, Any]] = list(SCHOOL_CURRICULUM) + get_all_k12_lessons_with_quarters()
 
 
 def get_examples_for_lab(lab_id: str) -> List[Dict[str, Any]]:
     return LAB_EXAMPLES.get(lab_id, LAB_EXAMPLES["moon_lander"])
 
 
-def get_curriculum_for_year(year_num: int = 1) -> List[Dict[str, Any]]:
+def get_curriculum_for_year(year_num: int = 1, include_quarters: bool = True) -> List[Dict[str, Any]]:
     """
-    Return the active school year's 5 Core Subject Lessons (Math, Science, Reading/ELA,
-    Social Studies/History, AI & Coding) followed by the Core AI Lab Track missions.
+    Return the active school year's 5 Core Subject Courses (Math, Science, Reading/ELA,
+    Social Studies/History, AI & Coding) + 20 Quarterly Unit Lessons (Q1-Q4), followed
+    by the Core AI Lab Track missions.
     """
-    year_subjects = get_subject_lessons_for_year(year_num)
+    year_subjects = get_subject_lessons_for_year(year_num, include_quarters=include_quarters)
     return list(year_subjects) + list(SCHOOL_CURRICULUM)
 
 

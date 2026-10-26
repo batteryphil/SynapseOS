@@ -1,5 +1,32 @@
 {
+  "total_grades_k_to_12": 13,
+  "total_subject_courses": 65,
+  "total_quarterly_unit_lessons": 260,
   "curricula_years": [
+    {
+      "pack_id": "year_00",
+      "school_year": 0,
+      "year_number": 0,
+      "grade_label": "Kindergarten / Grade K (Ages 5-6)",
+      "band": "Band A: Early Childhood & Elementary Discovery",
+      "title_en": "Kindergarten (Grade K): Counting 1-20, 5 Senses & Weather, Alphabet Phonics, Helpers & Lumi's First Steps",
+      "file": "year_00.json",
+      "subjects": [
+        "math",
+        "science",
+        "ela",
+        "history",
+        "ai_cs"
+      ],
+      "lesson_ids": [
+        "y00_math",
+        "y00_science",
+        "y00_ela",
+        "y00_history",
+        "y00_ai_cs"
+      ],
+      "quarterly_lesson_count": 20
+    },
     {
       "pack_id": "year_01",
       "school_year": 1,
@@ -21,7 +48,8 @@
         "y01_ela",
         "y01_history",
         "y01_ai_cs"
-      ]
+      ],
+      "quarterly_lesson_count": 20
     },
     {
       "pack_id": "year_02",
@@ -44,7 +72,8 @@
         "y02_ela",
         "y02_history",
         "y02_ai_cs"
-      ]
+      ],
+      "quarterly_lesson_count": 20
     },
     {
       "pack_id": "year_03",
@@ -67,7 +96,8 @@
         "y03_ela",
         "y03_history",
         "y03_ai_cs"
-      ]
+      ],
+      "quarterly_lesson_count": 20
     },
     {
       "pack_id": "year_04",
@@ -90,7 +120,8 @@
         "y04_ela",
         "y04_history",
         "y04_ai_cs"
-      ]
+      ],
+      "quarterly_lesson_count": 20
     },
     {
       "pack_id": "year_05",
@@ -113,7 +144,8 @@
         "y05_ela",
         "y05_history",
         "y05_ai_cs"
-      ]
+      ],
+      "quarterly_lesson_count": 20
     },
     {
       "pack_id": "year_06",
@@ -136,7 +168,8 @@
         "y06_ela",
         "y06_history",
         "y06_ai_cs"
-      ]
+      ],
+      "quarterly_lesson_count": 20
     },
     {
       "pack_id": "year_07",
@@ -159,7 +192,8 @@
         "y07_ela",
         "y07_history",
         "y07_ai_cs"
-      ]
+      ],
+      "quarterly_lesson_count": 20
     },
     {
       "pack_id": "year_08",
@@ -182,7 +216,8 @@
         "y08_ela",
         "y08_history",
         "y08_ai_cs"
-      ]
+      ],
+      "quarterly_lesson_count": 20
     },
     {
       "pack_id": "year_09",
@@ -205,7 +240,8 @@
         "y09_ela",
         "y09_history",
         "y09_ai_cs"
-      ]
+      ],
+      "quarterly_lesson_count": 20
     },
     {
       "pack_id": "year_10",
@@ -228,7 +264,8 @@
         "y10_ela",
         "y10_history",
         "y10_ai_cs"
-      ]
+      ],
+      "quarterly_lesson_count": 20
     },
     {
       "pack_id": "year_11",
@@ -251,7 +288,8 @@
         "y11_ela",
         "y11_history",
         "y11_ai_cs"
-      ]
+      ],
+      "quarterly_lesson_count": 20
     },
     {
       "pack_id": "year_12",
@@ -274,7 +312,8 @@
         "y12_ela",
         "y12_history",
         "y12_ai_cs"
-      ]
+      ],
+      "quarterly_lesson_count": 20
     }
   ]
 }

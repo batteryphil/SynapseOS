@@ -208,13 +208,25 @@ stage_inject_cortex() {
     sudo mkdir -p "${CHROOT_DIR}/etc/systemd/system/getty@tty1.service.d"
     sudo cp "${SCRIPT_DIR}/config/autologin.conf" "${CHROOT_DIR}/etc/systemd/system/getty@tty1.service.d/autologin.conf"
 
-    # 3. Install Cortex-Phi3, SQLite FTS5 KB, 12-Lesson School Suite & Synapse Studio 6-Lab Workbench
+    # 3. Install Cortex-Phi3, SQLite FTS5 KB, 325-Lesson K-12 Curriculum & Synapse Studio Workbench
     sudo mkdir -p "${CHROOT_DIR}/usr/local/lib/synapse/cortex"
     sudo mkdir -p "${CHROOT_DIR}/usr/local/lib/synapse/workbench"
+    sudo mkdir -p "${CHROOT_DIR}/usr/local/lib/synapse/curricula"
+    sudo mkdir -p "${CHROOT_DIR}/usr/local/lib/synapse/bin"
+    sudo mkdir -p "${CHROOT_DIR}/usr/local/lib/synapse/scripts"
+    sudo mkdir -p "${CHROOT_DIR}/usr/local/lib/synapse/tests"
     sudo cp -r "${PROJECT_ROOT}/cortex/"* "${CHROOT_DIR}/usr/local/lib/synapse/cortex/"
     sudo cp -r "${PROJECT_ROOT}/workbench/"* "${CHROOT_DIR}/usr/local/lib/synapse/workbench/"
+    sudo cp -r "${PROJECT_ROOT}/curricula/"* "${CHROOT_DIR}/usr/local/lib/synapse/curricula/"
+    sudo cp -r "${PROJECT_ROOT}/bin/"* "${CHROOT_DIR}/usr/local/lib/synapse/bin/" 2>/dev/null || true
+    sudo cp -r "${PROJECT_ROOT}/scripts/"* "${CHROOT_DIR}/usr/local/lib/synapse/scripts/" 2>/dev/null || true
+    sudo cp -r "${PROJECT_ROOT}/tests/"* "${CHROOT_DIR}/usr/local/lib/synapse/tests/" 2>/dev/null || true
     sudo cp "${PROJECT_ROOT}/synapse" "${CHROOT_DIR}/usr/local/lib/synapse/synapse"
+    sudo cp "${PROJECT_ROOT}/README.md" "${CHROOT_DIR}/usr/local/lib/synapse/README.md" 2>/dev/null || true
     sudo cp "${PROJECT_ROOT}/SYNAPSE_OS_SPECS.txt" "${CHROOT_DIR}/usr/local/lib/synapse/SYNAPSE_OS_SPECS.txt" 2>/dev/null || true
+
+    # Compile C99 PRIME-Moment Engine inside the Debian 12 chroot (GLIBC 2.36 ABI compatibility)
+    sudo chroot "${CHROOT_DIR}" /bin/bash -c "cd /usr/local/lib/synapse/cortex/c_prime && rm -f bin/prime bin/libprime.so bin/libsynapse_core.so && make bin/prime bin/libprime.so bin/libsynapse_core.so"
 
     sudo mkdir -p "${CHROOT_DIR}/usr/local/bin"
     sudo ln -sf /usr/local/lib/synapse/cortex/cortex_cli.py "${CHROOT_DIR}/usr/local/bin/cortex"
@@ -386,13 +398,23 @@ stage_build_lite_iso() {
     local lite_image_dir="${BUILD_DIR}/image_lite"
     log_info "Building Lite Experimentation ISO (No LLM / Fast Download): ${OUTPUT_DIR}/${lite_iso_name}..."
 
-    # Ensure latest Cortex (including C99 PRIME-Moment Engine) and 7-Lab Workbench are injected
+    # Ensure latest Cortex (including C99 PRIME-Moment Engine), 325-Lesson K-12 Curricula & Workbench are injected
     sudo mkdir -p "${CHROOT_DIR}/usr/local/lib/synapse/cortex"
     sudo mkdir -p "${CHROOT_DIR}/usr/local/lib/synapse/workbench"
+    sudo mkdir -p "${CHROOT_DIR}/usr/local/lib/synapse/curricula"
+    sudo mkdir -p "${CHROOT_DIR}/usr/local/lib/synapse/bin"
+    sudo mkdir -p "${CHROOT_DIR}/usr/local/lib/synapse/scripts"
+    sudo mkdir -p "${CHROOT_DIR}/usr/local/lib/synapse/tests"
     sudo cp -r "${PROJECT_ROOT}/cortex/"* "${CHROOT_DIR}/usr/local/lib/synapse/cortex/"
     sudo cp -r "${PROJECT_ROOT}/workbench/"* "${CHROOT_DIR}/usr/local/lib/synapse/workbench/"
+    sudo cp -r "${PROJECT_ROOT}/curricula/"* "${CHROOT_DIR}/usr/local/lib/synapse/curricula/"
+    sudo cp -r "${PROJECT_ROOT}/bin/"* "${CHROOT_DIR}/usr/local/lib/synapse/bin/" 2>/dev/null || true
+    sudo cp -r "${PROJECT_ROOT}/scripts/"* "${CHROOT_DIR}/usr/local/lib/synapse/scripts/" 2>/dev/null || true
+    sudo cp -r "${PROJECT_ROOT}/tests/"* "${CHROOT_DIR}/usr/local/lib/synapse/tests/" 2>/dev/null || true
     sudo cp "${PROJECT_ROOT}/synapse" "${CHROOT_DIR}/usr/local/lib/synapse/synapse"
+    sudo cp "${PROJECT_ROOT}/README.md" "${CHROOT_DIR}/usr/local/lib/synapse/README.md" 2>/dev/null || true
     sudo cp "${PROJECT_ROOT}/SYNAPSE_OS_SPECS.txt" "${CHROOT_DIR}/usr/local/lib/synapse/SYNAPSE_OS_SPECS.txt" 2>/dev/null || true
+    sudo chroot "${CHROOT_DIR}" /bin/bash -c "cd /usr/local/lib/synapse/cortex/c_prime && rm -f bin/prime bin/libprime.so bin/libsynapse_core.so && make bin/prime bin/libprime.so bin/libsynapse_core.so"
     sudo ln -sf /usr/local/lib/synapse/cortex/c_prime/bin/prime "${CHROOT_DIR}/usr/local/bin/prime-moment"
 
     sudo umount -lf "${CHROOT_DIR}/sys" 2>/dev/null || true

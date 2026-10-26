@@ -18,10 +18,16 @@ Each Yearly Package (`year_01` .. `year_12`) includes:
 
 import json
 import os
+import sys
 from typing import Dict, Any, List
+
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(os.path.realpath(__file__)), "..")))
+
+from workbench.k12_complete_textbook import KINDERGARTEN_SPEC, build_textbook_sections
 
 
 YEAR_SPECS: List[Dict[str, Any]] = [
+    KINDERGARTEN_SPEC,
     {
         "year": 1,
         "pack_id": "year_01",
@@ -1556,6 +1562,14 @@ def _build_subject_lessons_for_year(spec: Dict[str, Any]) -> List[Dict[str, Any]
         elif lab_id == "raycast_car":
             goal_target = min(goal_target, 140.0)
 
+        tb = build_textbook_sections(
+            yr=yr,
+            subj_key=subj_key,
+            title=sdata["title"],
+            base_story=sdata["story"],
+            base_code=sdata["code"],
+        )
+
         lessons.append({
             "id": lid,
             "year": yr,
@@ -1567,31 +1581,65 @@ def _build_subject_lessons_for_year(spec: Dict[str, Any]) -> List[Dict[str, Any]
             "track": f"Year {yr} ({grade_lbl}) — {subj_track_name}",
             "title": sdata["title"],
             "grade_level": grade_lbl,
+            "standards": tb["standards"],
             "lab_id": lab_id,
             "badge": badge_name,
-            "story": sdata["story"],
+            "core_story": sdata["story"],
+            "story": tb["full_textbook_story"],
+            "story_challenge": tb["full_textbook_story"],
+            "four_quarter_syllabus": tb["four_quarter_syllabus"],
+            "vocabulary": tb["vocabulary"],
+            "worked_examples": tb["worked_examples"],
+            "practice_quiz": tb["practice_quiz"],
+            "rubric": tb["rubric"],
             "steps": [
-                f"1. Read the Year {yr} ({grade_lbl}) {subj_track_name} lesson above.",
-                "2. Click '▸ 1. Load Preset' to configure the interactive simulation for this subject.",
-                "3. Click '⚡ Turbo +25 Gens' (or open '✎ 3. Python Challenge' and click '▶ Run Code') to complete the assignment.",
-                "4. Click '✓ 2. Check Goal' to record your grade on your Year-by-Year Report Card!",
+                f"1. Study Section 1 (Core Textbook Lesson), Section 3 (Vocabulary), and Section 4 (Worked Examples) for {grade_lbl} {clean_sname}.",
+                "2. Complete the 3 Practice Quiz problems in Section 5 (on paper or in the Python Worksheet tab).",
+                "3. Click '▸ 1. Load Preset' and '⚡ Turbo +25 Gens' (or run the Python Worksheet in Tab 2) to verify your mastery.",
+                "4. Click '✓ 2. Check Goal' to record your 100/100 score on your permanent K-12 Report Card!",
             ],
             "preset_params": preset,
             "goal_metric": goal_metric,
             "goal_op": sdata["goal_op"],
             "goal_target": goal_target,
-            "goal_desc": f"Complete the {sdata['title']} lab & code check ({goal_metric} {sdata['goal_op']} {goal_target})",
-            "coding_challenge": sdata["code"],
+            "goal_desc": f"Complete the {sdata['title']} textbook lesson, quiz & AI lab ({goal_metric} {sdata['goal_op']} {goal_target})",
+            "coding_challenge": tb["enhanced_code"],
         })
     return lessons
 
 
+def _build_quarterly_lessons_for_year(subject_lessons: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+    """Expand the 5 full-year subject courses into 20 Quarter-by-Quarter (Q1..Q4) runnable unit lessons."""
+    q_lessons: List[Dict[str, Any]] = []
+    for base_les in subject_lessons:
+        for q_idx, q_info in enumerate(base_les.get("four_quarter_syllabus", []), start=1):
+            qid = f"{base_les['id']}_q{q_idx}"
+            q_story = (
+                f"🗓️ {q_info['quarter']}\n"
+                f"• Unit Focus: {q_info['focus']}\n"
+                f"• Learning Objective: {q_info['objectives']}\n"
+                f"• Required Deliverable: {q_info['deliverable']}\n\n"
+                + base_les["story"]
+            )
+            q_lessons.append({
+                **base_les,
+                "id": qid,
+                "quarter": q_idx,
+                "title": f"[Q{q_idx}] {base_les['title']} — {q_info['focus']}",
+                "story": q_story,
+                "story_challenge": q_story,
+            })
+    return q_lessons
+
+
 def build_all_k12_year_packs() -> Dict[str, Dict[str, Any]]:
-    """Return a dictionary of all 12 K-12 Yearly Curriculum Packs (`year_01` .. `year_12`)."""
+    """Return a dictionary of all 13 K-12 Yearly Curriculum Packs (`year_00` Kindergarten .. `year_12` Senior)."""
     packs: Dict[str, Dict[str, Any]] = {}
     for spec in YEAR_SPECS:
         yr = spec["year"]
         pid = spec["pack_id"]
+        subj_lessons = _build_subject_lessons_for_year(spec)
+        q_lessons = _build_quarterly_lessons_for_year(subj_lessons)
         packs[pid] = {
             "pack_id": pid,
             "pack_number": yr,
@@ -1605,14 +1653,16 @@ def build_all_k12_year_packs() -> Dict[str, Dict[str, Any]]:
             "short_en": spec["short_en"],
             "short_fr": spec["short_fr"],
             "subjects": ["math", "science", "ela", "history", "ai_cs"],
-            "subject_lessons": _build_subject_lessons_for_year(spec),
+            "subject_lessons": subj_lessons,
+            "quarterly_lessons": q_lessons,
+            "quarterly_unit_lessons": q_lessons,
             "kid_levels": _build_kid_levels_for_year(spec),
         }
     return packs
 
 
 def export_k12_curricula_to_repo(repo_curricula_dir: str = "") -> List[str]:
-    """Write `curricula/year_01.json` through `curricula/year_12.json` + `curricula/index.json`."""
+    """Write `curricula/year_00.json` through `curricula/year_12.json` + `curricula/index.json`."""
     if not repo_curricula_dir:
         here = os.path.dirname(os.path.realpath(__file__))
         repo_curricula_dir = os.path.abspath(os.path.join(here, "..", "curricula"))
@@ -1637,34 +1687,59 @@ def export_k12_curricula_to_repo(repo_curricula_dir: str = "") -> List[str]:
             "file": f"{pid}.json",
             "subjects": pdata["subjects"],
             "lesson_ids": [l["id"] for l in pdata["subject_lessons"]],
+            "quarterly_lesson_count": len(pdata["quarterly_unit_lessons"]),
         })
 
     idx_path = os.path.join(repo_curricula_dir, "index.json")
     with open(idx_path, "w", encoding="utf-8") as f:
-        json.dump({"curricula_years": index_manifest}, f, indent=2, ensure_ascii=False)
+        json.dump(
+            {
+                "total_grades_k_to_12": len(index_manifest),
+                "total_subject_courses": len(index_manifest) * 5,
+                "total_quarterly_unit_lessons": len(index_manifest) * 20,
+                "curricula_years": index_manifest,
+            },
+            f,
+            indent=2,
+            ensure_ascii=False,
+        )
     written.append(idx_path)
     return written
 
 
 K12_YEAR_PACKS: Dict[str, Dict[str, Any]] = build_all_k12_year_packs()
 YEAR_PACK_ORDER: List[str] = [f"year_{i:02d}" for i in range(1, 13)]
+K12_ALL_GRADE_ORDER: List[str] = [f"year_{i:02d}" for i in range(0, 13)]
 
 
-def get_subject_lessons_for_year(year_num: int = 1) -> List[Dict[str, Any]]:
-    yr = max(1, min(12, int(year_num)))
+def get_subject_lessons_for_year(year_num: int = 1, include_quarters: bool = False) -> List[Dict[str, Any]]:
+    yr = max(0, min(12, int(year_num)))
     yp = K12_YEAR_PACKS.get(f"year_{yr:02d}", K12_YEAR_PACKS["year_01"])
-    return list(yp.get("subject_lessons", []))
+    base = list(yp.get("subject_lessons", []))
+    if include_quarters:
+        base.extend(yp.get("quarterly_unit_lessons", []))
+    return base
 
 
-def get_all_k12_subject_lessons() -> List[Dict[str, Any]]:
+def get_all_k12_subject_lessons(include_kindergarten: bool = True) -> List[Dict[str, Any]]:
+    order = K12_ALL_GRADE_ORDER if include_kindergarten else YEAR_PACK_ORDER
     all_lessons: List[Dict[str, Any]] = []
-    for yid in YEAR_PACK_ORDER:
+    for yid in order:
         all_lessons.extend(K12_YEAR_PACKS[yid].get("subject_lessons", []))
+    return all_lessons
+
+
+def get_all_k12_lessons_with_quarters() -> List[Dict[str, Any]]:
+    """Return all 65 K-12 full-year subject courses + all 260 quarterly unit lessons (325 total)."""
+    all_lessons: List[Dict[str, Any]] = []
+    for yid in K12_ALL_GRADE_ORDER:
+        all_lessons.extend(K12_YEAR_PACKS[yid].get("subject_lessons", []))
+        all_lessons.extend(K12_YEAR_PACKS[yid].get("quarterly_unit_lessons", []))
     return all_lessons
 
 
 if __name__ == "__main__":
     paths = export_k12_curricula_to_repo()
-    print(f"[✓] Exported {len(paths)} K-12 Yearly Curriculum files to curricula/:")
+    print(f"[✓] Exported {len(paths)} Complete K-12 Yearly Curriculum files (Kindergarten + Grades 1-12) to curricula/:")
     for p in paths:
         print(f"  • {p} ({os.path.getsize(p) / 1024:.1f} KB)")

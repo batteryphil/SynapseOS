@@ -494,18 +494,26 @@ class CortexEngine:
         has_avx2 = self.system_info.get("has_avx2", False)
         ram_gb = self.system_info.get("ram_total_gb", 4.0)
 
-        if self.potato_mode or not has_avx2 or ram_gb < 3.8:
-            num_ctx = 1024
-            num_predict = 150
+        try:
+            active_cores = len(os.sched_getaffinity(0))
+        except Exception:
+            active_cores = os.cpu_count() or 2
+
+        if self.potato_mode or not has_avx2 or ram_gb < 4.5 or active_cores <= 2:
+            num_ctx = 512
+            num_predict = 96
+            use_mlock = False
         else:
             num_ctx = 1024
             num_predict = 180
+            use_mlock = bool(ram_gb >= 6.0)
 
         return {
             "temperature": 0.15,
             "num_ctx": num_ctx,
             "num_predict": num_predict,
-            "use_mlock": bool(ram_gb >= 3.8),
+            "num_thread": max(1, min(8, active_cores)),
+            "use_mlock": use_mlock,
             "use_mmap": True,
             "stop": [
                 "AI_MENTOR_REQUEST:",

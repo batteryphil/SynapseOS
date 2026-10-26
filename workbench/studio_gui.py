@@ -556,6 +556,18 @@ class SynapseStudioWindow(Gtk.Window):
         self.btn_check_goal.connect("clicked", self._on_check_lesson_goal)
         lesson_btn_box.pack_start(self.btn_check_goal, True, True, 0)
 
+        self.btn_mission_next_year = Gtk.Button(label="★ Next Yr ↻")
+        self.btn_mission_next_year.set_tooltip_text(
+            "End-of-Course / End-of-Year Upgrade: Saves student Report Card, wipes old year files, and pulls the next Grade from github.com/batteryphil/SynapseOS"
+        )
+        self.btn_mission_next_year.connect("clicked", lambda _b: self.advance_k12_school_year())
+        lesson_btn_box.pack_start(self.btn_mission_next_year, False, False, 0)
+
+        self.btn_read_aloud = Gtk.Button(label="♪ Read")
+        self.btn_read_aloud.set_tooltip_text("Read this lesson & quiz question aloud (Offline Text-to-Speech for K-12 & early readers)")
+        self.btn_read_aloud.connect("clicked", lambda _b: self.read_aloud_lesson())
+        lesson_btn_box.pack_start(self.btn_read_aloud, False, False, 0)
+
         self.btn_kid_peek_brain = Gtk.Button(label="⚙ Peek Inside AI Brain!")
         self.btn_kid_peek_brain.connect("clicked", lambda _b: self.right_notebook.set_current_page(2))
         school_vbox.pack_start(self.btn_kid_peek_brain, False, False, 0)
@@ -563,6 +575,32 @@ class SynapseStudioWindow(Gtk.Window):
         self.btn_open_challenge = Gtk.Button(label="✎ 3. Open Python Coding Challenge")
         self.btn_open_challenge.connect("clicked", self._on_open_lesson_coding)
         school_vbox.pack_start(self.btn_open_challenge, False, False, 0)
+
+        # --- INTERACTIVE MULTIPLE-CHOICE QUICK QUIZ BAR (A / B / C / D) ---
+        self.active_quiz_idx = 0
+        self.quiz_frame = Gtk.Frame(label=" ★ Interactive Quick Quiz (Click A / B / C / D!) ")
+        quiz_vbox = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=3)
+        quiz_vbox.set_margin_top(3)
+        quiz_vbox.set_margin_bottom(3)
+        quiz_vbox.set_margin_start(4)
+        quiz_vbox.set_margin_end(4)
+
+        self.quiz_question_lbl = Gtk.Label()
+        self.quiz_question_lbl.set_xalign(0.0)
+        self.quiz_question_lbl.set_line_wrap(True)
+        self.quiz_question_lbl.set_max_width_chars(38)
+        quiz_vbox.pack_start(self.quiz_question_lbl, False, False, 0)
+
+        quiz_btn_row = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=3)
+        self.quiz_choice_buttons = {}
+        for letter in ("A", "B", "C", "D"):
+            qbtn = Gtk.Button(label=f"{letter}")
+            qbtn.connect("clicked", self._on_quiz_choice_clicked, letter)
+            quiz_btn_row.pack_start(qbtn, True, True, 0)
+            self.quiz_choice_buttons[letter] = qbtn
+        quiz_vbox.pack_start(quiz_btn_row, False, False, 0)
+        self.quiz_frame.add(quiz_vbox)
+        school_vbox.pack_start(self.quiz_frame, False, False, 0)
 
         lesson_scroll = Gtk.ScrolledWindow()
         lesson_scroll.set_policy(Gtk.PolicyType.AUTOMATIC, Gtk.PolicyType.AUTOMATIC)
@@ -646,14 +684,29 @@ class SynapseStudioWindow(Gtk.Window):
         dash_btn_row = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=4)
         dash_vbox.pack_start(dash_btn_row, False, False, 0)
 
-        self.btn_toggle_pin = Gtk.Button(label="◈ PIN Gate: OFF (1234)")
+        self.btn_toggle_pin = Gtk.Button(label="◈ PIN: OFF")
         self.btn_toggle_pin.connect("clicked", self._on_toggle_pin_lock)
         dash_btn_row.pack_start(self.btn_toggle_pin, True, True, 0)
+
+        self.btn_switch_student = Gtk.Button(label="❖ Student ↻")
+        self.btn_switch_student.set_tooltip_text("Switch active student profile in the classroom roster (each student has their own Grade, Transcript & Trophies)")
+        self.btn_switch_student.connect("clicked", lambda _b: self.switch_classroom_student())
+        dash_btn_row.pack_start(self.btn_switch_student, False, False, 0)
 
         self.btn_advance_year = Gtk.Button(label="★ Next Year ↻")
         self.btn_advance_year.set_tooltip_text("Graduate to the next K-12 School Year (wipes old year's pack & keeps transcript scores)")
         self.btn_advance_year.connect("clicked", lambda _b: self.advance_k12_school_year())
         dash_btn_row.pack_start(self.btn_advance_year, False, False, 0)
+
+        self.btn_sync_repo = Gtk.Button(label="☁ Repo")
+        self.btn_sync_repo.set_tooltip_text("Pull latest annual K-12 curriculum updates directly from github.com/batteryphil/SynapseOS")
+        self.btn_sync_repo.connect("clicked", lambda _b: self.sync_k12_repo())
+        dash_btn_row.pack_start(self.btn_sync_repo, False, False, 0)
+
+        self.btn_export_report = Gtk.Button(label="✎ Export")
+        self.btn_export_report.set_tooltip_text("Export Official Printable HTML & TXT K-12 Report Card & Honors Certificate")
+        self.btn_export_report.connect("clicked", lambda _b: self.export_student_report_card())
+        dash_btn_row.pack_start(self.btn_export_report, False, False, 0)
 
         self.btn_refresh_dash = Gtk.Button(label="↻")
         self.btn_refresh_dash.connect("clicked", lambda _b: self._refresh_teacher_dashboard())
@@ -893,10 +946,16 @@ class SynapseStudioWindow(Gtk.Window):
             return
         self.lesson_combo.clear()
         subj_lessons = self.pack_mgr.get_active_subject_lessons() if hasattr(self, "pack_mgr") else []
+        yr_pack = self.pack_mgr.get_active_year_pack() if hasattr(self, "pack_mgr") else {}
+        q_lessons = yr_pack.get("quarterly_unit_lessons", []) if isinstance(yr_pack, dict) else []
         for les in subj_lessons:
             raw_title = self._clean_bmp(f"★ {les.get('subject_name', 'Subject').split()[0]}: {les['title']}")
             short_title = raw_title if len(raw_title) <= 36 else raw_title[:33] + "..."
             self.lesson_combo.append(les["id"], short_title)
+        for qles in q_lessons:
+            raw_qtitle = self._clean_bmp(f"• {qles['title']}")
+            short_qtitle = raw_qtitle if len(raw_qtitle) <= 36 else raw_qtitle[:33] + "..."
+            self.lesson_combo.append(qles["id"], short_qtitle)
         for les in SCHOOL_CURRICULUM:
             short_title = les["title"] if len(les["title"]) <= 34 else les["title"][:31] + "..."
             self.lesson_combo.append(les["id"], short_title)
@@ -932,10 +991,70 @@ class SynapseStudioWindow(Gtk.Window):
 
         freed_kb = res.get("freed_kb", 0.0)
         yr_num = res.get("year_number", self.pack_mgr.get_current_school_year())
+        repo_url = res.get("repo_url", f"https://github.com/batteryphil/SynapseOS/blob/main/curricula/year_{yr_num:02d}.json")
         self._set_cortex_message(
-            f"★ GRADUATED TO SCHOOL YEAR {yr_num}: {res.get('new_pack_title')}!\n"
+            f"★ GRADUATED TO SCHOOL YEAR {'K' if yr_num == 0 else yr_num}: {res.get('new_pack_title')}!\n"
             f"   • 1-Year-at-a-Time Wiper: Deleted old year files ({freed_kb} KB freed); permanent transcript saved!\n"
-            f"   • Loaded 5 New Core Subjects: Mathematics, Science, Reading/ELA, Social Studies/History & AI Capstone."
+            f"   • Linked GitHub Repo: {repo_url}"
+        )
+        return res
+
+    def sync_k12_repo(self, target_year: Optional[int] = None) -> Dict[str, Any]:
+        """Pull the latest annual K-12 curriculum JSON directly from github.com/batteryphil/SynapseOS."""
+        res = self.pack_mgr.sync_from_github_repo(target_year)
+        self.earned_badges = set(self.pack_mgr.profile.get("earned_badges", []))
+        self._sync_active_pack_to_levels()
+        self._populate_lesson_dropdown()
+        subj_lessons = self.pack_mgr.get_active_subject_lessons()
+        if subj_lessons:
+            self.active_lesson_id = subj_lessons[0]["id"]
+            self.lesson_combo.set_active_id(self.active_lesson_id)
+            self._refresh_lesson_view()
+            self._load_lesson_coding_challenge()
+        self._update_badge_header()
+        self._refresh_teacher_dashboard()
+        self._set_cortex_message(
+            f"☁ SYNCED K-12 CURRICULUM WITH GITHUB REPO: {res.get('new_pack_title')}!\n"
+            f"   • Repo URL : {res.get('repo_url')}\n"
+            f"   • Loaded {res.get('subject_count', 5)} Full-Year Courses + {res.get('quarterly_unit_count', 20)} Quarterly Units."
+        )
+        return res
+
+    def switch_classroom_student(self, student_id: Optional[str] = None) -> Dict[str, Any]:
+        """Switch active student profile in the multi-student classroom roster."""
+        if student_id:
+            res = self.pack_mgr.switch_student(student_id)
+        else:
+            res = self.pack_mgr.cycle_next_student()
+
+        self.earned_badges = set(self.pack_mgr.profile.get("earned_badges", []))
+        self._sync_active_pack_to_levels()
+        self._populate_lesson_dropdown()
+        subj_lessons = self.pack_mgr.get_active_subject_lessons()
+        if subj_lessons:
+            self.active_lesson_id = subj_lessons[0]["id"]
+            self.lesson_combo.set_active_id(self.active_lesson_id)
+            self._refresh_lesson_view()
+            self._load_lesson_coding_challenge()
+        self._update_badge_header()
+        self._refresh_teacher_dashboard()
+        self.kids_view._switch_to_level(0)
+
+        yr = res.get("school_year", 1)
+        g_lbl = "Kindergarten" if yr == 0 else f"Grade {yr}"
+        self._set_cortex_message(
+            f"👤 SWITCHED STUDENT PROFILE TO: {res.get('player_name')} ({g_lbl})!\n"
+            f"   • Loaded {res.get('player_name')}'s K-12 Transcript, {res.get('trophies')} Gold Trophies & {res.get('points')} pts."
+        )
+        return res
+
+    def export_student_report_card(self, output_dir: Optional[str] = None) -> Dict[str, str]:
+        """Export an official printable HTML & TXT K-12 Report Card & Honors Certificate."""
+        res = self.pack_mgr.export_printable_report_card(output_dir=output_dir)
+        self._set_cortex_message(
+            f"🖨️ EXPORTED OFFICIAL K-12 REPORT CARD FOR {res['student_name'].upper()} ({res['grade_label']} — {res['average_score']}% AVG)!\n"
+            f"   • Printable HTML Certificate: {res['html_path']}\n"
+            f"   • Plain-Text Transcript     : {res['txt_path']}"
         )
         return res
 
@@ -1194,6 +1313,129 @@ class SynapseStudioWindow(Gtk.Window):
             f"▸ MISSION GOAL:\n  • {self._clean_bmp(lesson['goal_desc'])}"
         )
         self.lesson_text.get_buffer().set_text(txt)
+        self._refresh_quiz_bar()
+
+    def _refresh_quiz_bar(self) -> None:
+        if not hasattr(self, "quiz_question_lbl") or not hasattr(self, "quiz_choice_buttons"):
+            return
+        lesson = get_lesson_by_id(self.active_lesson_id)
+        quiz_list = lesson.get("practice_quiz", [])
+        if not quiz_list:
+            self.quiz_question_lbl.set_markup(
+                "<span size='small' foreground='#cbd5e1'><b>★ Quick Check:</b> Complete the Hands-On Lab steps above!</span>"
+            )
+            for ch, btn in self.quiz_choice_buttons.items():
+                btn.set_label(f"{ch}) Ready")
+                btn.set_sensitive(False)
+            return
+
+        idx = getattr(self, "active_quiz_idx", 0) % len(quiz_list)
+        q_item = quiz_list[idx]
+        q_text = self._clean_bmp(q_item.get("question", ""))
+        self.quiz_question_lbl.set_markup(
+            f"<span size='small' foreground='#fde047'><b>★ Quiz Q{idx + 1}/{len(quiz_list)}:</b></span> "
+            f"<span size='small' foreground='#f8fafc'>{GLib.markup_escape_text(q_text)}</span>"
+        )
+        choices = q_item.get("choices", [])
+        for i, ch in enumerate(("A", "B", "C", "D")):
+            btn = self.quiz_choice_buttons.get(ch)
+            if not btn:
+                continue
+            btn.set_sensitive(True)
+            if i < len(choices):
+                lbl_txt = self._clean_bmp(choices[i])
+                if len(lbl_txt) > 30:
+                    lbl_txt = lbl_txt[:28] + ".."
+                btn.set_label(lbl_txt)
+                btn.set_tooltip_text(self._clean_bmp(choices[i]))
+            else:
+                btn.set_label(f"{ch})")
+
+    def _on_quiz_choice_clicked(self, _btn: Gtk.Button, choice_letter: str) -> None:
+        lesson = get_lesson_by_id(self.active_lesson_id)
+        quiz_list = lesson.get("practice_quiz", [])
+        if not quiz_list:
+            return
+        idx = getattr(self, "active_quiz_idx", 0) % len(quiz_list)
+        q_item = quiz_list[idx]
+        correct_letter = q_item.get("correct_choice", "A").upper()
+        explanation = self._clean_bmp(q_item.get("answer", ""))
+
+        if choice_letter.upper() == correct_letter:
+            self.pack_mgr.profile["coins"] = int(self.pack_mgr.profile.get("coins", 250)) + 15
+            self.pack_mgr.profile["lifetime_points"] = int(self.pack_mgr.profile.get("lifetime_points", 300)) + 25
+            if lesson["id"].startswith("y"):
+                self.pack_mgr.record_subject_grade(lesson["id"], score=100)
+            else:
+                self.pack_mgr.save_profile()
+            self._update_badge_header()
+            self._refresh_teacher_dashboard()
+            if hasattr(self, "kids_view"):
+                self.kids_view.set_pet_mood("cheering", 3.5)
+            self._set_cortex_message(
+                f"★ CORRECT ({choice_letter})! +15 Coins & +25 XP! {explanation}"
+            )
+            self.active_quiz_idx = (idx + 1) % len(quiz_list)
+            self._refresh_quiz_bar()
+        else:
+            if hasattr(self, "kids_view"):
+                self.kids_view.set_pet_mood("curious", 2.5)
+            self._set_cortex_message(
+                f"▸ Almost! '{choice_letter}' isn't quite right. Hint: {explanation[:110]} — Try again!"
+            )
+
+    def read_aloud_lesson(self, text_override: str | None = None) -> None:
+        """Offline Text-to-Speech (TTS) Read-Aloud for early readers & K-12 accessibility."""
+        import shutil
+        import subprocess
+
+        if text_override:
+            raw_speech = text_override
+        else:
+            lesson = get_lesson_by_id(self.active_lesson_id)
+            quiz_list = lesson.get("practice_quiz", [])
+            q_str = ""
+            if quiz_list:
+                idx = getattr(self, "active_quiz_idx", 0) % len(quiz_list)
+                q_str = f" Quiz question: {quiz_list[idx].get('question', '')}"
+            raw_speech = f"{lesson.get('title', '')}. {lesson.get('story_summary', lesson.get('goal_desc', ''))}.{q_str}"
+
+        clean_speech = self._clean_bmp(raw_speech).replace("★", "").replace("▸", "").strip()
+        lang_code = "fr" if getattr(self, "lang", "en") == "fr" else "en"
+
+        # Stop any active speech process first
+        prev_proc = getattr(self, "_tts_proc", None)
+        if prev_proc is not None and prev_proc.poll() is None:
+            try:
+                prev_proc.terminate()
+            except Exception:
+                pass
+            self._tts_proc = None
+            self._set_cortex_message("♪ Read-Aloud paused.")
+            return
+
+        tts_cmd = None
+        if shutil.which("espeak-ng"):
+            tts_cmd = ["espeak-ng", "-v", lang_code, "-s", "155", clean_speech[:600]]
+        elif shutil.which("espeak"):
+            tts_cmd = ["espeak", "-v", lang_code, "-s", "155", clean_speech[:600]]
+        elif shutil.which("spd-say"):
+            tts_cmd = ["spd-say", "-l", lang_code, clean_speech[:600]]
+
+        if tts_cmd:
+            try:
+                self._tts_proc = subprocess.Popen(
+                    tts_cmd,
+                    stdout=subprocess.DEVNULL,
+                    stderr=subprocess.DEVNULL,
+                )
+                self._set_cortex_message(f"♪ Lumi Voice Reader speaking ({lang_code.upper()}): \"{clean_speech[:120]}...\"")
+            except Exception as e:
+                self._set_cortex_message(f"♪ Read-Aloud Text: \"{clean_speech[:160]}\" ({e})")
+        else:
+            self._set_cortex_message(
+                f"♪ Lumi Read-Aloud ({lang_code.upper()}): \"{clean_speech[:180]}\""
+            )
 
     def _load_lesson_coding_challenge(self) -> None:
         lesson = get_lesson_by_id(self.active_lesson_id)
@@ -1203,6 +1445,7 @@ class SynapseStudioWindow(Gtk.Window):
         lid = combo.get_active_id()
         if lid:
             self.active_lesson_id = lid
+            self.active_quiz_idx = 0
             self._refresh_lesson_view()
             self._load_lesson_coding_challenge()
 
@@ -1295,10 +1538,17 @@ class SynapseStudioWindow(Gtk.Window):
             self.btn_toggle_pin.set_label(
                 f"◈ PIN Gate: {'ON' if pin_on else 'OFF'} (PIN: {prof.get('teacher_pin', '1234')})"
             )
+        if hasattr(self, "btn_switch_student"):
+            short_student = prof.get("player_name", "Cadet Nova").replace("Cadet ", "")
+            self.btn_switch_student.set_label(f"❖ {short_student[:10]} ↻")
 
         cur_yr = self.pack_mgr.get_current_school_year()
+        yr_tag = "K" if cur_yr == 0 else str(cur_yr)
+        grade_tag = "Kindergarten (Grade K)" if cur_yr == 0 else f"Grade {cur_yr}"
         if hasattr(self, "btn_advance_year"):
-            self.btn_advance_year.set_label(f"★ Yr {cur_yr} ↻")
+            self.btn_advance_year.set_label(f"★ Yr {yr_tag} ↻")
+        if hasattr(self, "btn_mission_next_year"):
+            self.btn_mission_next_year.set_label(f"★ Yr {yr_tag} ↻")
 
         t_map = prof.get("lab_time_seconds", {})
         r_map = prof.get("lab_runs_count", {})
@@ -1342,7 +1592,7 @@ class SynapseStudioWindow(Gtk.Window):
             subj_lines.append(f"  • {s_name:<20}: {status_mark} ({self._clean_bmp(les['title'])[:26]})")
 
         grad_years = [yid for yid, rec in sorted(transcript.items()) if rec.get("graduated")]
-        grad_summary = ", ".join(grad_years) if grad_years else "Year 1 in progress (click '★ Yr 1 ↻' to graduate & advance!)"
+        grad_summary = ", ".join(grad_years) if grad_years else f"Year {yr_tag} in progress (click '★ Yr {yr_tag} ↻' to graduate & advance!)"
 
         audit_entries = self.cortex.get_command_audit_log(limit=6) if hasattr(self, "cortex") else []
         if audit_entries:
@@ -1353,16 +1603,18 @@ class SynapseStudioWindow(Gtk.Window):
         else:
             audit_lines = ["  • No Linux commands executed in this session yet."]
 
+        repo_link = f"github.com/batteryphil/SynapseOS/blob/main/curricula/year_{cur_yr:02d}.json"
         report = (
             f"★ PARENT & TEACHER K-12 REPORT CARD\n"
             f"--------------------------------------------------\n"
             f"▸ Student Cadet:   {prof.get('player_name', 'Cadet Nova')}\n"
-            f"▸ Active School Yr:Year {cur_yr} (Grade {cur_yr}) — {self._clean_bmp(yr_pack.get('title_en', ''))}\n"
+            f"▸ Active School Yr:Year {cur_yr} ({grade_tag}) — {self._clean_bmp(yr_pack.get('title_en', ''))}\n"
+            f"▸ Linked GitHub:   {repo_link}\n"
             f"▸ Active Pack Slot:{prof.get('current_pack_id', 'pack_1_core')} (1-Year-at-a-Time Wiper Active)\n"
             f"▸ Graduated Years: {grad_summary}\n"
             f"▸ Trophies & Coins:{len(prof.get('earned_badges', []))} Trophies | {prof.get('coins', 250)} Coins | {prof.get('lifetime_points', 300)} pts\n"
             f"▸ Daily Missions:  {done_m}/{len(missions)} completed today\n\n"
-            f"▸ ACTIVE YEAR {cur_yr} MULTI-SUBJECT REPORT CARD:\n"
+            f"▸ ACTIVE YEAR {yr_tag} MULTI-SUBJECT REPORT CARD:\n"
             + "\n".join(subj_lines)
             + f"\n\n▸ TIME & RUNS PER AI LAB:\n"
             + "\n".join(lab_lines)

@@ -11,26 +11,38 @@
 
 ---
 
-## 1. Boot the Compressed Lite ISO Directly From This Repo (`385 MB`, No LLM)
+## 1. Download & Boot SynapseOS (Full LLM ISO or Fast Lite ISO)
 
-The repository includes the complete bootable **Lite Experimentation ISO** (`SynapseOS-Lite-x86_64.iso`, excluding the `2.2 GB` LLM weights) compressed with `xz -Xbcj x86` + `zstd` and split into `< 90 MB` chunks inside [`iso/`](file:///home/phil/.gemini/antigravity/scratch/synapse-os/iso) so every file stays under GitHub's `100 MB` per-file `git push` limit.
+### Option A: Full Bootable ISO With Fine-Tuned `cortex-phi3` LLM Built In (`2.6 GB`)
+Includes **everything 100% offline**: Debian 12 + Openbox + the fine-tuned **`cortex-phi3:latest` LLM (`2.2 GB` GGUF)** + Ollama daemon + C99 `prime-moment` engine + 7 AI Labs + all **325 K–12 lessons** + offline `espeak-ng` Read-Aloud TTS.
 
 ```bash
 # 1. Clone repo
 git clone https://github.com/batteryphil/SynapseOS.git
 cd SynapseOS
 
-# 2. Recombine, decompress, and SHA256-verify SynapseOS-Lite-x86_64.iso (385 MB)
+# 2. Download, reassemble, SHA256-verify, and boot the Full 2.6 GB LLM ISO in QEMU (1 command):
+./scripts/download_and_boot_full_iso.sh
+
+# Or download & verify the .iso file only (to flash to a USB stick or attach in VirtualBox/VMware):
+./scripts/download_and_boot_full_iso.sh --download
+```
+
+### Option B: Boot the Compressed Lite ISO Directly From This Git Repo (`~400 MB`, No LLM)
+The repository also tracks the **Lite Experimentation ISO** (`SynapseOS-Lite-x86_64.iso`, excluding the `2.2 GB` LLM weights) inside [`iso/`](file:///home/phil/.gemini/antigravity/scratch/synapse-os/iso) so every file stays under GitHub's `100 MB` per-file `git push` limit.
+
+```bash
+# Recombine, decompress, and SHA256-verify SynapseOS-Lite-x86_64.iso
 ./iso/decompress_iso.sh
 
-# 3. Boot in QEMU/KVM
+# Boot in QEMU/KVM
 qemu-system-x86_64 -enable-kvm -m 2048 -smp 2 -cdrom iso/SynapseOS-Lite-x86_64.iso
 ```
 
-| ISO Artifact | Uncompressed Rootfs | SquashFS (`xz -Xbcj x86`) | Bootable `.iso` Size | Repo `.zst.part-*` Total | Contents |
+| ISO Artifact | Uncompressed Rootfs | SquashFS | Bootable `.iso` Size | How to Run | Contents |
 | :--- | :--- | :--- | :--- | :--- | :--- |
-| **`SynapseOS-Lite-x86_64.iso`** (In Repo `iso/`) | `1,347.9 MB` | `323.9 MB` (`24.6%`) | **`385 MB`** | **`374 MB`** (`4 x 90 MB` + `1 x 14 MB`) | Debian 12 + Openbox + 7 AI Labs + 14 School Lessons + `cortex_kb.sqlite` + C99 `prime-moment` (`libprime.so`) |
-| **`SynapseOS-Debian12-Potato-x86_64.iso`** (Full LLM) | `3,540.0 MB` | `2,410.0 MB` | **`2.5 GB`** | Hosted via Release / HF | Everything in Lite + pre-baked `2.2 GB` `cortex-phi3:latest` GGUF + Ollama runtime |
+| **`SynapseOS-Debian12-Potato-x86_64.iso`** (**Full LLM**) | `3,998.0 MB` | `2,546.1 MB` (`zstd`) | **`2.6 GB`** | `./scripts/download_and_boot_full_iso.sh` (GitHub Release `v1.0-k12`) | Everything in Lite + pre-baked `2.2 GB` `cortex-phi3:latest` GGUF + Ollama runtime + `espeak-ng` TTS |
+| **`SynapseOS-Lite-x86_64.iso`** (In Repo `iso/`) | `1,420.0 MB` | `345.0 MB` (`xz -Xbcj x86`) | **`~405 MB`** | `./iso/decompress_iso.sh` (In-Repo) | Debian 12 + Openbox + 7 AI Labs + 325 K–12 Lessons + `cortex_kb.sqlite` + C99 `prime-moment` (`libprime.so`) |
 
 ---
 
@@ -71,11 +83,13 @@ qemu-system-x86_64 -enable-kvm -m 2048 -smp 2 -cdrom iso/SynapseOS-Lite-x86_64.i
 ./distro/build-iso.sh --lite
 ./distro/build-iso.sh --all
 
-# Browse & manage the 12-Year K-12 Rolling Curriculum (Math, Science, Reading/ELA, History + AI)
+# Browse & manage the Complete K-12 Rolling Curriculum (Kindergarten + Grades 1-12)
 ./synapse pack list-years
-./synapse pack set-year 1        # Installs Year 1 (Grade 1), wipes old year files, keeps Transcript
-./synapse curriculum y01_math    # Run Grade 1 Mathematics + AI Lab
-./synapse pack advance-year      # Graduate to next School Year (wipes old year, saves Report Card)
+./synapse pack set-year K            # Install Kindergarten (year_00)
+./synapse pack set-year 1            # Install Grade 1 (year_01), wipes old year files, keeps Transcript
+./synapse curriculum y00_math        # Run Kindergarten Math + AI Lab
+./synapse curriculum y08_science_q2  # Run Grade 8 Science Quarter 2 (Winter Unit) + AI Lab
+./synapse pack advance-year          # Graduate to next School Year (wipes old year, saves Report Card)
 
 # Run all automated unit & integration tests
 python3 -m unittest discover -s tests
@@ -83,16 +97,24 @@ python3 -m unittest discover -s tests
 
 ---
 
-## 4. K–12 Rolling Year-by-Year School Curriculum (`curricula/year_01.json` – `year_12.json`)
+## 4. Complete K–12 Rolling Year-by-Year School Curriculum (`curricula/year_00.json` – `year_12.json`)
 
-Every school year (`Year 1` / Grade 1 through `Year 12` / Grade 12 Senior Capstone) includes **5 Core School Subjects** (**60 total K–12 subject lessons** + **84 bilingual `EN`/`FR` visual levels**):
-1. **📐 Mathematics** (*Arithmetic $\rightarrow$ Fractions/Ratios $\rightarrow$ Linear Algebra $\rightarrow$ Trigonometry $\rightarrow$ Calculus & Probability*)
-2. **🔬 Science** (*Forces & Weather $\rightarrow$ Food Webs & Matter $\rightarrow$ Genetics & Optics $\rightarrow$ Physics, Chemistry & Neuroscience*)
-3. **📖 Reading & Language Arts (ELA)** (*Phonics & Story Elements $\rightarrow$ Grammar & Main Idea $\rightarrow$ Claim-Evidence-Reasoning $\rightarrow$ Rhetoric & Technical Peer Review*)
-4. **🌍 Social Studies & History** (*Compass Maps & Continents $\rightarrow$ Ancient Civilizations & Civics $\rightarrow$ Industrial/Digital Revolutions $\rightarrow$ AI Ethics & Economics*)
-5. **🤖 Connected AI & Coding Assignment** (*Hands-on simulation + runnable Python code check tied directly to that grade's Math, Science, ELA, and History lessons*)
+Every grade from **Kindergarten (`year_00` / Grade K)** through **Grade 12 (`year_12` / Senior Capstone)** (**13 complete grades**) includes **5 Full-Year Subject Courses** + **20 Quarterly Unit Lessons (`Q1 Fall`, `Q2 Winter`, `Q3 Spring`, `Q4 Capstone`)** = **325 total K–12 lessons** + **91 bilingual `EN`/`FR` visual levels**:
+1. **📐 Mathematics** (*Counting & Shapes $\rightarrow$ Arithmetic $\rightarrow$ Fractions/Ratios $\rightarrow$ Algebra & Geometry $\rightarrow$ Pre-Calculus, Calculus & Linear Algebra*)
+2. **🔬 Science** (*5 Senses & Weather $\rightarrow$ Forces & Ecosystems $\rightarrow$ Genetics, Waves & Chemistry $\rightarrow$ Physics, Thermodynamics & Computational Neuroscience*)
+3. **📖 Reading & Language Arts (ELA)** (*Alphabet Phonics $\rightarrow$ Reading Comprehension & Grammar $\rightarrow$ Claim-Evidence-Reasoning (CER) $\rightarrow$ Rhetoric & Technical Peer Review*)
+4. **🌍 Social Studies & History** (*Classroom Civics & Maps $\rightarrow$ Ancient Civilizations & U.S./World History $\rightarrow$ Constitution & Economics $\rightarrow$ AI Ethics, Public Policy & TCO*)
+5. **🤖 Connected AI & Coding Assignment** (*Hands-on simulation + auto-graded Python worksheet tied directly to that grade's Math, Science, ELA, and History lessons*)
 
-- **1-Year-at-a-Time Potato Storage Wiper**: Only **one** school year's curriculum package (`~17 KB`) resides in active classroom storage (`~/.config/synapse-os/active_pack/current_pack.json`). Advancing a student (`./synapse pack advance-year` or clicking **`★ Yr X ↻`** in the Teacher Report tab) **wipes the old year's pack and scratch files** while **permanently preserving the student's Cumulative Multi-Subject Report Card Transcript, Gold Trophies, Coins, and High Scores** in `student_profile.json`.
+Every lesson contains **6 Complete Textbook Sections**:
+- **Section 1**: Core Textbook Lesson & National Standards Alignment (`CCSS Math`, `NGSS Science`, `CCSS ELA`, `NCSS C3`, `CSTA CS`)
+- **Section 2**: Full 36-Week / 4-Quarter Course Syllabus (`Q1 Weeks 1–9`, `Q2 Weeks 10–18`, `Q3 Weeks 19–27`, `Q4 Weeks 28–36`)
+- **Section 3**: Academic Vocabulary Glossary (Terms & Definitions)
+- **Section 4**: Step-by-Step Worked Textbook Examples
+- **Section 5**: Traditional Practice Worksheet & Self-Check Quiz (with Answer Key)
+- **Section 6**: Teacher Guide & 100-Point Mastery Rubric (`40 pts Core Subject + 30 pts Quiz + 30 pts AI Lab & Python Code`)
+
+- **1-Year-at-a-Time Potato Storage Wiper**: Only **one** school year's curriculum package resides in active classroom storage (`~/.config/synapse-os/active_pack/current_pack.json`). Advancing a student (`./synapse pack advance-year` or clicking **`★ Yr X ↻`** in the Teacher Report tab) **wipes the old year's pack and scratch files** while **permanently preserving the student's Cumulative Multi-Subject Report Card Transcript, Gold Trophies, Coins, and High Scores** in `student_profile.json`.
 
 ---
 
@@ -103,8 +125,8 @@ synapse-os/
 ├── synapse                                # Unified CLI entrypoint
 ├── SYNAPSE_OS_SPECS.txt                   # Full technical architecture & benchmark specification
 ├── curricula/
-│   ├── index.json                         # Master manifest of all 12 K-12 School Year Curricula
-│   └── year_01.json .. year_12.json       # Hosted Year 1-12 packages (Math, Science, ELA, History, AI)
+│   ├── index.json                         # Master manifest of all 13 K-12 School Year Curricula (K-12)
+│   └── year_00.json .. year_12.json       # Hosted Kindergarten + Grades 1-12 complete textbook packages
 ├── bin/
 │   ├── synapse-studio                     # Studio desktop launcher
 │   └── synapse-tunnel                     # Encrypted HTTPS noVNC + Cloudflare remote classroom tunnel
