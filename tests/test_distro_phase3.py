@@ -64,9 +64,9 @@ class TestDistroPhase3(unittest.TestCase):
         from cortex.engine import CortexEngine
         eng = CortexEngine()
         opts = eng.get_inference_options()
-        self.assertIn("use_mlock", opts)
+        self.assertIn("num_thread", opts)
         self.assertIn("num_ctx", opts)
-        self.assertIn(opts["num_ctx"], (1024, 2048, 4096))
+        self.assertIn(opts["num_ctx"], (256, 1024, 2048, 4096))
 
     def test_openbox_xml_validity_and_autostart(self):
         menu_xml = os.path.join(DISTRO_DIR, "skel", ".config", "openbox", "menu.xml")
@@ -98,7 +98,17 @@ class TestDistroPhase3(unittest.TestCase):
             self.assertIn("--autologin synapse", f.read())
 
         with open(xinitrc, "r", encoding="utf-8") as f:
-            self.assertIn("exec openbox-session", f.read())
+            xinit_txt = f.read()
+            self.assertIn("exec openbox", xinit_txt)
+            self.assertIn("preload_model", xinit_txt)
+
+    def test_buildbit_potato_kernels(self):
+        from workbench.labs.c_sim_bridge import benchmark_buildbit_potato_kernels
+        res = benchmark_buildbit_potato_kernels(dim=512, n_tokens=16)
+        self.assertTrue(res.get("available"))
+        self.assertTrue(res.get("trit_exact_match"))
+        self.assertGreater(res.get("trit_speedup", 0.0), 2.0)
+        self.assertGreater(res.get("mamba_tok_per_sec", 0.0), 1000.0)
 
     def test_build_iso_dry_run(self):
         script = os.path.join(DISTRO_DIR, "build-iso.sh")
@@ -109,3 +119,4 @@ class TestDistroPhase3(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+

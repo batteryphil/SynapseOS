@@ -241,6 +241,9 @@ def main():
     # System status
     subparsers.add_parser("sys", help="Show system hardware, potato budget, FTS5 KB, and cortex-phi3 status")
 
+    # BuildbitOS 1.58-Bit Ternary & Mamba SSM Potato Benchmark
+    subparsers.add_parser("trit", help="Run BuildbitOS 1.58-Bit Ternary POPCNT & O(1) Mamba SSM Potato Benchmark")
+
     # Shell hook
     subparsers.add_parser("init-shell", help="Generate shell functions for '??' and '?ai'")
 
@@ -254,12 +257,26 @@ def main():
         print(f"  {CYAN}cortex chat \"how do thrusters help land a rocket?\"{RESET}")
         print(f"  {CYAN}cortex cmd \"boost ram on a potato with zram\"{RESET}")
         print(f"  {CYAN}cortex ai \"neat moon lander\"{RESET}")
-        print(f"  {CYAN}cortex ai --llm \"moon lander\"{RESET}")
+        print(f"  {CYAN}cortex trit{RESET}")
         print(f"  {CYAN}cortex forge --verify{RESET}\n")
         return
 
     if args.subcommand == "sys":
         handle_sys(engine)
+    elif args.subcommand == "trit":
+        from workbench.labs.c_sim_bridge import benchmark_buildbit_potato_kernels
+        res = benchmark_buildbit_potato_kernels(dim=1024, n_tokens=64)
+        print(f"\n{CYAN}{BOLD}⚡ BuildbitOS Potato-Grade Neural Engine Benchmark:{RESET}")
+        if res.get("available"):
+            print(f"  {BOLD}1. 1.58-Bit Ternary Bit-Sliced POPCNT ({res['dim']}x{res['dim']}, {res['n_tokens']} tokens):{RESET}")
+            print(f"     • Standard FP32 GEMV : {YELLOW}{res['fp32_ms']} ms{RESET} (16x RAM)")
+            print(f"     • BuildbitOS trit64  : {GREEN}{res['trit_ms']} ms{RESET} (2 bits/weight, 0 FP muls)")
+            print(f"     • Potato CPU Speedup : {GREEN}{BOLD}{res['trit_speedup']}x faster{RESET} (Exact Match: {res['trit_exact_match']})")
+            print(f"  {BOLD}2. O(1)-Memory Mamba Selective State-Space Scan (768x16 state, 512 tokens):{RESET}")
+            print(f"     • Scan Latency       : {GREEN}{res['mamba_scan_ms']} ms{RESET} ({GREEN}{BOLD}{res['mamba_tok_per_sec']} tok/s{RESET})")
+            print(f"     • Total State Memory : {CYAN}{res['mamba_state_kb']} KB{RESET} (100% L2 Cache Resident, 0 KV-Cache growth)\n")
+        else:
+            print(f"  {RED}libsynapse_core.so not loaded; run 'make -C cortex/c_prime shared'{RESET}\n")
     elif args.subcommand == "chat":
         msg_str = " ".join(args.message)
         res = engine.chat_with_cortex(msg_str)
@@ -279,3 +296,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+

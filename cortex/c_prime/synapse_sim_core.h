@@ -154,8 +154,29 @@ void synapse_neat_forward(
     const float* conn_weights
 );
 
+/* ============================================================================
+ * 7. BuildbitOS 1.58-Bit Ternary Bit-Sliced POPCNT & Mamba SSM Potato Kernels
+ * ============================================================================ */
+void synapse_trit64_bench(
+    int dim,
+    int n_tokens,
+    float* out_fp32_ms,
+    float* out_trit_ms,
+    float* out_speedup,
+    int* out_exact_match
+);
+
+void synapse_mamba_ssm_bench(
+    int d_inner,
+    int n_tokens,
+    float* out_scan_ms,
+    float* out_tok_per_sec,
+    float* out_state_kb
+);
+
 #ifdef __cplusplus
 }
 #endif
 
 #endif /* SYNAPSE_SIM_CORE_H */
+

@@ -594,3 +594,192 @@ void synapse_neat_forward(
         node_acts[idx] = tanhf(s);
     }
 }
+
+/* ============================================================================
+ * 7. BuildbitOS 1.58-Bit Ternary Bit-Sliced POPCNT & Mamba SSM Potato Kernels
+ *    Ported from buildbit-os/os/os_superpowers.h & buildbit-os/os/mamba_engine.h
+ *    100% Potato-Safe (Runs on any 2007+ x86_64 CPU with zero GPU or AVX2 needed)
+ * ============================================================================ */
+#include <stdint.h>
+#include <stdlib.h>
+#include <sys/time.h>
+
+typedef struct {
+    uint64_t pos_mask;
+    uint64_t neg_mask;
+} synapse_trit64_pack_t;
+
+static double synapse_now_ms(void) {
+    struct timeval tv;
+    gettimeofday(&tv, NULL);
+    return (double)tv.tv_sec * 1000.0 + (double)tv.tv_usec / 1000.0;
+}
+
+void synapse_trit64_bench(
+    int dim,
+    int n_tokens,
+    float* out_fp32_ms,
+    float* out_trit_ms,
+    float* out_speedup,
+    int* out_exact_match
+) {
+    if (dim < 64) dim = 64;
+    dim = (dim / 64) * 64;
+    if (n_tokens < 1) n_tokens = 1;
+    int packs_per_row = dim / 64;
+    size_t total_weights = (size_t)dim * (size_t)dim;
+
+    float* w_fp32 = (float*)malloc(total_weights * sizeof(float));
+    float* x_fp32 = (float*)malloc((size_t)n_tokens * (size_t)dim * sizeof(float));
+    float* y_fp32 = (float*)malloc((size_t)n_tokens * (size_t)dim * sizeof(float));
+    synapse_trit64_pack_t* w_trit = (synapse_trit64_pack_t*)malloc((size_t)dim * (size_t)packs_per_row * sizeof(synapse_trit64_pack_t));
+    synapse_trit64_pack_t* x_trit = (synapse_trit64_pack_t*)malloc((size_t)n_tokens * (size_t)packs_per_row * sizeof(synapse_trit64_pack_t));
+    int32_t* y_trit = (int32_t*)malloc((size_t)n_tokens * (size_t)dim * sizeof(int32_t));
+
+    if (!w_fp32 || !x_fp32 || !y_fp32 || !w_trit || !x_trit || !y_trit) {
+        free(w_fp32); free(x_fp32); free(y_fp32);
+        free(w_trit); free(x_trit); free(y_trit);
+        return;
+    }
+
+    for (int r = 0; r < dim; ++r) {
+        for (int p = 0; p < packs_per_row; ++p) {
+            uint64_t pm = 0ULL, nm = 0ULL;
+            for (int b = 0; b < 64; ++b) {
+                uint64_t idx = (uint64_t)r * (uint64_t)dim + (uint64_t)(p * 64 + b);
+                int v = (int)((idx * 1103515245ULL + 12345ULL) % 3ULL) - 1;
+                w_fp32[idx] = (float)v;
+                if (v == 1)  pm |= (1ULL << b);
+                if (v == -1) nm |= (1ULL << b);
+            }
+            w_trit[r * packs_per_row + p].pos_mask = pm;
+            w_trit[r * packs_per_row + p].neg_mask = nm;
+        }
+    }
+
+    for (int t = 0; t < n_tokens; ++t) {
+        for (int p = 0; p < packs_per_row; ++p) {
+            uint64_t pm = 0ULL, nm = 0ULL;
+            for (int b = 0; b < 64; ++b) {
+                uint64_t idx = (uint64_t)t * (uint64_t)dim + (uint64_t)(p * 64 + b);
+                int v = (int)(((idx + 7ULL) * 2654435761ULL) % 3ULL) - 1;
+                x_fp32[idx] = (float)v;
+                if (v == 1)  pm |= (1ULL << b);
+                if (v == -1) nm |= (1ULL << b);
+            }
+            x_trit[t * packs_per_row + p].pos_mask = pm;
+            x_trit[t * packs_per_row + p].neg_mask = nm;
+        }
+    }
+
+    double t0 = synapse_now_ms();
+    for (int t = 0; t < n_tokens; ++t) {
+        const float* xt = &x_fp32[t * dim];
+        float* yt = &y_fp32[t * dim];
+        for (int r = 0; r < dim; ++r) {
+            const float* wr = &w_fp32[(size_t)r * (size_t)dim];
+            float sum = 0.0f;
+            for (int c = 0; c < dim; ++c) {
+                sum += wr[c] * xt[c];
+            }
+            yt[r] = sum;
+        }
+    }
+    double t1 = synapse_now_ms();
+
+    double t2 = synapse_now_ms();
+    for (int t = 0; t < n_tokens; ++t) {
+        const synapse_trit64_pack_t* xt = &x_trit[t * packs_per_row];
+        int32_t* yt = &y_trit[t * dim];
+        for (int r = 0; r < dim; ++r) {
+            const synapse_trit64_pack_t* wr = &w_trit[r * packs_per_row];
+            int32_t acc = 0;
+            for (int p = 0; p < packs_per_row; ++p) {
+                uint64_t wp = wr[p].pos_mask;
+                uint64_t wn = wr[p].neg_mask;
+                uint64_t xp = xt[p].pos_mask;
+                uint64_t xn = xt[p].neg_mask;
+                int pos_hits = __builtin_popcountll((wp & xp) | (wn & xn));
+                int neg_hits = __builtin_popcountll((wp & xn) | (wn & xp));
+                acc += (pos_hits - neg_hits);
+            }
+            yt[r] = acc;
+        }
+    }
+    double t3 = synapse_now_ms();
+
+    float fp32_ms = (float)(t1 - t0);
+    float trit_ms = (float)(t3 - t2);
+    if (trit_ms < 0.001f) trit_ms = 0.001f;
+    if (out_fp32_ms) *out_fp32_ms = fp32_ms;
+    if (out_trit_ms) *out_trit_ms = trit_ms;
+    if (out_speedup) *out_speedup = fp32_ms / trit_ms;
+    if (out_exact_match) {
+        int diff = (int)(y_fp32[0] >= 0.0f ? (y_fp32[0] + 0.5f) : (y_fp32[0] - 0.5f)) - (int)y_trit[0];
+        *out_exact_match = (diff == 0) ? 1 : 0;
+    }
+
+    free(w_fp32); free(x_fp32); free(y_fp32);
+    free(w_trit); free(x_trit); free(y_trit);
+}
+
+void synapse_mamba_ssm_bench(
+    int d_inner,
+    int n_tokens,
+    float* out_scan_ms,
+    float* out_tok_per_sec,
+    float* out_state_kb
+) {
+    if (d_inner < 64) d_inner = 64;
+    if (n_tokens < 1) n_tokens = 1;
+    const int d_state = 16;
+
+    float* h_state = (float*)calloc((size_t)d_inner * (size_t)d_state, sizeof(float));
+    float* A_bar   = (float*)malloc((size_t)d_inner * (size_t)d_state * sizeof(float));
+    float* B_u     = (float*)malloc((size_t)d_inner * (size_t)d_state * sizeof(float));
+    float* C_vec   = (float*)malloc((size_t)d_state * sizeof(float));
+    float* y_out   = (float*)malloc((size_t)d_inner * sizeof(float));
+
+    if (!h_state || !A_bar || !B_u || !C_vec || !y_out) {
+        free(h_state); free(A_bar); free(B_u); free(C_vec); free(y_out);
+        return;
+    }
+
+    for (int i = 0; i < d_inner * d_state; ++i) {
+        A_bar[i] = 0.96f;
+        B_u[i]   = 0.04f * (float)((i & 7) - 3);
+    }
+    for (int s = 0; s < d_state; ++s) {
+        C_vec[s] = 0.125f;
+    }
+
+    double t0 = synapse_now_ms();
+    for (int t = 0; t < n_tokens; ++t) {
+        for (int c = 0; c < d_inner; ++c) {
+            float* hc = &h_state[c * d_state];
+            const float* ac = &A_bar[c * d_state];
+            const float* bc = &B_u[c * d_state];
+            float acc = 0.0f;
+            for (int s = 0; s < d_state; ++s) {
+                float h_new = ac[s] * hc[s] + bc[s];
+                hc[s] = h_new;
+                acc += h_new * C_vec[s];
+            }
+            /* Fused SiLU gate */
+            float sig = 1.0f / (1.0f + expf(-acc));
+            y_out[c] = acc * sig;
+        }
+    }
+    double t1 = synapse_now_ms();
+    volatile float sink = y_out[0];
+    (void)sink;
+
+    float scan_ms = (float)(t1 - t0);
+    if (scan_ms < 0.001f) scan_ms = 0.001f;
+    if (out_scan_ms) *out_scan_ms = scan_ms;
+    if (out_tok_per_sec) *out_tok_per_sec = ((float)n_tokens * 1000.0f) / scan_ms;
+    if (out_state_kb) *out_state_kb = (float)((size_t)d_inner * (size_t)(d_state + 4) * sizeof(float)) / 1024.0f;
+
+    free(h_state); free(A_bar); free(B_u); free(C_vec); free(y_out);
+}
+

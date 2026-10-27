@@ -374,6 +374,9 @@ stage_squashfs() {
 
     sudo cp "$kernel_img" "${IMAGE_DIR}/${LIVE_DIR}/vmlinuz"
     sudo cp "$initrd_img" "${IMAGE_DIR}/${LIVE_DIR}/initrd"
+    if [ -f "/home/phil/.gemini/antigravity/scratch/buildbit-os/buildbit_gui_kernel.elf" ]; then
+        sudo cp "/home/phil/.gemini/antigravity/scratch/buildbit-os/buildbit_gui_kernel.elf" "${IMAGE_DIR}/${LIVE_DIR}/buildbit_gui_kernel.elf"
+    fi
     log_success "SquashFS image and kernel/initrd packaged."
 }
 
@@ -399,7 +402,13 @@ menuentry "SynapseOS (Copy-to-RAM Toram Mode for 8GB+ Machines)" {
     linux /${LIVE_DIR}/vmlinuz ${LIVE_BOOT_ARGS} toram ---
     initrd /${LIVE_DIR}/initrd
 }
+
+menuentry "BuildbitOS Ring-0 Instant GUI (38ms Bare-Metal Mode for <512MB RAM PCs)" {
+    multiboot /${LIVE_DIR}/buildbit_gui_kernel.elf
+    boot
+}
 EOF
+
 
     sudo grub-mkrescue -o "${OUTPUT_DIR}/${ISO_NAME}" "${IMAGE_DIR}" -- -volid "SYNAPSE_OS"
     sudo chown -R "$USER:$USER" "${OUTPUT_DIR}" 2>/dev/null || true

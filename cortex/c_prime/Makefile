@@ -1,6 +1,7 @@
 CC ?= gcc
-CFLAGS ?= -O3 -Wall -Wextra -std=c99
+CFLAGS ?= -O3 -mtune=generic -fopenmp-simd -funroll-loops -fno-math-errno -fno-trapping-math -Wall -Wextra -std=c99
 LDFLAGS ?= -lm
+
 
 COSMOCC ?= $(shell command -v cosmocc 2>/dev/null || echo "/home/phil/.gemini/antigravity/scratch/cosmocc/bin/cosmocc")
 COSMO_CFLAGS ?= -O3 -Wall -Wextra -std=c99
