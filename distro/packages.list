@@ -31,10 +31,16 @@ tar
 procps
 
 # --- Bare-Bones Point & Click GUI (< 150MB RAM, Zero Display Manager Bloat) ---
+xserver-xorg
 xserver-xorg-core
+xserver-xorg-legacy
 xserver-xorg-video-all
+xserver-xorg-video-intel
 xserver-xorg-input-libinput
 x11-xserver-utils
+xfonts-base
+libgl1-mesa-dri
+firmware-linux-free
 xinit
 openbox
 tint2

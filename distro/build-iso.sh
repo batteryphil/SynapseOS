@@ -204,9 +204,15 @@ stage_inject_cortex() {
     sudo cp "${SCRIPT_DIR}/config/zramswap" "${CHROOT_DIR}/etc/default/zramswap"
     sudo cp "${SCRIPT_DIR}/config/99-synapse-potato.conf" "${CHROOT_DIR}/etc/sysctl.d/99-synapse-potato.conf"
 
-    # 2. Zero-RAM tty1 Auto-Login (No GDM/LightDM overhead)
+    # 2. Zero-RAM tty1 Auto-Login (No GDM/LightDM overhead) & Universal Xorg Hardware Autodetect
     sudo mkdir -p "${CHROOT_DIR}/etc/systemd/system/getty@tty1.service.d"
     sudo cp "${SCRIPT_DIR}/config/autologin.conf" "${CHROOT_DIR}/etc/systemd/system/getty@tty1.service.d/autologin.conf"
+    sudo rm -f "${CHROOT_DIR}/etc/X11/xorg.conf.d/20-amdgpu.conf"
+    sudo mkdir -p "${CHROOT_DIR}/etc/X11"
+    cat <<'EOF' | sudo tee "${CHROOT_DIR}/etc/X11/Xwrapper.config" >/dev/null
+allowed_users=anybody
+needs_root_rights=yes
+EOF
 
     # 3. Install Cortex-Phi3, SQLite FTS5 KB, 325-Lesson K-12 Curriculum & Synapse Studio Workbench
     sudo mkdir -p "${CHROOT_DIR}/usr/local/lib/synapse/cortex"
@@ -317,14 +323,16 @@ EOF
     sudo cp "${SCRIPT_DIR}/desktop/cortex.desktop" "${CHROOT_DIR}/usr/share/applications/"
     sudo cp "${SCRIPT_DIR}/skel/Desktop/lunar_lander.desktop" "${CHROOT_DIR}/usr/share/applications/synapse-studio.desktop"
 
-    # 6. Populate /etc/skel and /home/synapse (Openbox, Tint2, .xinitrc, .bash_profile, .bashrc)
-    sudo mkdir -p "${CHROOT_DIR}/etc/skel"
+    # 6. Populate /etc/skel, /home/synapse, and /root (Openbox, Tint2, .xinitrc, .bash_profile, .bashrc)
+    sudo mkdir -p "${CHROOT_DIR}/etc/skel" "${CHROOT_DIR}/root"
     sudo cp -r "${SCRIPT_DIR}/skel/." "${CHROOT_DIR}/etc/skel/"
-    sudo chmod +x "${CHROOT_DIR}/etc/skel/.xinitrc"
+    sudo cp -r "${SCRIPT_DIR}/skel/." "${CHROOT_DIR}/root/"
+    sudo chmod +x "${CHROOT_DIR}/etc/skel/.xinitrc" "${CHROOT_DIR}/root/.xinitrc"
 
     if [ -d "${CHROOT_DIR}/home/synapse" ]; then
         sudo cp -r "${SCRIPT_DIR}/skel/." "${CHROOT_DIR}/home/synapse/"
         sudo chmod +x "${CHROOT_DIR}/home/synapse/.xinitrc"
+        sudo chroot "${CHROOT_DIR}" usermod -aG sudo,video,audio,plugdev,input,render,tty synapse 2>/dev/null || true
         sudo chroot "${CHROOT_DIR}" chown -R synapse:synapse /home/synapse
     fi
 
