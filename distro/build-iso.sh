@@ -257,6 +257,16 @@ EOF
         if [ -d /usr/local/lib/ollama/vulkan ]; then
             sudo cp -r /usr/local/lib/ollama/vulkan "${CHROOT_DIR}/usr/local/lib/ollama/"
         fi
+        # Wrap llama-server so Ollama skips the 35s empty warmup pass (--no-warmup) while keeping 2.2GB RAM footprint
+        if [ -f "${CHROOT_DIR}/usr/local/lib/ollama/llama-server" ] && ! head -c 2 "${CHROOT_DIR}/usr/local/lib/ollama/llama-server" | grep -q '#!'; then
+            sudo mv "${CHROOT_DIR}/usr/local/lib/ollama/llama-server" "${CHROOT_DIR}/usr/local/lib/ollama/llama-server.real"
+        fi
+        cat <<'WRAP' | sudo tee "${CHROOT_DIR}/usr/local/lib/ollama/llama-server" >/dev/null
+#!/usr/bin/env bash
+export LD_LIBRARY_PATH="/usr/local/lib/ollama:${LD_LIBRARY_PATH:-}"
+exec /usr/local/lib/ollama/llama-server.real "$@" --no-warmup
+WRAP
+        sudo chmod 755 "${CHROOT_DIR}/usr/local/lib/ollama/llama-server"
     fi
 
     # Copy cortex-phi3:latest manifest + exact referenced SHA256 blobs (2.2 GB)
@@ -307,7 +317,7 @@ Environment="PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
 Environment="HOME=/usr/share/ollama"
 Environment="OLLAMA_MODELS=/usr/share/ollama/.ollama/models"
 Environment="OLLAMA_HOST=127.0.0.1:11434"
-Environment="OLLAMA_KEEP_ALIVE=30m"
+Environment="OLLAMA_KEEP_ALIVE=-1"
 
 [Install]
 WantedBy=multi-user.target

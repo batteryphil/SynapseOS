@@ -1975,7 +1975,14 @@ class SynapseStudioWindow(Gtk.Window):
 
         if self.kid_mode:
             self.kids_view.step_kid_simulation()
-            self.kids_view.queue_draw()
+            is_idle = (
+                (self.kids_view.rocket_state != "flying" and (time.monotonic() - self.kids_view.last_interaction_ts) > 12.0)
+                or self.kids_view.asking_ai
+                or self.cortex.last_llm_metrics.get("active", False)
+            )
+            stride = 15 if is_idle else (3 if getattr(self.cortex, "potato_mode", True) else 2)
+            if self.kids_view._tick_counter % stride == 0:
+                self.kids_view.queue_draw()
         else:
             self.telemetry_lbl.set_markup(
                 f"<b>{telem['lab']}</b>   |   Gen/Ep: <b><span foreground='#38bdf8'>{telem['generation']}</span></b>   "
@@ -1983,9 +1990,10 @@ class SynapseStudioWindow(Gtk.Window):
                 f"|   Avg: <span foreground='#facc15'>{telem['avg_fitness']}</span>   "
                 f"|   Record: <b><span foreground='#f472b6'>{rec_str}</span></b>{extra}"
             )
-            self.sim_canvas.queue_draw()
-            if self.right_notebook.get_current_page() == 2:
-                self.net_canvas.queue_draw()
+            if self.running or (self._tick_count % 10 == 0):
+                self.sim_canvas.queue_draw()
+                if self.right_notebook.get_current_page() == 2:
+                    self.net_canvas.queue_draw()
         return True
 
     # ==========================================================================

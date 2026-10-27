@@ -499,27 +499,24 @@ class CortexEngine:
         except Exception:
             active_cores = os.cpu_count() or 2
 
-        if self.potato_mode or not has_avx2 or ram_gb < 4.5 or active_cores <= 2:
-            num_ctx = 512
-            num_predict = 96
-            use_mlock = False
+        if self.potato_mode or not has_avx2 or ram_gb < 6.0 or active_cores <= 2:
+            num_ctx = 256
+            num_predict = 36 if has_avx2 else 28
         else:
             num_ctx = 1024
-            num_predict = 180
-            use_mlock = bool(ram_gb >= 6.0)
+            num_predict = 120
 
         return {
             "temperature": 0.15,
             "num_ctx": num_ctx,
             "num_predict": num_predict,
             "num_thread": max(1, min(8, active_cores)),
-            "use_mlock": use_mlock,
-            "use_mmap": True,
             "stop": [
                 "AI_MENTOR_REQUEST:",
                 "JSON_CMD_REQUEST:",
                 "LINUX_CMD_REQUEST:",
                 "\nUser:",
+                "\nStudent:",
                 "<|end|>",
                 "<|user|>",
             ],
@@ -532,6 +529,8 @@ class CortexEngine:
         json_format: bool = False
     ) -> Optional[str]:
         """Query `cortex-phi3` with SIMD- and ZRAM-safe inference options."""
+        if self.system_info.get("ram_total_gb", 4.0) < 2.2:
+            return None
         model = self.get_preferred_model()
         if not model:
             return None
@@ -543,9 +542,10 @@ class CortexEngine:
                 "model": model,
                 "prompt": prompt,
                 "stream": False,
+                "keep_alive": -1,
                 "options": self.get_inference_options(),
             }
-            if system_prompt:
+            if system_prompt is not None:
                 body["system"] = system_prompt
             if json_format:
                 body["format"] = "json"
@@ -556,7 +556,7 @@ class CortexEngine:
                 data=payload,
                 headers={"Content-Type": "application/json"}
             )
-            with urllib.request.urlopen(req, timeout=60) as resp:
+            with urllib.request.urlopen(req, timeout=90) as resp:
                 data = json.loads(resp.read().decode("utf-8"))
                 pe_c = int(data.get("prompt_eval_count", 0) or 0)
                 pe_d = float(data.get("prompt_eval_duration", 1) or 1) / 1e9
@@ -577,6 +577,44 @@ class CortexEngine:
             self.last_llm_metrics["active"] = False
             return None
 
+    def preload_model(self) -> bool:
+        """Pre-warm `cortex-phi3` at boot with identical runner options and KV-cached system prompt."""
+        if self.system_info.get("ram_total_gb", 4.0) < 2.2:
+            return False
+        model = self.get_preferred_model()
+        if not model:
+            return False
+        try:
+            opts = self.get_inference_options()
+            opts["num_predict"] = 1
+            if self.potato_mode or self.system_info.get("ram_total_gb", 4.0) < 6.0 or not self.system_info.get("has_avx2", False):
+                sys_prompt = "You are Lumi, a friendly Socratic AI tutor for students. Give a helpful hint in 1-2 short sentences."
+            else:
+                sys_prompt = (
+                    "You are Lumi (powered by Cortex-Phi3 + C99 PRIME Moment Attention), a friendly, patient, and enthusiastic "
+                    "AI robot companion and Socratic tutor for young learners on SynapseOS. "
+                    "Always give warm, playful hints and a guiding question in 1 to 3 short sentences so the student discovers the answer, "
+                    "instead of just handing out raw code!"
+                )
+            body: Dict[str, Any] = {
+                "model": model,
+                "prompt": "Student: Hi\nLumi:",
+                "system": sys_prompt,
+                "stream": False,
+                "keep_alive": -1,
+                "options": opts,
+            }
+            req = urllib.request.Request(
+                f"{self.ollama_url}/api/generate",
+                data=json.dumps(body).encode("utf-8"),
+                headers={"Content-Type": "application/json"},
+            )
+            with urllib.request.urlopen(req, timeout=90) as resp:
+                resp.read()
+            return True
+        except Exception:
+            return False
+
     def chat_with_cortex(self, user_message: str, history: Optional[List[Dict[str, str]]] = None) -> Dict[str, Any]:
         """
         General Conversational Mode for `cortex-phi3:latest` with C99 PRIME Sliding-Window memory compression.
@@ -594,12 +632,15 @@ class CortexEngine:
             else:
                 context_block = "Recent Conversation:\n" + "\n".join(turns_text[-4:]) + "\n\n"
 
-        sys_prompt = (
-            "You are Lumi (powered by Cortex-Phi3 + C99 PRIME Moment Attention), a friendly, patient, and enthusiastic "
-            "AI robot companion and Socratic tutor for young learners on SynapseOS. "
-            "Always give warm, playful hints and a guiding question in 1 to 3 short sentences so the student discovers the answer, "
-            "instead of just handing out raw code!"
-        )
+        if self.potato_mode or self.system_info.get("ram_total_gb", 4.0) < 6.0 or not self.system_info.get("has_avx2", False):
+            sys_prompt = "You are Lumi, a friendly Socratic AI tutor for students. Give a helpful hint in 1-2 short sentences."
+        else:
+            sys_prompt = (
+                "You are Lumi (powered by Cortex-Phi3 + C99 PRIME Moment Attention), a friendly, patient, and enthusiastic "
+                "AI robot companion and Socratic tutor for young learners on SynapseOS. "
+                "Always give warm, playful hints and a guiding question in 1 to 3 short sentences so the student discovers the answer, "
+                "instead of just handing out raw code!"
+            )
         full_prompt = f"{context_block}Student: {user_message}\nLumi:"
         t0 = time.perf_counter()
         resp = self.query_local_ollama(prompt=full_prompt, system_prompt=sys_prompt, json_format=False)
@@ -725,34 +766,40 @@ class CortexEngine:
             return best
 
         if self.is_ollama_available():
-            rag_context = ""
-            prime_tag = ""
-            if fts_hits:
-                h = fts_hits[0]
-                chunks = [
-                    f"Debugging: {h['debugging_tips']}",
-                    f"Code: {h['code_template']}",
-                    f"Math: {h['math_and_theory']}",
-                    f"Layman ({h['title']}): {h['layman_guide']}",
-                ]
-                if self.prime_compressor is not None:
-                    comp = self.prime_compressor.compress_context(topic_query, chunks, max_evicted_keep=1)
-                    rag_context = f"Reference ({h['title']}):\n{comp['compressed_text']}\n"
-                    prime_tag = f" + PRIME-Win({comp['original_tokens_est']}->{comp['compressed_tokens_est']}tok)"
-                else:
-                    rag_context = (
-                        f"Reference Grounding from SynapseOS AI KB ({h['title']}):\n"
-                        f"- Layman: {h['layman_guide']}\n"
-                        f"- Math: {h['math_and_theory']}\n"
-                    )
-            sys_prompt = (
-                "You are Cortex (`cortex-phi3`), the AI Mentor on SynapseOS. "
-                "Give a concise guide covering: 1) Point-and-Click sliders, 2) Core Math, and 3) Python tip.\n"
-                + rag_context
-            )
+            if self.potato_mode or self.system_info.get("ram_total_gb", 4.0) < 6.0 or not self.system_info.get("has_avx2", False):
+                sys_prompt = "You are Lumi, a friendly Socratic AI tutor for students. Give a helpful hint in 1-2 short sentences."
+                prompt_str = f"Student: Explain {topic_query} for a student.\nLumi:"
+                prime_tag = " + KV-Cached"
+            else:
+                rag_context = ""
+                prime_tag = ""
+                if fts_hits:
+                    h = fts_hits[0]
+                    chunks = [
+                        f"Debugging: {h['debugging_tips']}",
+                        f"Code: {h['code_template']}",
+                        f"Math: {h['math_and_theory']}",
+                        f"Layman ({h['title']}): {h['layman_guide']}",
+                    ]
+                    if self.prime_compressor is not None:
+                        comp = self.prime_compressor.compress_context(topic_query, chunks, max_evicted_keep=1)
+                        rag_context = f"Reference ({h['title']}):\n{comp['compressed_text']}\n"
+                        prime_tag = f" + PRIME-Win({comp['original_tokens_est']}->{comp['compressed_tokens_est']}tok)"
+                    else:
+                        rag_context = (
+                            f"Reference Grounding from SynapseOS AI KB ({h['title']}):\n"
+                            f"- Layman: {h['layman_guide']}\n"
+                            f"- Math: {h['math_and_theory']}\n"
+                        )
+                sys_prompt = (
+                    "You are Cortex (`cortex-phi3`), the AI Mentor on SynapseOS. "
+                    "Give a concise guide covering: 1) Point-and-Click sliders, 2) Core Math, and 3) Python tip.\n"
+                    + rag_context
+                )
+                prompt_str = f"AI_MENTOR_REQUEST: {topic_query}"
             t0 = time.perf_counter()
             resp = self.query_local_ollama(
-                prompt=f"AI_MENTOR_REQUEST: {topic_query}",
+                prompt=prompt_str,
                 system_prompt=sys_prompt,
                 json_format=False
             )

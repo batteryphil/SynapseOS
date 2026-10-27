@@ -260,8 +260,8 @@ class SynapseKidsView(Gtk.DrawingArea):
 
         if self.rocket_state != "flying":
             self.landed_timer += 1
-            # After 2.8 seconds parked on the Moon (or crashed), launch a fresh test flight
-            if self.landed_timer > 155:
+            # After 2.8 seconds parked on the Moon (or crashed), launch a fresh test flight if recently active
+            if self.landed_timer > 155 and (time.monotonic() - self.last_interaction_ts) < 12.0 and not self.asking_ai:
                 self.reset_rocket_test()
             return
 

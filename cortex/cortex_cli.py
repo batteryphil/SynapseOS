@@ -228,6 +228,10 @@ def main():
     ai_parser.add_argument("topic", nargs="+", help="AI topic, algorithm, or debugging question")
     ai_parser.add_argument("--llm", action="store_true", help="Force live cortex-phi3 deep-dive generation")
 
+    # Conversational chat
+    chat_parser = subparsers.add_parser("chat", help="Ask Lumi (Cortex-Phi3 Socratic Tutor) a question")
+    chat_parser.add_argument("message", nargs="+", help="Question or message for Lumi")
+
     # Forge management
     forge_parser = subparsers.add_parser("forge", help="Manage Phi-3 Mini fine-tuning dataset, FTS5 KB, and QLoRA")
     forge_parser.add_argument("--rebuild", action="store_true", help="Rebuild FTS5 KB, dataset, and cortex-phi3 Ollama model")
@@ -247,15 +251,20 @@ def main():
         print_banner()
         handle_sys(engine)
         print(f"{BOLD}Quick Examples:{RESET}")
+        print(f"  {CYAN}cortex chat \"how do thrusters help land a rocket?\"{RESET}")
         print(f"  {CYAN}cortex cmd \"boost ram on a potato with zram\"{RESET}")
-        print(f"  {CYAN}cortex cmd --llm \"limit python training script to 1GB RAM\"{RESET}")
         print(f"  {CYAN}cortex ai \"neat moon lander\"{RESET}")
-        print(f"  {CYAN}cortex ai --llm \"why is my moon lander hovering until fuel runs out?\"{RESET}")
+        print(f"  {CYAN}cortex ai --llm \"moon lander\"{RESET}")
         print(f"  {CYAN}cortex forge --verify{RESET}\n")
         return
 
     if args.subcommand == "sys":
         handle_sys(engine)
+    elif args.subcommand == "chat":
+        msg_str = " ".join(args.message)
+        res = engine.chat_with_cortex(msg_str)
+        print(f"\n{CYAN}{BOLD}🤖 Lumi ({res['source']}):{RESET}")
+        print(f"  {GREEN}{res['reply']}{RESET}\n")
     elif args.subcommand == "cmd":
         query_str = " ".join(args.query)
         handle_cmd(engine, query_str, auto_exec=args.yes, force_llm=args.llm)
