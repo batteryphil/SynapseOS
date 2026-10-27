@@ -155,7 +155,7 @@ void synapse_neat_forward(
 );
 
 /* ============================================================================
- * 7. BuildbitOS 1.58-Bit Ternary Bit-Sliced POPCNT & Mamba SSM Potato Kernels
+ * 7. BuildbitOS 1.58-Bit Ternary POPCNT + PRIME-Moment Attention Potato Kernel
  * ============================================================================ */
 void synapse_trit64_bench(
     int dim,
@@ -166,10 +166,11 @@ void synapse_trit64_bench(
     int* out_exact_match
 );
 
-void synapse_mamba_ssm_bench(
-    int d_inner,
+void synapse_prime_trit64_bench(
+    int num_heads,
+    int head_dim,
     int n_tokens,
-    float* out_scan_ms,
+    float* out_step_ms,
     float* out_tok_per_sec,
     float* out_state_kb
 );
@@ -179,4 +180,5 @@ void synapse_mamba_ssm_bench(
 #endif
 
 #endif /* SYNAPSE_SIM_CORE_H */
+
 

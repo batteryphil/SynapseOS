@@ -241,8 +241,8 @@ def main():
     # System status
     subparsers.add_parser("sys", help="Show system hardware, potato budget, FTS5 KB, and cortex-phi3 status")
 
-    # BuildbitOS 1.58-Bit Ternary & Mamba SSM Potato Benchmark
-    subparsers.add_parser("trit", help="Run BuildbitOS 1.58-Bit Ternary POPCNT & O(1) Mamba SSM Potato Benchmark")
+    # BuildbitOS 1.58-Bit Ternary & PRIME-Moment Attention Potato Benchmark
+    subparsers.add_parser("trit", help="Run BuildbitOS 1.58-Bit Ternary POPCNT + PRIME-Moment Attention Potato Benchmark")
 
     # Shell hook
     subparsers.add_parser("init-shell", help="Generate shell functions for '??' and '?ai'")
@@ -266,17 +266,18 @@ def main():
     elif args.subcommand == "trit":
         from workbench.labs.c_sim_bridge import benchmark_buildbit_potato_kernels
         res = benchmark_buildbit_potato_kernels(dim=1024, n_tokens=64)
-        print(f"\n{CYAN}{BOLD}⚡ BuildbitOS Potato-Grade Neural Engine Benchmark:{RESET}")
+        print(f"\n{CYAN}{BOLD}⚡ BuildbitOS 1.58-Bit Ternary + PRIME-Moment Attention Potato Benchmark:{RESET}")
         if res.get("available"):
-            print(f"  {BOLD}1. 1.58-Bit Ternary Bit-Sliced POPCNT ({res['dim']}x{res['dim']}, {res['n_tokens']} tokens):{RESET}")
+            print(f"  {BOLD}1. 1.58-Bit Ternary Bit-Sliced POPCNT Linear Projections ({res['dim']}x{res['dim']}, {res['n_tokens']} tokens):{RESET}")
             print(f"     • Standard FP32 GEMV : {YELLOW}{res['fp32_ms']} ms{RESET} (16x RAM)")
             print(f"     • BuildbitOS trit64  : {GREEN}{res['trit_ms']} ms{RESET} (2 bits/weight, 0 FP muls)")
             print(f"     • Potato CPU Speedup : {GREEN}{BOLD}{res['trit_speedup']}x faster{RESET} (Exact Match: {res['trit_exact_match']})")
-            print(f"  {BOLD}2. O(1)-Memory Mamba Selective State-Space Scan (768x16 state, 512 tokens):{RESET}")
-            print(f"     • Scan Latency       : {GREEN}{res['mamba_scan_ms']} ms{RESET} ({GREEN}{BOLD}{res['mamba_tok_per_sec']} tok/s{RESET})")
-            print(f"     • Total State Memory : {CYAN}{res['mamba_state_kb']} KB{RESET} (100% L2 Cache Resident, 0 KV-Cache growth)\n")
+            print(f"  {BOLD}2. PRIME-Moment O(D^2) KV-Cache-Free Attention (8 heads x 64 dim, 512 tokens):{RESET}")
+            print(f"     • Step Latency       : {GREEN}{res['prime_step_ms']} ms{RESET} ({GREEN}{BOLD}{res['prime_tok_per_sec']} tok/s{RESET})")
+            print(f"     • S0/S1/S2 State RAM : {CYAN}{res['prime_state_kb']} KB{RESET} (100% L2 Cache Resident, 0 KV-Cache growth)\n")
         else:
             print(f"  {RED}libsynapse_core.so not loaded; run 'make -C cortex/c_prime shared'{RESET}\n")
+
     elif args.subcommand == "chat":
         msg_str = " ".join(args.message)
         res = engine.chat_with_cortex(msg_str)

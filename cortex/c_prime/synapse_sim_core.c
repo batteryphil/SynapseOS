@@ -723,63 +723,60 @@ void synapse_trit64_bench(
     free(w_trit); free(x_trit); free(y_trit);
 }
 
-void synapse_mamba_ssm_bench(
-    int d_inner,
+#include "prime_moment.h"
+
+void synapse_prime_trit64_bench(
+    int num_heads,
+    int head_dim,
     int n_tokens,
-    float* out_scan_ms,
+    float* out_step_ms,
     float* out_tok_per_sec,
     float* out_state_kb
 ) {
-    if (d_inner < 64) d_inner = 64;
-    if (n_tokens < 1) n_tokens = 1;
-    const int d_state = 16;
+    if (num_heads < 1) num_heads = 8;
+    if (head_dim < 16) head_dim = 64;
+    if (n_tokens < 1) n_tokens = 512;
 
-    float* h_state = (float*)calloc((size_t)d_inner * (size_t)d_state, sizeof(float));
-    float* A_bar   = (float*)malloc((size_t)d_inner * (size_t)d_state * sizeof(float));
-    float* B_u     = (float*)malloc((size_t)d_inner * (size_t)d_state * sizeof(float));
-    float* C_vec   = (float*)malloc((size_t)d_state * sizeof(float));
-    float* y_out   = (float*)malloc((size_t)d_inner * sizeof(float));
-
-    if (!h_state || !A_bar || !B_u || !C_vec || !y_out) {
-        free(h_state); free(A_bar); free(B_u); free(C_vec); free(y_out);
+    prime_config_t cfg = prime_default_config(num_heads, head_dim);
+    prime_state_t* state = prime_state_create(num_heads, head_dim);
+    if (!state) {
         return;
     }
 
-    for (int i = 0; i < d_inner * d_state; ++i) {
-        A_bar[i] = 0.96f;
-        B_u[i]   = 0.04f * (float)((i & 7) - 3);
+    size_t vec_len = (size_t)num_heads * (size_t)head_dim;
+    float* q = (float*)malloc(vec_len * sizeof(float));
+    float* k = (float*)malloc(vec_len * sizeof(float));
+    float* v = (float*)malloc(vec_len * sizeof(float));
+    float* out = (float*)malloc(vec_len * sizeof(float));
+    if (!q || !k || !v || !out) {
+        free(q); free(k); free(v); free(out);
+        prime_state_free(state);
+        return;
     }
-    for (int s = 0; s < d_state; ++s) {
-        C_vec[s] = 0.125f;
+
+    for (size_t i = 0; i < vec_len; ++i) {
+        q[i] = 0.05f * (float)((int)(i & 7) - 3);
+        k[i] = 0.05f * (float)((int)((i + 3) & 7) - 3);
+        v[i] = 0.10f * (float)((int)((i + 5) & 7) - 3);
     }
 
     double t0 = synapse_now_ms();
     for (int t = 0; t < n_tokens; ++t) {
-        for (int c = 0; c < d_inner; ++c) {
-            float* hc = &h_state[c * d_state];
-            const float* ac = &A_bar[c * d_state];
-            const float* bc = &B_u[c * d_state];
-            float acc = 0.0f;
-            for (int s = 0; s < d_state; ++s) {
-                float h_new = ac[s] * hc[s] + bc[s];
-                hc[s] = h_new;
-                acc += h_new * C_vec[s];
-            }
-            /* Fused SiLU gate */
-            float sig = 1.0f / (1.0f + expf(-acc));
-            y_out[c] = acc * sig;
-        }
+        prime_step(&cfg, state, q, k, v, out);
     }
     double t1 = synapse_now_ms();
-    volatile float sink = y_out[0];
+    volatile float sink = out[0];
     (void)sink;
 
-    float scan_ms = (float)(t1 - t0);
-    if (scan_ms < 0.001f) scan_ms = 0.001f;
-    if (out_scan_ms) *out_scan_ms = scan_ms;
-    if (out_tok_per_sec) *out_tok_per_sec = ((float)n_tokens * 1000.0f) / scan_ms;
-    if (out_state_kb) *out_state_kb = (float)((size_t)d_inner * (size_t)(d_state + 4) * sizeof(float)) / 1024.0f;
+    float step_ms = (float)(t1 - t0);
+    if (step_ms < 0.001f) step_ms = 0.001f;
+    if (out_step_ms) *out_step_ms = step_ms;
+    if (out_tok_per_sec) *out_tok_per_sec = ((float)n_tokens * 1000.0f) / step_ms;
+    if (out_state_kb) *out_state_kb = (float)state->state_bytes / 1024.0f;
 
-    free(h_state); free(A_bar); free(B_u); free(C_vec); free(y_out);
+    free(q); free(k); free(v); free(out);
+    prime_state_free(state);
 }
+
+
 

@@ -103,12 +103,12 @@ def _load_synapse_core() -> Optional[ctypes.CDLL]:
                 ]
                 lib.synapse_trit64_bench.restype = None
 
-            if hasattr(lib, "synapse_mamba_ssm_bench"):
-                lib.synapse_mamba_ssm_bench.argtypes = [
-                    ctypes.c_int, ctypes.c_int,
+            if hasattr(lib, "synapse_prime_trit64_bench"):
+                lib.synapse_prime_trit64_bench.argtypes = [
+                    ctypes.c_int, ctypes.c_int, ctypes.c_int,
                     _C_FLOAT_P, _C_FLOAT_P, _C_FLOAT_P,
                 ]
-                lib.synapse_mamba_ssm_bench.restype = None
+                lib.synapse_prime_trit64_bench.restype = None
 
             return lib
         except Exception:
@@ -120,7 +120,7 @@ SYNAPSE_C_CORE = _load_synapse_core()
 
 
 def benchmark_buildbit_potato_kernels(dim: int = 1024, n_tokens: int = 64) -> dict:
-    """Run BuildbitOS 1.58-Bit Ternary Bit-Sliced POPCNT & O(1) Mamba SSM Potato Benchmarks."""
+    """Run BuildbitOS 1.58-Bit Ternary Bit-Sliced POPCNT + PRIME-Moment Attention Potato Benchmarks."""
     if SYNAPSE_C_CORE is None or not hasattr(SYNAPSE_C_CORE, "synapse_trit64_bench"):
         return {"available": False}
     fp32_ms = ctypes.c_float(0.0)
@@ -133,12 +133,12 @@ def benchmark_buildbit_potato_kernels(dim: int = 1024, n_tokens: int = 64) -> di
         ctypes.byref(speedup), ctypes.byref(exact),
     )
 
-    scan_ms = ctypes.c_float(0.0)
+    prime_ms = ctypes.c_float(0.0)
     tok_s = ctypes.c_float(0.0)
     state_kb = ctypes.c_float(0.0)
-    SYNAPSE_C_CORE.synapse_mamba_ssm_bench(
-        768, 512,
-        ctypes.byref(scan_ms), ctypes.byref(tok_s), ctypes.byref(state_kb),
+    SYNAPSE_C_CORE.synapse_prime_trit64_bench(
+        8, 64, 512,
+        ctypes.byref(prime_ms), ctypes.byref(tok_s), ctypes.byref(state_kb),
     )
     return {
         "available": True,
@@ -148,8 +148,9 @@ def benchmark_buildbit_potato_kernels(dim: int = 1024, n_tokens: int = 64) -> di
         "trit_ms": round(float(trit_ms.value), 3),
         "trit_speedup": round(float(speedup.value), 2),
         "trit_exact_match": bool(exact.value == 1),
-        "mamba_scan_ms": round(float(scan_ms.value), 3),
-        "mamba_tok_per_sec": round(float(tok_s.value), 1),
-        "mamba_state_kb": round(float(state_kb.value), 1),
+        "prime_step_ms": round(float(prime_ms.value), 3),
+        "prime_tok_per_sec": round(float(tok_s.value), 1),
+        "prime_state_kb": round(float(state_kb.value), 1),
     }
+
 

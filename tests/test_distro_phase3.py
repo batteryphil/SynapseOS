@@ -108,7 +108,8 @@ class TestDistroPhase3(unittest.TestCase):
         self.assertTrue(res.get("available"))
         self.assertTrue(res.get("trit_exact_match"))
         self.assertGreater(res.get("trit_speedup", 0.0), 2.0)
-        self.assertGreater(res.get("mamba_tok_per_sec", 0.0), 1000.0)
+        self.assertGreater(res.get("prime_tok_per_sec", 0.0), 1000.0)
+
 
     def test_build_iso_dry_run(self):
         script = os.path.join(DISTRO_DIR, "build-iso.sh")
