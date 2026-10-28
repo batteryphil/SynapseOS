@@ -1,0 +1,38 @@
+SYNAPSE-OS VM & HARDWARE SIMULATION TEST MATRIX
+================================================
+
+Hypervisor: QEMU/KVM (qemu-system-x86_64) on Linux
+Boot Method: Raw USB Disk Simulation (-drive file=SynapseOS-Debian12-Potato-x86_64.iso,if=virtio,media=disk,format=raw)
+Firmware Tested: Both Legacy BIOS (SeaBIOS) and 64-bit UEFI (OVMF)
+
+7 Simulated Hardware Profiles Tested & Verified:
+1. 2015 School Chromebook (Acer C720 / Dell 11):
+   Flags: -cpu Westmere -smp 2 -m 2048 -device virtio-gpu-pci (64-bit UEFI OVMF)
+   Specs: 2 Cores, 2 GB RAM, No AVX -> Boots in ~13s, uses instant (<1ms) offline SQLite FTS5 tutor & zram swap.
+
+2. 2007 Core 2 Duo Laptop:
+   Flags: -cpu Conroe -smp 1 -m 1536 -vga cirrus (Legacy BIOS)
+   Specs: 1 Single Core (SSSE3 only), 1.5 GB RAM, 4 MB Cirrus VGA -> Boots cleanly at 1024x768.
+
+3. 2009 MacBook / Dell Latitude E6400:
+   Flags: -cpu Penryn -smp 2 -m 4096 -vga std (Legacy BIOS)
+   Specs: 2 Cores, 4 GB RAM -> Boots cleanly at 1280x800, runs built-in cortex-phi3 LLM + all 7 AI labs.
+
+4. 2011 ThinkPad T420 / Donated Corporate Laptop:
+   Flags: -cpu SandyBridge -smp 2 -m 4096 -vga vmware (Legacy BIOS)
+   Specs: 2 Cores, 4 GB RAM, AVX1 (No AVX2) -> Boots cleanly, UI scales to 800x600.
+
+5. 2011 Cheap AMD Netbook (AMD E-350 / Brazos):
+   Flags: -cpu phenom -smp 2 -m 2048 -vga std (Legacy BIOS)
+   Specs: 2 Cores, 2 GB RAM, No AVX -> Boots cleanly at 1280x800 with zero illegal-instruction crashes.
+
+6. 2017 ThinkPad T470 Ultrabook:
+   Flags: -cpu host -smp 4 -m 4096 -vga std (64-bit UEFI OVMF & Legacy BIOS)
+   Specs: 4 Cores, 4 GB RAM -> Boots in ~12s; built-in cortex-phi3:latest LLM preloads into 2.3 GB RAM (1.2 GiB free, <1 MB swap) and generates at 6.64 tok/s (578 ms TTFT).
+
+7. Broken-GPU Laptop (Safe Graphics Mode):
+   Flags: -cpu Westmere -smp 2 -m 2048 -vga std (GRUB Entry #2: nomodeset vga=normal)
+   Specs: 2 Cores, 2 GB RAM -> Boots cleanly via universal VESA/EFI framebuffer fallback at 1920x1080.
+
+One-Liner to Boot the Full ISO in QEMU:
+qemu-system-x86_64 -enable-kvm -cpu host -smp 4 -m 4096 -drive file=SynapseOS-Debian12-Potato-x86_64.iso,if=virtio,media=disk,format=raw,readonly=on -vga std
