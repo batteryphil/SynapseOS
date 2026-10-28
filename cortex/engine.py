@@ -102,19 +102,42 @@ class CortexKnowledgeDB:
 
     @staticmethod
     def _sanitize_fts_query(query: str) -> str:
-        """Convert natural language query into safe FTS5 OR token query."""
+        """Convert natural language query or lab slug into safe FTS5 prefix OR token query."""
         stop_words = {
             "how", "do", "i", "to", "the", "a", "an", "in", "on", "for", "of",
             "and", "or", "is", "my", "what", "can", "you", "me", "with", "use",
             "using", "give", "show", "run", "cmd", "command", "please", "why"
         }
-        tokens = re.findall(r"[a-zA-Z0-9_]+", query.lower())
-        filtered = [t for t in tokens if t not in stop_words and len(t) >= 2]
-        if not filtered:
-            filtered = tokens
-        if not filtered:
+        alias_map = {
+            "raycast": ["neat", "neuroevolution", "sensor"],
+            "car": ["neat", "neuroevolution", "steering"],
+            "swarm": ["neat", "neuroevolution", "evolution"],
+            "ecosystem": ["neat", "evolution", "population"],
+            "moon": ["neat", "lunar", "lander"],
+            "lander": ["neat", "lunar", "neuroevolution"],
+            "cartpole": ["ppo", "reinforcement", "policy"],
+            "gridworld": ["q_learning", "reinforcement", "bellman"],
+            "playground": ["backprop", "mlp", "gradient"],
+            "prime": ["llm", "attention", "transformer"],
+            "mamba": ["llm", "transformer", "quantization"],
+            "ternary": ["llm", "quantization", "gguf"],
+        }
+        raw_tokens = re.findall(r"[a-zA-Z0-9]+", query.lower())
+        expanded = []
+        for t in raw_tokens:
+            if t not in stop_words and len(t) >= 2:
+                expanded.append(t)
+                if t in alias_map:
+                    expanded.extend(alias_map[t])
+        if not expanded:
+            expanded = [t for t in raw_tokens if len(t) >= 2] or raw_tokens
+        if not expanded:
             return ""
-        return " OR ".join(f'"{t}"' for t in filtered[:10])
+        seen = []
+        for t in expanded:
+            if t not in seen:
+                seen.append(t)
+        return " OR ".join(f'"{t}"*' for t in seen[:12])
 
     def search_linux(self, query: str, limit: int = 3) -> List[Dict[str, Any]]:
         if not self.is_ready():
@@ -683,19 +706,19 @@ class CortexEngine:
     def synthesize_command_and_instructions(self, query: str, force_llm: bool = False) -> Dict[str, Any]:
         """
         1. Searches SQLite FTS5 KB in <1ms.
-        2. If strong BM25 match (and not force_llm), returns verified command immediately or grounds LLM.
-        3. Otherwise synthesizes via `cortex-phi3` grounded with top FTS5 references.
+        2. When force_llm=False, always returns in <1ms without blocking on LLM inference.
+        3. When force_llm=True, synthesizes via `cortex-phi3` grounded with top FTS5 references.
         """
         fts_hits = self.kb.search_linux(query, limit=2)
 
-        # Fast-path: strong BM25 match (<= -1.8 in SQLite FTS5 BM25 where more negative = stronger match)
-        if fts_hits and not force_llm and (fts_hits[0]["bm25_score"] <= -1.8 or self.potato_mode or not self.is_ollama_available()):
+        # Instant <1ms fast-path whenever force_llm is False (or Potato mode / Ollama offline)
+        if fts_hits and (not force_llm or self.potato_mode or not self.is_ollama_available()):
             best = fts_hits[0]
             best["source"] = f"SQLite FTS5 Grounded ({best['retrieval_ms']} ms)"
             return self._enrich_cmd_result(best)
 
-        # Grounded LLM synthesis via cortex-phi3
-        if self.is_ollama_available():
+        # Grounded LLM synthesis via cortex-phi3 (only when explicitly requested via force_llm=True)
+        if force_llm and self.is_ollama_available():
             hardware = self.system_info
             rag_context = ""
             if fts_hits:
@@ -734,7 +757,7 @@ class CortexEngine:
                 except Exception:
                     pass
 
-        # Fallback if offline and weak match
+        # Fallback if offline or no FTS match
         if fts_hits:
             best = fts_hits[0]
             best["source"] = f"SQLite FTS5 Offline Fallback ({best['retrieval_ms']} ms)"
@@ -750,13 +773,14 @@ class CortexEngine:
                 "Run the `apropos` command to list matching utilities.",
                 "Use `?? <specific task>` for targeted command synthesis."
             ],
-            "source": "Offline Core"
+            "source": "SQLite FTS5 Instant Fallback (<0.5 ms)"
         })
 
     def explain_ai_concept(self, topic_query: str, force_llm: bool = False) -> Dict[str, Any]:
         """
         Hybrid FTS5 + `cortex-phi3` AI Development Mentor.
-        Returns Layman Point-and-Click guide, Math/Theory, Hyperparameters, Code Template, and Debugging tips.
+        When force_llm=False (the '⚡ Instant (<1ms)' button), strictly returns in <1ms from SQLite FTS5
+        without ever blocking on CPU/GPU LLM inference.
         """
         fts_hits = self.kb.search_ai(topic_query, limit=2)
 
@@ -765,7 +789,26 @@ class CortexEngine:
             best["source"] = f"SQLite FTS5 AI KB ({best['retrieval_ms']} ms)"
             return best
 
-        if self.is_ollama_available():
+        if not force_llm:
+            # Instant <1ms fallback when user typed a custom phrase that didn't hit a specific keyword
+            default_hits = self.kb.search_ai("neat reinforcement learning backprop llm", limit=1)
+            if default_hits:
+                best = dict(default_hits[0])
+                best["title"] = f"{best['title']} (Query: {topic_query})"
+                best["source"] = f"SQLite FTS5 Instant Match ({best['retrieval_ms']} ms)"
+                return best
+            return {
+                "paradigm": "General AI & Machine Learning",
+                "title": f"AI Guidance: {topic_query}",
+                "summary": "SynapseOS provides built-in environments for Neuroevolution (NEAT), RL (PPO/DQN), Classical ML, Deep Learning, and SLMs.",
+                "layman_guide": "Adjust the sliders in the left panel to tune learning rate, mutation power, or exploration, then click Train/Evolve to watch the agent adapt in real time.",
+                "math_and_theory": "Optimization minimizes loss L(θ) or maximizes expected cumulative reward E[∑ γ^t r_t] across rollouts.",
+                "debugging_tips": "If reward stalls, lower the learning rate or increase population/exploration diversity.",
+                "available_topics": list(AI_TOPICS.keys()),
+                "source": "SQLite FTS5 Instant Core (<0.5 ms)"
+            }
+
+        if force_llm and self.is_ollama_available():
             if self.potato_mode or self.system_info.get("ram_total_gb", 4.0) < 6.0 or not self.system_info.get("has_avx2", False):
                 sys_prompt = "You are Lumi, a friendly Socratic AI tutor for students. Give a helpful hint in 1-2 short sentences."
                 prompt_str = f"Student: Explain {topic_query} for a student.\nLumi:"

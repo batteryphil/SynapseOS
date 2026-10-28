@@ -42,11 +42,13 @@ from workbench.curriculum import (
 from workbench.sandbox_runner import run_student_code
 from workbench.kid_arcade_view import SynapseKidsView, LEVEL_DATA
 from workbench.pack_manager import LearningPackManager
+from workbench.classroom_hub import ClassroomHubManager
+from workbench.safe_media_sandbox import show_safe_media_dialog
 from cortex.engine import CortexEngine
 
 
 DARK_CSS = b"""
-window {
+window, dialog {
     background-color: #0f1117;
     color: #e2e8f0;
 }
@@ -289,6 +291,8 @@ class SynapseStudioWindow(Gtk.Window):
         self.active_lab_id = "moon_lander"
         self.active_lesson_id = SCHOOL_CURRICULUM[0]["id"]
         self.pack_mgr = LearningPackManager()
+        self.classroom_hub = ClassroomHubManager(enable_udp=True)
+        self.classroom_hub.register_listener(lambda _st: GLib.idle_add(self._refresh_classroom_hub_ui))
         self.earned_badges: Set[str] = set(self.pack_mgr.profile.get("earned_badges", []))
         if not self.earned_badges:
             self.earned_badges.add("m1_moon_gravity")
@@ -316,6 +320,7 @@ class SynapseStudioWindow(Gtk.Window):
         self._populate_sliders()
         self._refresh_lesson_view()
         self._load_lesson_coding_challenge()
+        self._refresh_classroom_hub_ui()
 
         GLib.timeout_add(18, self._on_tick)
 
@@ -335,12 +340,42 @@ class SynapseStudioWindow(Gtk.Window):
         self.mode_stack.set_transition_duration(180)
         self.add(self.mode_stack)
 
-        # PAGE 1: Full-Screen "Synapse Kids" Interactive Arcade View
+        # PAGE 1: Full-Screen "Synapse Kids" Interactive Arcade View + Student Classroom & Safe Media Bar
+        kid_root_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=0)
         self.kids_view = SynapseKidsView(
             self,
             on_switch_to_teacher=lambda: self._set_kid_mode(False),
         )
-        self.mode_stack.add_named(self.kids_view, "kid")
+        kid_root_box.pack_start(self.kids_view, True, True, 0)
+
+        kid_hub_bar = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=6)
+        kid_hub_bar.set_margin_top(3)
+        kid_hub_bar.set_margin_bottom(3)
+        kid_hub_bar.set_margin_start(8)
+        kid_hub_bar.set_margin_end(8)
+
+        self.kid_broadcast_lbl = Gtk.Label()
+        self.kid_broadcast_lbl.set_xalign(0.0)
+        self.kid_broadcast_lbl.set_ellipsize(3)  # Pango.EllipsizeMode.END
+        kid_hub_bar.pack_start(self.kid_broadcast_lbl, True, True, 2)
+
+        btn_kid_load_bcast = Gtk.Button(label="📥 Open Teacher Lesson")
+        btn_kid_load_bcast.set_tooltip_text("Load the lesson, lab, and starter code broadcasted by your teacher over LAN!")
+        btn_kid_load_bcast.connect("clicked", self._on_student_load_broadcast)
+        kid_hub_bar.pack_start(btn_kid_load_bcast, False, False, 1)
+
+        btn_kid_safe_media = Gtk.Button(label="📺 Safe Media & Kiwix")
+        btn_kid_safe_media.set_tooltip_text("Open Synapse Kids TV (Animated STEM Video Lessons) & Offline Kiwix Encyclopedia!")
+        btn_kid_safe_media.connect("clicked", self._on_open_safe_media)
+        kid_hub_bar.pack_start(btn_kid_safe_media, False, False, 1)
+
+        btn_kid_raise_hand = Gtk.Button(label="✋ Raise Hand / Ask Teacher")
+        btn_kid_raise_hand.set_tooltip_text("Ping your teacher over the classroom LAN with a question and see their reply!")
+        btn_kid_raise_hand.connect("clicked", self._on_student_raise_hand_dialog)
+        kid_hub_bar.pack_start(btn_kid_raise_hand, False, False, 1)
+
+        kid_root_box.pack_start(kid_hub_bar, False, False, 0)
+        self.mode_stack.add_named(kid_root_box, "kid")
 
         # PAGE 2: Full 3-Column "Teacher / Pro Workstation" View
         root_vbox = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=4)
@@ -364,6 +399,18 @@ class SynapseStudioWindow(Gtk.Window):
         self.lab_combo.set_active_id(self.active_lab_id)
         self.lab_combo.connect("changed", self._on_lab_changed)
         header_box.pack_start(self.lab_combo, False, False, 2)
+
+        # Safe Media & Offline Kiwix Sandbox Button
+        self.btn_safe_media = Gtk.Button(label="📺 Safe Media")
+        self.btn_safe_media.set_tooltip_text("Open Distraction-Free Safe Media Player (Synapse Kids TV) & Offline Kiwix Encyclopedia")
+        self.btn_safe_media.connect("clicked", self._on_open_safe_media)
+        header_box.pack_start(self.btn_safe_media, False, False, 1)
+
+        # Classroom LAN Hub Quick Button
+        self.btn_classroom_hub = Gtk.Button(label="🏫 LAN Hub")
+        self.btn_classroom_hub.set_tooltip_text("Open Teacher LAN Broadcast, Schedule Manager, Course/File Uploader & Student Hands-Up Q&A")
+        self.btn_classroom_hub.connect("clicked", lambda _b: self.right_notebook.set_current_page(4))
+        header_box.pack_start(self.btn_classroom_hub, False, False, 1)
 
         # Web Browser Launch Button
         self.btn_browser = Gtk.Button(label="◈ Browser")
@@ -722,6 +769,114 @@ class SynapseStudioWindow(Gtk.Window):
         dash_scroll.add(self.dashboard_text)
         self.right_notebook.append_page(dash_vbox, Gtk.Label(label="❖ Report"))
         self._refresh_teacher_dashboard()
+
+        # --- TAB 4: TEACHER CLASSROOM LAN HUB, COURSE/FILE UPLOADER, SCHEDULE & HANDS-UP Q&A ---
+        hub_vbox = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=4)
+        hub_vbox.set_margin_top(4)
+        hub_vbox.set_margin_bottom(4)
+        hub_vbox.set_margin_start(4)
+        hub_vbox.set_margin_end(4)
+
+        hub_title_lbl = Gtk.Label()
+        hub_title_lbl.set_xalign(0.0)
+        hub_title_lbl.set_markup(
+            "<b><span foreground='#38bdf8'>🏫 Offline LAN Classroom Hub &amp; Teacher Controls</span></b>"
+        )
+        hub_vbox.pack_start(hub_title_lbl, False, False, 0)
+
+        # 1. Course & Lesson Broadcast + File Attachment Row
+        bcast_frame = Gtk.Frame(label=" 📡 1-Click LAN Broadcast, Course Upload & File Attachment ")
+        bcast_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=3)
+        bcast_box.set_margin_top(3)
+        bcast_box.set_margin_bottom(3)
+        bcast_box.set_margin_start(4)
+        bcast_box.set_margin_end(4)
+
+        self.hub_bcast_title_entry = Gtk.Entry()
+        self.hub_bcast_title_entry.set_placeholder_text("Lesson / Course Title (e.g., Period 2: Lunar Lander Challenge)")
+        self.hub_bcast_title_entry.set_text("Period 2: Soft Lunar Landing & Thrust Control")
+        bcast_box.pack_start(self.hub_bcast_title_entry, False, False, 0)
+
+        self.hub_bcast_msg_entry = Gtk.Entry()
+        self.hub_bcast_msg_entry.set_placeholder_text("Instructions or announcement for all student screens...")
+        self.hub_bcast_msg_entry.set_text("Try Moon gravity (-1.62) first, then attach your custom reward code!")
+        bcast_box.pack_start(self.hub_bcast_msg_entry, False, False, 0)
+
+        bcast_btn_row = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=3)
+        btn_attach_file = Gtk.Button(label="📎 Attach File")
+        btn_attach_file.set_tooltip_text("Attach a local worksheet, Python script, or course file to share with all students on LAN")
+        btn_attach_file.connect("clicked", self._on_teacher_attach_file)
+        bcast_btn_row.pack_start(btn_attach_file, True, True, 0)
+
+        btn_save_course = Gtk.Button(label="📚 Upload Course")
+        btn_save_course.set_tooltip_text("Save current lab, code & attachments as a reusable Classroom Course module")
+        btn_save_course.connect("clicked", self._on_teacher_upload_course)
+        bcast_btn_row.pack_start(btn_save_course, True, True, 0)
+
+        btn_push_lan = Gtk.Button(label="📡 Broadcast to LAN")
+        btn_push_lan.set_tooltip_text("Push this lesson, active lab, and code snippet to every student PC on the LAN in 1 click!")
+        btn_push_lan.connect("clicked", self._on_teacher_broadcast_lan)
+        bcast_btn_row.pack_start(btn_push_lan, True, True, 0)
+
+        bcast_box.pack_start(bcast_btn_row, False, False, 0)
+        bcast_frame.add(bcast_box)
+        hub_vbox.pack_start(bcast_frame, False, False, 0)
+
+        # 2. Daily Class Schedule Manager Row
+        sched_frame = Gtk.Frame(label=" 📅 Class Schedule Manager ")
+        sched_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=3)
+        sched_box.set_margin_top(3)
+        sched_box.set_margin_bottom(3)
+        sched_box.set_margin_start(4)
+        sched_box.set_margin_end(4)
+
+        self.hub_sched_period_entry = Gtk.Entry()
+        self.hub_sched_period_entry.set_placeholder_text("Period / Time (e.g. 13:00-13:45)")
+        self.hub_sched_period_entry.set_width_chars(12)
+        sched_box.pack_start(self.hub_sched_period_entry, False, False, 0)
+
+        self.hub_sched_topic_entry = Gtk.Entry()
+        self.hub_sched_topic_entry.set_placeholder_text("Topic (e.g. Swarm Boids Lab)")
+        sched_box.pack_start(self.hub_sched_topic_entry, True, True, 0)
+
+        btn_add_sched = Gtk.Button(label="+ Add Period")
+        btn_add_sched.connect("clicked", self._on_teacher_add_schedule)
+        sched_box.pack_start(btn_add_sched, False, False, 0)
+
+        sched_frame.add(sched_box)
+        hub_vbox.pack_start(sched_frame, False, False, 0)
+
+        # 3. Real-Time Student Hands-Up Q&A Reply Bar
+        qa_frame = Gtk.Frame(label=" ✋ Answer Student Hands-Up & Q&A ")
+        qa_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=3)
+        qa_box.set_margin_top(3)
+        qa_box.set_margin_bottom(3)
+        qa_box.set_margin_start(4)
+        qa_box.set_margin_end(4)
+
+        self.hub_reply_entry = Gtk.Entry()
+        self.hub_reply_entry.set_placeholder_text("Type hint/reply for the top raised hand...")
+        self.hub_reply_entry.set_text("Lower Mutation Power to 0.30 and increase Fuel so it touches down gently!")
+        qa_box.pack_start(self.hub_reply_entry, True, True, 0)
+
+        btn_send_reply = Gtk.Button(label="💬 Reply to Hand")
+        btn_send_reply.connect("clicked", self._on_teacher_reply_hand)
+        qa_box.pack_start(btn_send_reply, False, False, 0)
+
+        qa_frame.add(qa_box)
+        hub_vbox.pack_start(qa_frame, False, False, 0)
+
+        # 4. Live Classroom Status View (Schedule, Courses, Attached Files, Hands-Up Queue & LAN Roster)
+        hub_scroll = Gtk.ScrolledWindow()
+        hub_scroll.set_policy(Gtk.PolicyType.AUTOMATIC, Gtk.PolicyType.AUTOMATIC)
+        hub_vbox.pack_start(hub_scroll, True, True, 0)
+
+        self.hub_status_text = Gtk.TextView()
+        self.hub_status_text.set_editable(False)
+        self.hub_status_text.set_wrap_mode(Gtk.WrapMode.WORD_CHAR)
+        hub_scroll.add(self.hub_status_text)
+
+        self.right_notebook.append_page(hub_vbox, Gtk.Label(label="🏫 Hub"))
 
         # --- BOTTOM BAR: BUILT-IN CORTEX-PHI3 GENERAL CHAT, AI TUTOR & LINUX RUNNER ---
         self.cortex_frame = Gtk.Frame(label=" ★ 4. Ask Cortex (Your Friendly AI Buddy!) ")
@@ -3338,6 +3493,247 @@ class SynapseStudioWindow(Gtk.Window):
                 cr.line_to(px, py)
         cr.stroke()
 
+    # ------------------------------------------------------------------
+    # Classroom LAN Hub, Safe Media Sandbox & Real-Time Hands-Up Q&A
+    # ------------------------------------------------------------------
+    def _refresh_classroom_hub_ui(self) -> bool:
+        if not hasattr(self, "classroom_hub"):
+            return False
+        st = self.classroom_hub.get_state()
+        bcast = st.get("active_broadcast", {})
+        hands = st.get("hands_up_queue", [])
+        sched = st.get("schedule", [])
+        courses = st.get("courses", [])
+        roster = st.get("students_roster", {})
+        files = self.classroom_hub.list_attached_files()
+
+        # Update Kid Mode bottom Classroom & Broadcast banner
+        if hasattr(self, "kid_broadcast_lbl"):
+            btitle = bcast.get("title", "Classroom Hub Active")
+            bmsg = bcast.get("message", "")
+            # Check if teacher replied to any hand recently
+            answered = [h for h in hands if h.get("teacher_reply")]
+            if answered:
+                latest_ans = answered[0]
+                banner_markup = (
+                    f"<span foreground='#4ade80' weight='bold'>💬 Teacher Reply ({latest_ans.get('student_name', 'You')}):</span> "
+                    f"<span foreground='#f8fafc'>{GLib.markup_escape_text(latest_ans.get('teacher_reply', ''))}</span>"
+                )
+            else:
+                cur_period = sched[0]["period"] if sched else "Period 1"
+                banner_markup = (
+                    f"<span foreground='#fde047' weight='bold'>📢 [{GLib.markup_escape_text(cur_period)}] "
+                    f"{GLib.markup_escape_text(btitle)}:</span> "
+                    f"<span foreground='#e2e8f0'>{GLib.markup_escape_text(bmsg)}</span>"
+                )
+            self.kid_broadcast_lbl.set_markup(banner_markup)
+
+        # Update Teacher Hub Status TextView
+        if hasattr(self, "hub_status_text"):
+            lines = []
+            lines.append(f"🌐 TEACHER LAN NODE: {st.get('teacher_host', 'Localhost')}  |  UDP Broadcast Port: 50505")
+            lines.append("=" * 66)
+
+            open_hands = [h for h in hands if h.get("status") == "open"]
+            lines.append(f"✋ STUDENT HANDS-UP & Q&A QUEUE ({len(open_hands)} Open / {len(hands)} Total):")
+            for h in hands[:5]:
+                status_icon = "✋ [OPEN]" if h.get("status") == "open" else "✅ [ANSWERED]"
+                lines.append(
+                    f"  {status_icon} {h.get('student_name')} ({h.get('lab_id')} - {h.get('level')}) @ {h.get('timestamp')}:"
+                )
+                lines.append(f"     ❓ Q: \"{h.get('question')}\"")
+                if h.get("teacher_reply"):
+                    lines.append(f"     💬 Teacher Reply: \"{h.get('teacher_reply')}\"")
+            lines.append("")
+
+            lines.append(f"🖥️ LIVE CLASSROOM LAN STUDENT ROSTER ({len(roster)} Stations Online):")
+            for skey, sinfo in roster.items():
+                lines.append(
+                    f"  • {sinfo.get('student_name', skey)} [{sinfo.get('ip', 'LAN')}] -> "
+                    f"Lab: {sinfo.get('active_lab')} ({sinfo.get('mode')}) | "
+                    f"Best: {sinfo.get('best_score')} | Status: {sinfo.get('status')}"
+                )
+            lines.append("")
+
+            lines.append(f"📅 DAILY CLASS SCHEDULE ({len(sched)} Periods):")
+            for idx, item in enumerate(sched, 1):
+                lines.append(
+                    f"  {idx}. [{item.get('period')}] {item.get('title')} "
+                    f"(Lab: {item.get('lab_id')} | {item.get('mode')})"
+                )
+            lines.append("")
+
+            lines.append(f"📚 UPLOADED COURSES ({len(courses)}) & 📎 ATTACHED FILES ({len(files)}):")
+            for c in courses[:4]:
+                lines.append(
+                    f"  📘 {c.get('title')} [Lab: {c.get('lab_id')}] — "
+                    f"Files: {', '.join(c.get('attached_files', [])) or 'None'}"
+                )
+            if files:
+                lines.append("  📎 Shared Files Folder: " + ", ".join(f"{f['name']} ({f['size_kb']}KB)" for f in files))
+
+            self.hub_status_text.get_buffer().set_text("\n".join(lines))
+        return False
+
+    def _on_open_safe_media(self, _btn=None) -> None:
+        show_safe_media_dialog(
+            parent_window=self,
+            classroom_hub=self.classroom_hub,
+            speak_callback=lambda txt: self._append_cortex_output("📺 Safe Media Narrator", txt),
+        )
+
+    def _on_student_load_broadcast(self, _btn=None) -> None:
+        st = self.classroom_hub.get_state()
+        bcast = st.get("active_broadcast", {})
+        target_lab = bcast.get("lab_id", "moon_lander")
+        if target_lab in self.labs:
+            self.lab_combo.set_active_id(target_lab)
+            self._on_lab_changed(self.lab_combo)
+        snippet = bcast.get("code_snippet", "")
+        if snippet and hasattr(self, "code_view"):
+            self.code_view.get_buffer().set_text(snippet)
+        if hasattr(self, "kids_view"):
+            self.kids_view.custom_ai_speech = (
+                f"📢 Loaded Teacher Lesson: {bcast.get('title', 'Classroom Lab')}! {bcast.get('message', '')}"
+            )
+            self.kids_view.queue_draw()
+
+    def _on_student_raise_hand_dialog(self, _btn=None) -> None:
+        dlg = Gtk.Dialog(
+            title="✋ Raise Hand & Ask Your Teacher (Offline Classroom LAN)",
+            transient_for=self,
+            flags=0,
+        )
+        dlg.set_default_size(520, 260)
+        dlg.add_button("Cancel", Gtk.ResponseType.CANCEL)
+        dlg.add_button("✋ Send Question to Teacher", Gtk.ResponseType.OK)
+
+        box = dlg.get_content_area()
+        box.set_spacing(8)
+        box.set_margin_top(10)
+        box.set_margin_bottom(10)
+        box.set_margin_start(12)
+        box.set_margin_end(12)
+
+        info_lbl = Gtk.Label()
+        info_lbl.set_markup(
+            "<b><span foreground='#fde047'>✋ Need a hand with your AI experiment?</span></b>\n"
+            "Your question and current lab will appear immediately on your teacher's Classroom Hub screen."
+        )
+        info_lbl.set_xalign(0.0)
+        info_lbl.set_line_wrap(True)
+        box.pack_start(info_lbl, False, False, 0)
+
+        name_entry = Gtk.Entry()
+        active_student = self.pack_mgr.profile.get("student_name", "Student (Station-01)")
+        name_entry.set_text(active_student)
+        name_entry.set_placeholder_text("Your Name / Station #")
+        box.pack_start(name_entry, False, False, 0)
+
+        q_entry = Gtk.Entry()
+        q_entry.set_text(f"Can you help me tune the sliders for {self.active_lab_id}?")
+        q_entry.set_placeholder_text("Type your question for the teacher...")
+        box.pack_start(q_entry, False, False, 0)
+
+        dlg.show_all()
+        resp = dlg.run()
+        sname = name_entry.get_text().strip()
+        qtext = q_entry.get_text().strip()
+        dlg.destroy()
+
+        if resp == Gtk.ResponseType.OK and qtext:
+            self.classroom_hub.raise_hand(
+                student_name=sname,
+                question=qtext,
+                lab_id=self.active_lab_id,
+                level="Kid Arcade" if self.kid_mode else "Student Workbench",
+            )
+            self._refresh_classroom_hub_ui()
+            if hasattr(self, "kids_view"):
+                self.kids_view.custom_ai_speech = (
+                    f"✋ Hand raised! Sent to teacher: \"{qtext}\". Watch the bottom bar for your teacher's reply!"
+                )
+                self.kids_view.queue_draw()
+
+    def _on_teacher_attach_file(self, _btn=None) -> None:
+        dlg = Gtk.FileChooserDialog(
+            title="📎 Attach Course Worksheet, Python Script, or Media File to Classroom Hub",
+            parent=self,
+            action=Gtk.FileChooserAction.OPEN,
+        )
+        dlg.add_buttons(
+            Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL,
+            Gtk.STOCK_OPEN, Gtk.ResponseType.OK,
+        )
+        resp = dlg.run()
+        chosen = dlg.get_filename()
+        dlg.destroy()
+        if resp == Gtk.ResponseType.OK and chosen:
+            fname = self.classroom_hub.attach_file(chosen)
+            if fname:
+                self._append_cortex_output("📎 File Attached to LAN Hub", f"Shared '{fname}' with all student PCs.")
+                self._refresh_classroom_hub_ui()
+
+    def _on_teacher_upload_course(self, _btn=None) -> None:
+        title = self.hub_bcast_title_entry.get_text().strip() or f"Course: {self.active_lab_id}"
+        desc = self.hub_bcast_msg_entry.get_text().strip()
+        buf = self.code_view.get_buffer()
+        code = buf.get_text(buf.get_start_iter(), buf.get_end_iter(), True)
+        files = [f["name"] for f in self.classroom_hub.list_attached_files()]
+        self.classroom_hub.upload_course(
+            title=title,
+            lab_id=self.active_lab_id,
+            description=desc,
+            starter_code=code,
+            attached_files=files[:3],
+        )
+        self._refresh_classroom_hub_ui()
+        self._append_cortex_output("📚 Course Uploaded", f"Saved course module '{title}' for lab '{self.active_lab_id}'.")
+
+    def _on_teacher_broadcast_lan(self, _btn=None) -> None:
+        title = self.hub_bcast_title_entry.get_text().strip() or "Teacher Classroom Broadcast"
+        msg = self.hub_bcast_msg_entry.get_text().strip() or "Open this lab and test the starter code!"
+        buf = self.code_view.get_buffer()
+        code = buf.get_text(buf.get_start_iter(), buf.get_end_iter(), True)
+        files = [f["name"] for f in self.classroom_hub.list_attached_files()]
+        self.classroom_hub.broadcast_to_classroom(
+            title=title,
+            message=msg,
+            lab_id=self.active_lab_id,
+            code_snippet=code,
+            attached_files=files[:3],
+        )
+        self._refresh_classroom_hub_ui()
+        self._append_cortex_output("📡 LAN Broadcast Sent", f"Pushed '{title}' ({self.active_lab_id}) to all student PCs.")
+
+    def _on_teacher_add_schedule(self, _btn=None) -> None:
+        period = self.hub_sched_period_entry.get_text().strip() or f"Period {len(self.classroom_hub.get_schedule()) + 1}"
+        topic = self.hub_sched_topic_entry.get_text().strip() or f"Hands-on Lab: {self.active_lab_id}"
+        self.classroom_hub.add_schedule_item(
+            period=period,
+            title=topic,
+            lab_id=self.active_lab_id,
+            mode="Student / Kid Lab",
+        )
+        self.hub_sched_period_entry.set_text("")
+        self.hub_sched_topic_entry.set_text("")
+        self._refresh_classroom_hub_ui()
+
+    def _on_teacher_reply_hand(self, _btn=None) -> None:
+        reply_txt = self.hub_reply_entry.get_text().strip()
+        if not reply_txt:
+            return
+        st = self.classroom_hub.get_state()
+        hands = st.get("hands_up_queue", [])
+        if not hands:
+            return
+        # Reply to first open hand, or most recent hand
+        open_hands = [h for h in hands if h.get("status") == "open"]
+        target_id = open_hands[0]["id"] if open_hands else hands[0]["id"]
+        self.classroom_hub.reply_to_hand(target_id, reply_txt)
+        self._refresh_classroom_hub_ui()
+        self._append_cortex_output("💬 Answered Student Hand", f"Sent reply to student: {reply_txt}")
+
 
 def main():
     win = SynapseStudioWindow()
@@ -3351,6 +3747,11 @@ def main():
     if init_lab and init_lab in win.labs:
         win.lab_combo.set_active_id(init_lab)
         win._on_lab_changed(win.lab_combo)
+    init_tab = os.environ.get("SYNAPSE_INITIAL_TAB", "").strip()
+    if init_tab.isdigit() and hasattr(win, "right_notebook"):
+        win.right_notebook.set_current_page(int(init_tab))
+    if os.environ.get("SYNAPSE_OPEN_SAFE_MEDIA", "").strip() == "1":
+        GLib.timeout_add(300, lambda: (win._on_open_safe_media(), False)[1])
     Gtk.main()
 
 
